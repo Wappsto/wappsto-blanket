@@ -20,6 +20,7 @@ function useIds(service, ids, query){
   const ownRequest = useRef(false);
   const [ status, setStatus ] = useState('idle');
   const prevStatus = usePrevious(status);
+  const prevIds = usePrevious(ids);
   const missingIds = useRef();
   const dispatch = useDispatch();
   const [ items, setItems] = useState([]);
@@ -74,7 +75,7 @@ function useIds(service, ids, query){
 
   // Update status
   useEffect(() => {
-    if(status !== 'success'){
+    if(status !== 'success' || prevIds !== ids){
       for(let i = 0; i < ids.length; i++){
         const idStatus = cache[ids[i]];
         if(idStatus === 'error'){
