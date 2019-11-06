@@ -37,7 +37,7 @@ function useIds(service, ids, query){
     });
     missingIds.current = arr;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ids]);
 
   const { request, requestId, setRequestId } = useRequest();
 
@@ -70,7 +70,7 @@ function useIds(service, ids, query){
       setRequestId(lastRequestId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, service, updateMissingIds]);
+  }, [dispatch, service, updateMissingIds, ids]);
 
   // Update status
   useEffect(() => {
