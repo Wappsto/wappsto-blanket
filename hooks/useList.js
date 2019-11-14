@@ -92,13 +92,13 @@ function useList(props){
 	const idsItemName = propsData.url + queryString + "_ids";
 	const fetchedItemName = propsData.url + queryString + "_fetched";
 	const getSavedIdsItem = useMemo(makeItemSelector, []);
-	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || 0;
+	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || [];
 	const getFetchedItem = useMemo(makeItemSelector, []);
 	const fetched = useSelector(state => getFetchedItem(state, fetchedItemName));
 
 	const limit = propsData.query.limit || 100;
 
-	const options = { parent: propsData.parent, filter: savedIds };
+	const options = { parent: propsData.parent, filter: savedIds, limit: savedIds.length };
 
 	const getEntities = useMemo(makeEntitiesSelector, []);
 	let items = useSelector(state => getEntities(state, propsData.entitiesType, options));
@@ -206,7 +206,21 @@ function useList(props){
     }
 	}, [canLoadMore, propsData.query, items.length, sendRequest]);
 
-  return { items, canLoadMore, request, refresh, loadMore };
+	const addItem = useCallback((id, position='start') => {
+		const found = savedIds.find(obj => obj.meta.id === id);
+		if(!found){
+			dispatch(setItem(idsItemName, (ids = []) => {
+				if(position==='start'){
+					return [{ meta: { id }}, ...ids];
+				} else {
+					return [...ids, { meta: { id }}];
+				}
+			}));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [dispatch, idsItemName]);
+
+  return { items, canLoadMore, request, refresh, loadMore, addItem };
 }
 
 export default useList;

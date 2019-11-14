@@ -31,12 +31,21 @@ function useIds(service, ids, query){
 
   const updateMissingIds = useCallback(() => {
     const arr = [];
+    const cacheIds = [];
     ids.forEach(id => {
-      if(cache[id] !== 'pending' && (cache[id] !== 'success' || !cacheItems.find(item => item.meta.id === id))){
-        arr.push(id);
+      const found = cacheItems.find(item => item.meta.id === id);
+      if(found){
+        cacheIds.push(id);
+      } else {
+        if(!cache[id] || cache[id] === 'error'){
+          arr.push(id);
+        }
       }
     });
     missingIds.current = arr;
+    if(cacheIds.length > 0){
+      setCacheStatus(dispatch, cacheIds, 'success');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
