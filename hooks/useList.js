@@ -75,6 +75,9 @@ function useList(props){
 	      entitiesType = type;
 	    }
 	  }
+		if(!query.limit || query.limit > 100){
+			query.limit = 100;
+		}
 		return{
 			type: type,
 			childType: childType,
@@ -96,7 +99,7 @@ function useList(props){
 	const getFetchedItem = useMemo(makeItemSelector, []);
 	const fetched = useSelector(state => getFetchedItem(state, fetchedItemName));
 
-	const limit = propsData.query.limit || 100;
+	const limit = propsData.query.limit;
 
 	const options = { parent: propsData.parent, filter: savedIds, limit: savedIds.length };
 
