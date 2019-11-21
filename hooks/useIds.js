@@ -102,6 +102,13 @@ function useIds(service, ids, query){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids, idsStatus, status]);
 
+  useEffect(() => {
+    if(status === 'success'){
+      setItems(cacheItems);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cacheItems]);
+
   return { items, status };
 }
 
