@@ -100,7 +100,7 @@ function useIds(service, ids, query){
       setItems(cacheItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ids, idsStatus, status]);
+  }, [ids, idsStatus]);
 
   useEffect(() => {
     if(status === 'success'){
@@ -109,7 +109,7 @@ function useIds(service, ids, query){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheItems]);
 
-  return { items, status };
+  return { items, status, setStatus };
 }
 
 export default useIds;
