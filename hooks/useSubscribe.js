@@ -35,7 +35,9 @@ const useSubscribe = (items) => {
 
   useEffect(() => {
     return () => {
-      updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'remove');
+      if(arr.length > 0){
+        updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'remove');
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

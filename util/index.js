@@ -53,8 +53,11 @@ function updateSubscriptionNumber(subscriptions, number=1){
 const mainStream = 'stream-main';
 const secondaryStream = 'stream-secondary';
 export function updateStream(dispatch, subscription, type, options=defaultOptions){
+  if(subscription.length === 0){
+    return;
+  }
   if(!subscriptions.old){
-    if(type === 'add' && subscription.length > 0){
+    if(type === 'add'){
       subscriptions.old = subscription;
       dispatch(openStream({ name: mainStream, subscription, full: false }, null, options));
       updateSubscriptionNumber(subscription, 1);
