@@ -52,17 +52,30 @@ function updateSubscriptionNumber(subscriptions, number=1){
 
 const mainStream = 'stream-main';
 const secondaryStream = 'stream-secondary';
+const arrayEqual = (arr1, arr2) => {
+  if(arr1.length !== arr2.length){
+    return false;
+  }
+  for(let i = 0; i < arr1.length; i++){
+    if(arr2.indexOf(arr1[i]) === -1){
+      return false;
+    }
+  }
+  return true;
+}
 export function updateStream(dispatch, subscription, type, options=defaultOptions){
   if(subscription.length === 0){
     return;
   }
   if(!subscriptions.old){
     if(type === 'add'){
+      clearTimeout(timeout);
       subscriptions.old = subscription;
       dispatch(openStream({ name: mainStream, subscription, full: false }, null, options));
       updateSubscriptionNumber(subscription, 1);
     }
   } else {
+    clearTimeout(timeout);
     let newSubscriptions;
     let func;
     if(type === 'add'){
@@ -73,14 +86,20 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
       updateSubscriptionNumber(subscription, -1);
     }
     if(subscriptions.new){
-      dispatch(closeStream(secondaryStream));
       newSubscriptions = func(subscriptions.new, subscription);
+      subscriptions.new = null;
+      if(arrayEqual(newSubscriptions, subscriptions.old)){
+        return;
+      }
+      dispatch(closeStream(secondaryStream));
     } else {
       newSubscriptions = func(subscriptions.old, subscription);
     }
-    clearTimeout(timeout);
+    subscriptions.new = newSubscriptions;
     if(newSubscriptions.length > 0){
-      subscriptions.new = newSubscriptions;
+      if(arrayEqual(newSubscriptions, subscriptions.old)){
+        return;
+      }
       timeout = setTimeout(() => {
         const ws = dispatch(openStream({ name: secondaryStream, subscription: newSubscriptions, full: false }, null, options));
         ws.addEventListener('open', () => {
@@ -94,7 +113,6 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
       timeout = setTimeout(() => {
         dispatch(closeStream(mainStream));
         subscriptions.old = null;
-        subscriptions.new = null;
       }, 500);
     }
   }

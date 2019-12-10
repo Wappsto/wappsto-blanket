@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateStream } from '../util';
+import { updateStream } from './util';
 
 const useSubscribe = (items) => {
   const dispatch = useDispatch();
@@ -14,14 +14,6 @@ const useSubscribe = (items) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
-
-  // unsubscribe on unmount
-  useEffect(() => {
-    return () => {
-      updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'remove');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 }
 
 export default useSubscribe;
