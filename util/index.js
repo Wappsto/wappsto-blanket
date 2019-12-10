@@ -12,7 +12,7 @@ export function getLastKey(data){
 
 export function getNextKey(data){
   const lastKey = getLastKey(data) || 0;
-  return parseInt(lastKey) + 1;;
+  return parseInt(lastKey) + 1;
 }
 
 function mergeUnique(arr1, arr2){
@@ -103,4 +103,25 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
 export function getServiceUrl(service, options){
   const version = options && options.hasOwnProperty('version') ? options.version : getServiceVersion(service);
   return config.baseUrl + (version ? '/' + version : '') + '/' + service;
+}
+
+export function matchObject(obj1, obj2) {
+  for (const key in obj2) {
+    if(obj1.hasOwnProperty(key)){
+      let left = obj1[key];
+      let right = obj2[key];
+      if (left && right && left.constructor !== right.constructor) {
+        return false;
+      } else if (typeof(left) === "object") {
+        if (!matchObject(left, right)) {
+          return false;
+        }
+      } else if (left !== right) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+  return true;
 }
