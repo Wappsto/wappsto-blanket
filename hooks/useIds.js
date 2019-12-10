@@ -17,7 +17,6 @@ const setCacheStatus = (dispatch, ids, status) => {
 }
 
 function useIds(service, ids, query){
-  const ownRequest = useRef(false);
   const [ status, setStatus ] = useState('idle');
   const prevStatus = usePrevious(status);
   const prevIds = usePrevious(ids);
@@ -53,21 +52,17 @@ function useIds(service, ids, query){
 
   // Update cache when request is over
   useEffect(() => {
-    if(request && ownRequest.current){
+    if(request){
       setCacheStatus(dispatch, missingIds.current, request.status);
-      if(request.status !== 'pending'){
-        ownRequest.current = false;
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, request]);
+  }, [request]);
 
   // Make request to get the ids
   useEffect(() => {
     updateMissingIds();
     if(missingIds.current.length > 0){
       setCacheStatus(dispatch, missingIds.current, 'pending');
-      ownRequest.current = true;
       dispatch(removeRequest(requestId));
       const lastRequestId = dispatch(makeRequest({
         method: 'GET',
@@ -107,7 +102,7 @@ function useIds(service, ids, query){
       setItems(cacheItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheItems]);
+  }, [status]);
 
   return { items, status, setStatus };
 }
