@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateStream } from './util';
+import { updateStream } from '../util';
 
 const useSubscribe = (items) => {
   const dispatch = useDispatch();
