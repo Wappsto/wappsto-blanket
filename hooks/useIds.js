@@ -91,6 +91,7 @@ function useIds(service, ids, query){
         }
       }
       setStatus('success');
+      setItems(cacheItems);
     } else if(prevStatus !== 'success' && status === 'success'){
       setItems(cacheItems);
     }
@@ -102,7 +103,7 @@ function useIds(service, ids, query){
       setItems(cacheItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, [cacheItems]);
 
   return { items, status, setStatus };
 }
