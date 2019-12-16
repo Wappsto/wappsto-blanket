@@ -107,15 +107,16 @@ function useList(props){
 	let items = useSelector(state => getEntities(state, propsData.entitiesType, options));
 
 	if(props.resetOnEmpty){
-		if(!fetched
-			&& items.length !== 0
-			&& (!request
-					|| request.status === "error"
-					|| (request.status === "pending" && !request.url.includes("offset") && !request.options.query.hasOwnProperty("offset"))
-				)
+		if(!fetched 
+				|| !request
+				|| request.status === "error"
+				|| (request.status === "pending" && !request.url.includes("offset") && !request.options.query.hasOwnProperty("offset"))
 		) {
 			items = empty;
 		}
+	}
+	if(request && request.status === "error"){
+		items = empty;
 	}
 	if(items.length === 1 && items[0].meta.type === 'attributelist'){
 		const newItems = [];
