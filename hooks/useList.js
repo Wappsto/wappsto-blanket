@@ -79,6 +79,9 @@ function useList(props){
 		if(!query.limit || query.limit > 100){
 			query.limit = 100;
 		}
+		if(!query.hasOwnProperty('offset')){
+			query.offset = 0;
+		}
 		return{
 			type: type,
 			childType: childType,
@@ -108,15 +111,11 @@ function useList(props){
 	const getEntities = useMemo(makeEntitiesSelector, []);
 	let items = useSelector(state => getEntities(state, propsData.entitiesType, options));
 
-	if(props.resetOnEmpty){
-		if(!fetched
-			|| items.length === 0
-			|| (request && (request.status === 'error' || (request.status === 'pending' && !request.url.includes('offset') && !request.options.query.hasOwnProperty('offset'))))
-		) {
-			items = empty;
-		}
-	}
-	if(request && request.status === 'error'){
+	if(!fetched
+		|| items.length === 0
+		|| (request && request.status === 'error')
+		|| (props.resetOnEmpty && request && request.status === 'pending' && query.current.offset === propsData.query.offset)
+	){
 		items = empty;
 	}
 	if(items.length === 1 && items[0].meta.type === 'attributelist'){
@@ -216,7 +215,7 @@ function useList(props){
 			query.current = {
 				expand: 0,
 				...propsData.query,
-				offset: items.length + (propsData.query.offset || 0)
+				offset: items.length + propsData.query.offset
 			};
 			sendRequest({
 				query: query.current
