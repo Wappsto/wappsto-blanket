@@ -71,7 +71,7 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
     if(type === 'add'){
       clearTimeout(timeout);
       subscriptions.old = subscription;
-      dispatch(openStream({ name: mainStream, subscription, full: false }, null, options));
+      dispatch(openStream({ name: mainStream, subscription, full: options.full || false }, null, options));
       updateSubscriptionNumber(subscription, 1);
     }
   } else {
@@ -101,10 +101,10 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
         return;
       }
       timeout = setTimeout(() => {
-        const ws = dispatch(openStream({ name: secondaryStream, subscription: newSubscriptions, full: false }, null, options));
+        const ws = dispatch(openStream({ name: secondaryStream, subscription: newSubscriptions, full: options.full || false }, null, options));
         ws.addEventListener('open', () => {
           dispatch(closeStream(mainStream, true));
-          dispatch(updateReduxStream(mainStream, null, null, ws, { subscription: newSubscriptions, name: mainStream, full: false }));
+          dispatch(updateReduxStream(mainStream, null, null, ws, { subscription: newSubscriptions, name: mainStream, full: options.full || false }));
           subscriptions.old = subscriptions.new;
           subscriptions.new = null;
         });

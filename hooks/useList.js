@@ -13,13 +13,14 @@ import useRequest from '../hooks/useRequest';
 
 function getQueryObj(query) {
 	var urlParams = {};
-  var match,
-      pl     = /\+/g,
-      search = /([^&=]+)=?([^&]*)/g,
-      decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); };
+	var match,
+			pl		 = /\+/g,
+			search = /([^&=]+)=?([^&]*)/g,
+			decode = function (s) { return decodeURIComponent(s.replace(pl, ' ')); };
 
-  while ((match = search.exec(query)))
-     urlParams[decode(match[1])] = decode(match[2]);
+	while ((match = search.exec(query))){
+		urlParams[decode(match[1])] = decode(match[2]);
+	}
 	return urlParams;
 }
 
@@ -28,7 +29,7 @@ props: url, type, id, childType, query, reset, resetOnEmpty, sort
 */
 const empty = [];
 function useList(props){
-  const dispatch = useDispatch();
+	const dispatch = useDispatch();
 	const prevQuery = usePrevious(props.query);
 	const query = useRef({});
 	const differentQuery = useRef(0);
@@ -38,43 +39,43 @@ function useList(props){
 
 	const propsData = useMemo(() => {
 		let { type, id, childType, url } = props;
-	  let parent, entitiesType;
-	  let query = { ...props.query };
-	  if(url){
-	    let split = url.split("?");
-	    url = split[0];
-	    query = {...getQueryObj(split.slice(1).join("?")), ...query};
-	    split = split[0].split("/");
+		let parent, entitiesType;
+		let query = { ...props.query };
+		if(url){
+			let split = url.split('?');
+			url = split[0];
+			query = {...getQueryObj(split.slice(1).join('?')), ...query};
+			split = split[0].split('/');
 			let result = getUrlInfo(url);
 			if(result.parent){
 				type = result.parent.type;
-		    childType = result.service;
-		    entitiesType = childType;
+				childType = result.service;
+				entitiesType = childType;
 			} else {
 				id = result.id;
 				type = result.service;
 				entitiesType = type;
 			}
-	  } else {
-	    url = "/" + type;
-	    if(id){
-	      if(id.startsWith("?")){
-	        query = { ...query, ...getQueryObj(id.slice(1)) };
-	      } else {
-	        if(!id.startsWith("/")){
-	          url += "/";
-	        }
-	        url += id;
-	      }
-	    }
-	    if(childType){
-	      url += "/" + childType;
-	      parent = { id, type };
-	      entitiesType = childType;
-	    } else {
-	      entitiesType = type;
-	    }
-	  }
+		} else {
+		url = '/' + type;
+			if(id){
+				if(id.startsWith('?')){
+					query = { ...query, ...getQueryObj(id.slice(1)) };
+				} else {
+					if(!id.startsWith('/')){
+						url += '/';
+					}
+					url += id;
+				}
+			}
+			if(childType){
+				url += '/' + childType;
+				parent = { id, type };
+				entitiesType = childType;
+			} else {
+				entitiesType = type;
+			}
+		}
 		if(!query.limit || query.limit > 100){
 			query.limit = 100;
 		}
@@ -90,10 +91,11 @@ function useList(props){
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
+	const [ customRequest, setCustomRequest ] = useState();
 	const { request, setRequestId } = useRequest();
-	const queryString = JSON.stringify(propsData.query);
-	const idsItemName = propsData.url + queryString + "_ids";
-	const fetchedItemName = propsData.url + queryString + "_fetched";
+	const name = props.name || (propsData.url + JSON.stringify(propsData.query));
+	const idsItemName = name + '_ids';
+	const fetchedItemName = name + '_fetched';
 	const getSavedIdsItem = useMemo(makeItemSelector, []);
 	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || [];
 	const getFetchedItem = useMemo(makeItemSelector, []);
@@ -108,14 +110,14 @@ function useList(props){
 
 	if(props.resetOnEmpty){
 		if(!fetched
-			&& items.length !== 0
-			&& (!request
-					|| request.status === "error"
-					|| (request.status === "pending" && !request.url.includes("offset") && !request.options.query.hasOwnProperty("offset"))
-				)
+			|| items.length === 0
+			|| (request && (request.status === 'error' || (request.status === 'pending' && !request.url.includes('offset') && !request.options.query.hasOwnProperty('offset'))))
 		) {
 			items = empty;
 		}
+	}
+	if(request && request.status === 'error'){
+		items = empty;
 	}
 	if(items.length === 1 && items[0].meta.type === 'attributelist'){
 		const newItems = [];
@@ -133,37 +135,38 @@ function useList(props){
 
 	const prevRequest = usePrevious(request);
 
-  const sendRequest = useCallback((options) => {
+	const sendRequest = useCallback((options) => {
 		if(propsData.url){
 			setCanLoadMore(false);
-			setRequestId(dispatch(makeRequest("GET", propsData.url, null, options)));
+			setCustomRequest({ status: 'pending', options: options });
+			setRequestId(dispatch(makeRequest('GET', propsData.url, null, options)));
 		}
-  }, [dispatch, propsData.url, setRequestId]);
+	}, [dispatch, propsData.url, setRequestId]);
 
-  const refresh = useCallback((reset) => {
+	const refresh = useCallback((reset) => {
 		query.current = {
 			expand: 0,
 			...propsData.query
 		};
-    sendRequest({
-      query: query.current,
-      reset: (typeof reset === "boolean") ? reset : true,
+		sendRequest({
+			query: query.current,
+			reset: (typeof reset === 'boolean') ? reset : true,
 			refresh: true
-    });
-  }, [propsData.query, sendRequest]);
+		});
+	}, [propsData.query, sendRequest]);
 
-  useEffect(() => {
-		if((!fetched && (!request || request.status !=='pending')) || (fetched && request && request.status === "error")){
+	useEffect(() => {
+		if((!fetched && (!request || request.status !== 'pending')) || (fetched && request && request.status === 'error')){
 			dispatch(setItem(fetchedItemName, true));
 			refresh(props.reset);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propsData.query, props.id, propsData.url, refresh, fetched]);
+	}, [propsData.query, props.id, propsData.url, refresh, fetched]);
 
-  // function updateItemCount
-  useEffect(() => {
-    if(prevRequest && prevRequest.status === "pending" && request && request.status === "success"){
-      dispatch(setItem(idsItemName, (ids) => {
+	// function updateItemCount
+	useEffect(() => {
+		if(prevRequest && prevRequest.status === 'pending' && request && request.status === 'success'){
+			dispatch(setItem(idsItemName, (ids) => {
 				if(request.options.refresh){
 					ids = [];
 				}
@@ -174,12 +177,12 @@ function useList(props){
 				}
 				return ids;
 			}));
-    }
-  }, [dispatch, idsItemName, prevRequest, propsData.id, request]);
+		}
+	}, [dispatch, idsItemName, prevRequest, propsData.id, request]);
 
-  // function updateListLoadMore
-  useEffect(() => {
-    if(request && prevRequest && prevRequest.status !== "success" && request.status === "success"){
+	// function updateListLoadMore
+	useEffect(() => {
+		if(request && prevRequest && prevRequest.status !== 'success' && request.status === 'success'){
 			let data;
 			if(request.json.constructor === Array){
 				data = request.json;
@@ -188,32 +191,44 @@ function useList(props){
 			} else {
 				data = [request.json];
 			}
-      if(data.length === limit){
-        setCanLoadMore(true);
-      } else {
-        setCanLoadMore(false);
-      }
-    }
-  }, [limit, prevRequest, request]);
+			if(data.length === limit){
+				setCanLoadMore(true);
+			} else {
+				setCanLoadMore(false);
+			}
+		}
+	}, [limit, prevRequest, request]);
 
-  const loadMore = useCallback(() => {
+	// updateCustomRequest
+	useEffect(() => {
+		if(request){
+			if(request.status !== 'success'){
+				setCustomRequest(request);
+			} else if(prevRequest && prevRequest.status === 'success' && request.status === 'success' && customRequest.status !== 'success'){
+				setCustomRequest(request);
+			}
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [prevRequest, request]);
+
+	const loadMore = useCallback(() => {
 		if(canLoadMore){
 			query.current = {
 				expand: 0,
 				...propsData.query,
 				offset: items.length + (propsData.query.offset || 0)
 			};
-      sendRequest({
-        query: query.current
-      });
-    }
+			sendRequest({
+				query: query.current
+			});
+		}
 	}, [canLoadMore, propsData.query, items.length, sendRequest]);
 
-	const addItem = useCallback((id, position='start') => {
+	const addItem = useCallback((id, position = 'start') => {
 		const found = savedIds.find(obj => obj.meta.id === id);
 		if(!found){
 			dispatch(setItem(idsItemName, (ids = []) => {
-				if(position==='start'){
+				if(position === 'start'){
 					return [{ meta: { id }}, ...ids];
 				} else {
 					return [...ids, { meta: { id }}];
@@ -223,7 +238,7 @@ function useList(props){
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [dispatch, idsItemName]);
 
-  return { items, canLoadMore, request, refresh, loadMore, addItem };
+	return { items, canLoadMore, request: customRequest, refresh, loadMore, addItem };
 }
 
 export default useList;
