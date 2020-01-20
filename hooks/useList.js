@@ -126,7 +126,7 @@ function useList(props){
 		items = newItems.length > 0 ? newItems : empty;
 	}
 
-	const [ canLoadMore, setCanLoadMore ] = useState(items.length % limit === 0);
+	const [ canLoadMore, setCanLoadMore ] = useState(items.length !== 0 && (items.length % limit === 0));
 
 	useEffect(() => {
 		items.sort(props.sort);
@@ -170,7 +170,7 @@ function useList(props){
 					ids = [];
 				}
 				if(request.json.constructor === Array){
-					ids = [...ids, ...request.json.map(item => ({ meta: { id: item.meta.id }}))];
+					ids = [...(ids || []), ...request.json.map(item => ({ meta: { id: item.meta.id }}))];
 				} else if(request.json.meta.type === 'attributelist'){
 					ids = [propsData.id];
 				}
