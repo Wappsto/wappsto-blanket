@@ -32,11 +32,13 @@ function useIds(service, ids, query){
     const arr = [];
     const cacheIds = [];
     ids.forEach(id => {
-      const found = cacheItems.find(item => item.meta.id === id);
-      if(found){
-        cacheIds.push(id);
-      } else {
-        if(!cache[id] || cache[id] === 'error'){
+      if(cache[id] === 'error' || cache[id] === 'idle'){
+        arr.push(id);
+      } else if(!cache[id]){
+        const found = cacheItems.find(item => item.meta.id === id);
+        if(found){
+          cacheIds.push(id);
+        } else {
           arr.push(id);
         }
       }
@@ -105,7 +107,13 @@ function useIds(service, ids, query){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheItems]);
 
-  return { items, status, setStatus };
+  // Reset current ids cache
+  const reset = useCallback(() => {
+    setCacheStatus(dispatch, ids, 'idle');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ids]);
+
+  return { items, status, setStatus, reset };
 }
 
 export default useIds;
