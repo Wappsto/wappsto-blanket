@@ -100,7 +100,7 @@ function useList(props){
 	const idsItemName = name + '_ids';
 	const fetchedItemName = name + '_fetched';
 	const getSavedIdsItem = useMemo(makeItemSelector, []);
-	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || [];
+	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || empty;
 	const getFetchedItem = useMemo(makeItemSelector, []);
 	const fetched = useSelector(state => getFetchedItem(state, fetchedItemName));
 
@@ -234,8 +234,7 @@ function useList(props){
 				}
 			}));
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [dispatch, idsItemName]);
+	}, [dispatch, idsItemName, savedIds]);
 
 	return { items, canLoadMore, request: customRequest, refresh, loadMore, addItem };
 }
