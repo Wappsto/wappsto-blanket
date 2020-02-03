@@ -151,3 +151,16 @@ export function isPrototype(item){
 export function cannotAccessState(state){
   return state.status_payment === 'not_shared' || state.status_payment === 'not_paid' || state.status_payment === 'open';
 }
+
+export function matchArray(arr1 = [], arr2 = []){
+  if(arr1.length !== arr2.length){
+    return false;
+  } else {
+    for(let i = 0; i < arr1.length; i ++){
+      if(arr2.indexOf(arr1[i]) === -1){
+        return false;
+      }
+    }
+  }
+  return true;
+}

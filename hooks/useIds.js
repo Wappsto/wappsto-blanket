@@ -7,6 +7,7 @@ import { makeEntitiesSelector } from 'wappsto-redux/selectors/entities';
 import { makeItemSelector } from 'wappsto-redux/selectors/items';
 import usePrevious from '../hooks/usePrevious';
 import useRequest from '../hooks/useRequest';
+import { matchArray } from '../util';
 
 const itemName = 'useIds_status';
 const cache = {};
@@ -29,6 +30,9 @@ function useIds(service, ids, query){
   const idsStatus = useSelector(state => getItem(state, itemName));
 
   const updateMissingIds = useCallback(() => {
+    if(matchArray(ids, prevIds)){
+      return;
+    }
     const arr = [];
     const cacheIds = [];
     ids.forEach(id => {
@@ -62,6 +66,9 @@ function useIds(service, ids, query){
 
   // Make request to get the ids
   useEffect(() => {
+    if(matchArray(ids, prevIds)){
+      return;
+    }
     updateMissingIds();
     if(missingIds.current.length > 0){
       setCacheStatus(dispatch, missingIds.current, 'pending');
