@@ -47,10 +47,12 @@ function useIds(service, ids, query){
         }
       }
     });
+    const prevMissingIds = missingIds.current;
     missingIds.current = arr;
     if(cacheIds.length > 0){
       setCacheStatus(dispatch, cacheIds, 'success');
     }
+    return prevMissingIds;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
@@ -69,10 +71,13 @@ function useIds(service, ids, query){
     if(matchArray(ids, prevIds)){
       return;
     }
-    updateMissingIds();
+    const prevMissingIds = updateMissingIds();
     if(missingIds.current.length > 0){
-      setCacheStatus(dispatch, missingIds.current, 'pending');
+      if(request && request.status === 'pending' && prevMissingIds.length > 0){
+        setCacheStatus(dispatch, prevMissingIds, '');
+      }
       dispatch(removeRequest(requestId));
+      setCacheStatus(dispatch, missingIds.current, 'pending');
       const lastRequestId = dispatch(makeRequest({
         method: 'GET',
         url: '/' + service,
