@@ -1,0 +1,18 @@
+{
+  "name": "wappsto-blanket",
+  "version": "0.0.20",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wappsto/wappsto-blanket.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Wappsto/wappsto-blanket/issues"
+  },
+  "homepage": "https://github.com/Wappsto/wappsto-blanket#readme"
+}
