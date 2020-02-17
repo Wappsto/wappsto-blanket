@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { getSession } from 'wappsto-redux/selectors/session';
 import { useSelector } from 'react-redux';
 import { getServiceUrl } from '../util';
@@ -22,6 +22,7 @@ function useLogs(stateId, sessionId){
   const [ status, setStatus ] = useState(STATUS.IDLE);
   const activeSession = useSelector(state => getSession(state));
   const cancelFunc = useRef();
+  const unmounted = useRef(false);
 
   const setCurrentStatus = (status) => {
     cachedStatus.current = status;
@@ -47,10 +48,12 @@ function useLogs(stateId, sessionId){
       isCanceled.current = false;
       cachedData.current = [];
       let more = true;
-      let offset = 0;
       try{
         while(more && !isCanceled.current){
-          const url = `${getServiceUrl('log')}/${stateId}?start=${start}&end=${end}&offset=${offset}&type=state&limit=3600`;
+          if(cachedData.current.length > 0){
+            start = cachedData.current[cachedData.current.length - 1].time;
+          }
+          const url = `${getServiceUrl('log')}/${stateId}?start=${start}&end=${end}&type=state&limit=3600`;
           const result = await axios.get(url, {
             headers: { "x-session": sessionId || activeSession.meta.id },
             cancelToken: new CancelToken(function executor(cancel) {
@@ -61,14 +64,19 @@ function useLogs(stateId, sessionId){
             throw new Error("error");
           }
           cachedData.current = cachedData.current.concat(result.data.data);
-          offset = cachedData.current.length;
           more = result.data.more;
+        }
+        if(unmounted.current){
+          return;
         }
         if(!isCanceled.current){
           setData(cachedData.current);
         }
         setCurrentStatus(STATUS.SUCCESS);
       } catch(e){
+        if(unmounted.current){
+          return;
+        }
         if(!isCanceled.current){
           setData(cachedData.current);
         }
@@ -77,6 +85,12 @@ function useLogs(stateId, sessionId){
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
+
+  useEffect(() => {
+    return () => {
+      unmounted.current = true;
+    }
+  }, []);
 
   const cancel = useCallback(() => {
     if(cancelFunc.current){

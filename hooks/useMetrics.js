@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setItem } from 'wappsto-redux/actions/items';
 import { getSession } from 'wappsto-redux/selectors/session';
@@ -28,6 +28,7 @@ function useMetrics(id){
   const [ status, setStatus ] = useState(savedStatus);
   const cancelFunc = useRef();
   const isCanceled = useRef(false);
+  const unmounted = useRef(false);
 
   const setCurrentStatus = (status) => {
     cachedStatus.current = status;
@@ -70,6 +71,9 @@ function useMetrics(id){
           })
         }
       );
+      if(unmounted.current){
+        return;
+      }
       if(result.status !== 200){
         throw new Error("error");
       }
@@ -79,9 +83,18 @@ function useMetrics(id){
       }
       setCurrentStatus(STATUS.SUCCESS);
     } catch(e){
+      if(unmounted.current){
+        return;
+      }
       setCurrentStatus(STATUS.ERROR);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      unmounted.current = true;
+    }
   }, []);
 
   const cancel = useCallback(() => {
