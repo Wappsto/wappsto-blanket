@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { getSession } from 'wappsto-redux/selectors/session';
 import { useSelector } from 'react-redux';
 import { getServiceUrl } from '../util';
+import querystring from 'querystring';
 import axios from 'axios';
 
 const CancelToken = axios.CancelToken;
@@ -29,18 +30,19 @@ function useLogs(stateId, sessionId){
     setStatus(status);
   }
 
-  const getLogs = useCallback(async (start, end) => {
+  const getLogs = useCallback(async (options) => {
     if(!stateId){
       throw new Error('stateId is not defined');
     }
-    if(!start || !end){
+    const cOptions = {...options};
+    if(!cOptions.start || !cOptions.end){
       return;
     }
-    if(start.constructor === Date){
-      start = start.toISOString();
+    if(cOptions.start.constructor === Date){
+      cOptions.start = cOptions.start.toISOString();
     }
-    if(end.constructor === Date){
-      end = end.toISOString();
+    if(cOptions.end.constructor === Date){
+      cOptions.end = cOptions.end.toISOString();
     }
     if(cachedStatus.current === STATUS.IDLE){
       setData([]);
@@ -49,11 +51,11 @@ function useLogs(stateId, sessionId){
       cachedData.current = [];
       let more = true;
       try{
-        while(more && !isCanceled.current){
+        while(more && !isCanceled.current && !unmounted.current){
           if(cachedData.current.length > 0){
-            start = cachedData.current[cachedData.current.length - 1].time;
+            cOptions.start = cachedData.current[cachedData.current.length - 1].time;
           }
-          const url = `${getServiceUrl('log')}/${stateId}?start=${start}&end=${end}&type=state&limit=3600`;
+          const url = `${getServiceUrl('log')}/${stateId}?type=state&limit=3600&${querystring.stringify(cOptions)}`;
           const result = await axios.get(url, {
             headers: { "x-session": sessionId || activeSession.meta.id },
             cancelToken: new CancelToken(function executor(cancel) {
