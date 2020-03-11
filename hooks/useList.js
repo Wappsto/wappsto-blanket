@@ -94,7 +94,7 @@ function useList(props){
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
-	const [ customRequest, setCustomRequest ] = useState({ status: 'pending' });
+	const [ customRequest, setCustomRequest ] = useState({ status: 'pending', options: { query } });
 	const { request, setRequestId } = useRequest();
 	const name = props.name || (propsData.url + JSON.stringify(propsData.query));
 	const idsItemName = name + '_ids';
