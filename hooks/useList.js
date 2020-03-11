@@ -94,7 +94,7 @@ function useList(props){
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
-	const [ customRequest, setCustomRequest ] = useState();
+	const [ customRequest, setCustomRequest ] = useState({ status: 'pending' });
 	const { request, setRequestId } = useRequest();
 	const name = props.name || (propsData.url + JSON.stringify(propsData.query));
 	const idsItemName = name + '_ids';
@@ -156,8 +156,9 @@ function useList(props){
 
 	useEffect(() => {
 		if((!fetched && (!request || request.status !== 'pending')) || (fetched && request && request.status === 'error')){
-			dispatch(setItem(fetchedItemName, true));
 			refresh(props.reset);
+		} else {
+			setCustomRequest({ status: 'success' });
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [propsData.query, props.id, propsData.url, refresh, fetched]);
@@ -205,6 +206,7 @@ function useList(props){
 				setCustomRequest(request);
 			} else if(prevRequest && prevRequest.status === 'success' && request.status === 'success' && customRequest.status !== 'success'){
 				setCustomRequest(request);
+				dispatch(setItem(fetchedItemName, true));
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
