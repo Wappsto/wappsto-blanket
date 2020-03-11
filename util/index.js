@@ -165,6 +165,6 @@ export function matchArray(arr1 = [], arr2 = []){
   return true;
 }
 
-export function getDottedText(text, num = 4, separator = ' ... ') => {
+export function getDottedText(text, num = 4, separator = ' ... '){
   return text.slice(0,num) + separator + text.slice(-num);
 }
