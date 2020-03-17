@@ -170,10 +170,14 @@ function useList(props){
 				if(request.options.refresh){
 					ids = [];
 				}
-				if(request.json.constructor === Array){
-					ids = [...(ids || []), ...request.json.map(item => ({ meta: { id: item.meta.id }}))];
-				} else if(request.json.meta.type === 'attributelist'){
-					ids = [propsData.id];
+				if(request.json){
+					if(request.json.constructor === Array){
+						ids = [...(ids || []), ...request.json.map(item => ({ meta: { id: item.meta.id }}))];
+					} else if(request.json.meta.type === 'attributelist'){
+						ids = [propsData.id];
+					}
+				} else {
+					ids = [];
 				}
 				return ids;
 			}));
@@ -184,17 +188,19 @@ function useList(props){
 	useEffect(() => {
 		if(request && prevRequest && prevRequest.status !== 'success' && request.status === 'success'){
 			let data;
-			if(request.json.constructor === Array){
-				data = request.json;
-			} else if(request.json.meta.type === 'attributelist'){
-				data = Object.keys(request.json.data);
-			} else {
-				data = [request.json];
-			}
-			if(data.length === limit){
-				setCanLoadMore(true);
-			} else {
-				setCanLoadMore(false);
+			if(request.json){
+				if(request.json.constructor === Array){
+					data = request.json;
+				} else if(request.json.meta.type === 'attributelist'){
+					data = Object.keys(request.json.data);
+				} else {
+					data = [request.json];
+				}
+				if(data.length === limit){
+					setCanLoadMore(true);
+				} else {
+					setCanLoadMore(false);
+				}
 			}
 		}
 	}, [limit, prevRequest, request]);
