@@ -28,6 +28,7 @@ function getQueryObj(query) {
 props: url, type, id, childType, query, reset, resetOnEmpty, sort
 */
 const empty = [];
+const requestIdCache = {};
 function useList(props){
 	const dispatch = useDispatch();
 	const prevQuery = usePrevious(props.query);
@@ -95,14 +96,17 @@ function useList(props){
 	}, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
 	const [ customRequest, setCustomRequest ] = useState({ status: 'pending', options: { query } });
-	const { request, setRequestId } = useRequest();
 	const name = props.name || (propsData.url + JSON.stringify(propsData.query));
 	const idsItemName = name + '_ids';
-	const fetchedItemName = name + '_fetched';
+	const requestIdName = name + '_requestId';
 	const getSavedIdsItem = useMemo(makeItemSelector, []);
 	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || empty;
-	const getFetchedItem = useMemo(makeItemSelector, []);
-	const fetched = useSelector(state => getFetchedItem(state, fetchedItemName));
+	const requestId = requestIdCache[requestIdName];
+  const { request, setRequestId } = useRequest();
+
+  if(requestId && (!request ||request.id !== requestId)){
+    setRequestId(requestId);
+  }
 
 	const limit = propsData.query.limit;
 
@@ -111,7 +115,7 @@ function useList(props){
 	const getEntities = useMemo(makeEntitiesSelector, []);
 	let items = useSelector(state => getEntities(state, propsData.entitiesType, options));
 
-	if(!fetched
+	if(!request
 		|| items.length === 0
 		|| (request && request.status === 'error')
 		|| (props.resetOnEmpty && request && request.status === 'pending' && query.current.offset === propsData.query.offset)
@@ -138,9 +142,11 @@ function useList(props){
 		if(propsData.url){
 			setCanLoadMore(false);
 			setCustomRequest({ status: 'pending', options: options });
-			setRequestId(dispatch(makeRequest('GET', propsData.url, null, options)));
+      const crid = dispatch(makeRequest('GET', propsData.url, null, options));
+      setRequestId(crid);
+      requestIdCache[requestIdName] = crid;
 		}
-	}, [dispatch, propsData.url, setRequestId]);
+	}, [propsData.url, dispatch, requestIdName, setRequestId]);
 
 	const refresh = useCallback((reset) => {
 		query.current = {
@@ -155,13 +161,13 @@ function useList(props){
 	}, [propsData.query, sendRequest]);
 
 	useEffect(() => {
-		if((!fetched && (!request || request.status !== 'pending')) || (fetched && request && request.status === 'error')){
+		if(!requestIdCache[requestIdName] || (request && request.status === 'error')){
 			refresh(props.reset);
 		} else {
-			setCustomRequest({ status: 'success' });
-		}
+      setRequestId(requestIdCache[requestIdName]);
+    }
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [propsData.query, props.id, propsData.url, refresh, fetched]);
+	}, [propsData.query, props.id, propsData.url, refresh]);
 
 	// function updateItemCount
 	useEffect(() => {
@@ -210,9 +216,8 @@ function useList(props){
 		if(request){
 			if(request.status !== 'success'){
 				setCustomRequest(request);
-			} else if(prevRequest && prevRequest.status === 'success' && request.status === 'success' && customRequest.status !== 'success'){
+			} else if(prevRequest && prevRequest.status === 'success' && request.status === 'success' && (customRequest.status !== 'success' || customRequest.id !== request.id)){
 				setCustomRequest(request);
-				dispatch(setItem(fetchedItemName, true));
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
