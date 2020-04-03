@@ -104,7 +104,7 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
         const ws = dispatch(openStream({ name: secondaryStream, subscription: newSubscriptions, full: options.full || false }, null, options));
         ws.addEventListener('open', () => {
           dispatch(closeStream(mainStream, true));
-          dispatch(updateReduxStream(mainStream, null, null, ws, { subscription: newSubscriptions, name: mainStream, full: options.full || false }));
+          dispatch(updateReduxStream(mainStream, undefined, undefined, ws, { subscription: newSubscriptions, name: mainStream, full: options.full || false }));
           subscriptions.old = subscriptions.new;
           subscriptions.new = null;
         });
