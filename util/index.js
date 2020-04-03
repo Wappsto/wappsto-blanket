@@ -1,5 +1,5 @@
 import { getServiceVersion } from 'wappsto-redux/util/helpers';
-import { openStream, closeStream, updateStream as updateReduxStream } from 'wappsto-redux/actions/stream';
+import { openStream, closeStream, updateStream as updateReduxStream, status } from 'wappsto-redux/actions/stream';
 import config from 'wappsto-redux/config';
 
 export function getLastKey(data){
@@ -104,7 +104,7 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
         const ws = dispatch(openStream({ name: secondaryStream, subscription: newSubscriptions, full: options.full || false }, null, options));
         ws.addEventListener('open', () => {
           dispatch(closeStream(mainStream, true));
-          dispatch(updateReduxStream(mainStream, undefined, undefined, ws, { subscription: newSubscriptions, name: mainStream, full: options.full || false }));
+          dispatch(updateReduxStream(mainStream, status.OPEN, null, ws, { subscription: newSubscriptions, name: mainStream, full: options.full || false }));
           subscriptions.old = subscriptions.new;
           subscriptions.new = null;
         });
