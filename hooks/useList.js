@@ -104,9 +104,11 @@ function useList(props){
 	const requestId = requestIdCache[requestIdName];
   const { request, setRequestId } = useRequest();
 
-  if(requestId && (!request ||request.id !== requestId)){
+  if(requestId && (!request || request.id !== requestId)){
     setRequestId(requestId);
-  }
+  } if(!requestId && customRequest.status !== 'pending'){
+		setCustomRequest({ status: 'pending', options: { query: props.query } });
+	}
 
 	const limit = propsData.query.limit;
 
@@ -155,16 +157,16 @@ function useList(props){
 		};
 		sendRequest({
 			query: query.current,
-			reset: (typeof reset === 'boolean') ? reset : true,
+			reset: (typeof reset === 'boolean') ? reset : props.reset,
 			refresh: true
 		});
-	}, [propsData.query, sendRequest]);
+	}, [propsData.query, sendRequest, props.reset]);
 
 	useEffect(() => {
-		if(!requestIdCache[requestIdName] || (request && request.status === 'error')){
+		if(!requestId || (request && request.status === 'error')){
 			refresh(props.reset);
 		} else {
-      setRequestId(requestIdCache[requestIdName]);
+      setRequestId(requestId);
     }
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [propsData.query, props.id, propsData.url, refresh]);
