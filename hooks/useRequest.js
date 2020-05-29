@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { makeRequestSelector } from 'wappsto-redux/selectors/request';
-import { makeRequest, removeRequest } from 'wappsto-redux/actions/request';
+import { makeRequest, removeRequest as removeStoreRequest } from 'wappsto-redux/actions/request';
 
 const useRequestSelector = () =>  {
   const dispatch = useDispatch();
@@ -16,7 +16,7 @@ const useRequestSelector = () =>  {
   }, [dispatch]);
 
   const removeRequest = useCallback(() => {
-    dispatch(removeRequest(requestId));
+    dispatch(removeStoreRequest(requestId));
   }, [requestId]);
 
   return { request, requestId, setRequestId, send, removeRequest };
