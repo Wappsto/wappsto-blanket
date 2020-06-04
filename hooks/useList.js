@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { setItem } from 'wappsto-redux/actions/items';
-import { makeRequest } from 'wappsto-redux/actions/request';
 
 import { makeEntitiesSelector } from 'wappsto-redux/selectors/entities';
 import { makeItemSelector } from 'wappsto-redux/selectors/items';
@@ -101,12 +100,12 @@ function useList(props){
 	const requestIdName = name + '_requestId';
 	const getSavedIdsItem = useMemo(makeItemSelector, []);
 	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || empty;
-	const requestId = requestIdCache[requestIdName];
-  const { request, setRequestId } = useRequest();
+	const cachedRequestId = requestIdCache[requestIdName];
+  const { request, requestId, setRequestId, send } = useRequest();
 
-  if(requestId && (!request || request.id !== requestId)){
-    setRequestId(requestId);
-  } if(!requestId && customRequest.status !== 'pending'){
+  if(cachedRequestId && requestId !== cachedRequestId){
+    setRequestId(cachedRequestId);
+  } if(!cachedRequestId && customRequest.status !== 'pending'){
 		setCustomRequest({ status: 'pending', options: { query: props.query } });
 	}
 
@@ -144,11 +143,14 @@ function useList(props){
 		if(propsData.url){
 			setCanLoadMore(false);
 			setCustomRequest({ status: 'pending', options: options });
-      const crid = dispatch(makeRequest('GET', propsData.url, null, options));
-      setRequestId(crid);
+      const crid = send({
+				method: 'GET',
+				url: propsData.url,
+				...options
+			});
       requestIdCache[requestIdName] = crid;
 		}
-	}, [propsData.url, dispatch, requestIdName, setRequestId]);
+	}, [propsData.url, requestIdName, send]);
 
 	const refresh = useCallback((reset) => {
 		query.current = {
@@ -163,10 +165,10 @@ function useList(props){
 	}, [propsData.query, sendRequest, props.reset]);
 
 	useEffect(() => {
-		if(!requestId || (request && request.status === 'error')){
+		if(!cachedRequestId || (savedIds === empty && !request) || (request && request.status === 'error')){
 			refresh(props.reset);
-		} else {
-      setRequestId(requestId);
+		} else if(cachedRequestId !== requestId){
+      setRequestId(cachedRequestId);
     }
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [propsData.query, props.id, propsData.url, refresh]);

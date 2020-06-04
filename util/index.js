@@ -130,7 +130,7 @@ export function matchObject(obj1, obj2) {
       let right = obj2[key];
       if (left && right && left.constructor !== right.constructor) {
         return false;
-      } else if (typeof(left) === "object") {
+      } else if (typeof(left) === 'object') {
         if (!matchObject(left, right)) {
           return false;
         }
@@ -156,7 +156,7 @@ export function matchArray(arr1 = [], arr2 = []){
   if(arr1.length !== arr2.length){
     return false;
   } else {
-    for(let i = 0; i < arr1.length; i ++){
+    for(let i = 0; i < arr1.length; i++){
       if(arr2.indexOf(arr1[i]) === -1){
         return false;
       }

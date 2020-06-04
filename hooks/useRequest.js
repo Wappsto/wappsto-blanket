@@ -17,7 +17,7 @@ const useRequestSelector = () =>  {
 
   const removeRequest = useCallback(() => {
     dispatch(removeStoreRequest(requestId));
-  }, [requestId]);
+  }, [dispatch, requestId]);
 
   return { request, requestId, setRequestId, send, removeRequest };
 }
