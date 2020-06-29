@@ -111,7 +111,7 @@ function useList(props){
 
 	const limit = propsData.query.limit;
 
-	const options = { parent: propsData.parent, filter: savedIds, limit: savedIds.length };
+	const options = { filter: savedIds, limit: savedIds.length };
 
 	const getEntities = useMemo(makeEntitiesSelector, []);
 	let items = useSelector(state => getEntities(state, propsData.entitiesType, options));
