@@ -20,7 +20,7 @@ function useIds(service, ids, query){
   const [ status, setStatus ] = useState('idle');
   const prevStatus = usePrevious(status);
   const prevIds = usePrevious(ids);
-  const missingIds = useRef();
+  const missingIds = useRef([]);
   const dispatch = useDispatch();
   const [ items, setItems] = useState([]);
   const getEntities = useMemo(makeEntitiesSelector, []);
@@ -133,8 +133,10 @@ function useIds(service, ids, query){
   }, [ids]);
 
   // Refresh
-  const refresh = useCallback(() => {
-    reset();
+  const refresh = useCallback((callReset = true) => {
+    if(callReset){
+      reset();
+    }
     getMissingIds(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);

@@ -182,7 +182,7 @@ function useList(props){
 				}
 				if(request.json){
 					if(request.json.constructor === Array){
-						ids = [...(ids || []), ...request.json.map(item => ({ meta: { id: item.meta.id }}))];
+						ids = [...(ids || []), ...request.json.map(item => item.constructor === Object ? ({ meta: { id: item.meta.id }}) : ({ meta: { id: item }}))];
 					} else if(request.json.meta.type === 'attributelist'){
 						ids = [propsData.id];
 					}
