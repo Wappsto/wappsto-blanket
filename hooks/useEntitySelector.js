@@ -1,11 +1,10 @@
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { makeEntitySelector } from 'wappsto-redux/selectors/entities';
 
-const useEntitySelector = (type, options) => {
-  const getEntity = useMemo(makeEntitySelector, []);
-  const entity = useSelector(state => getEntity(state, type, options));
-  return entity;
-}
+const useEntitySelector = (type) =>  useMemo(() => {
+  const getEntity = makeEntitySelector();
+  return (state, options) => getEntity(state, type, options);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
 export default useEntitySelector;
