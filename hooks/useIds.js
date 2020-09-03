@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { makeRequest, removeRequest } from 'wappsto-redux/actions/request';
 import { setItem } from 'wappsto-redux/actions/items';
 import { makeEntitiesSelector } from 'wappsto-redux/selectors/entities';
 import { makeItemSelector } from 'wappsto-redux/selectors/items';
@@ -21,7 +20,7 @@ function useIds(service, ids, query){
   const [ status, setStatus ] = useState('idle');
   const prevStatus = usePrevious(status);
   const prevIds = usePrevious(ids);
-  const missingIds = useRef();
+  const missingIds = useRef([]);
   const dispatch = useDispatch();
   const [ items, setItems] = useState([]);
   const getEntities = useMemo(makeEntitiesSelector, []);
@@ -37,8 +36,10 @@ function useIds(service, ids, query){
     const cacheIds = [];
     ids.forEach(id => {
       const cid = cache[id];
-      if(cid){
-        if(!matchObject(cid.query, query) || cid.status === 'error' || cid.status === 'idle'){
+      if(cid) {
+        const cidQ = {...cid.query, expand: null};
+        const cQ = {...query, expand: null};
+        if(!matchObject(cidQ, cQ) || cid.query.expand < query.expand || cid.status === 'error' || cid.status === 'idle'){
           arr.push(id);
         }
       } else if(!query || !query.expand || query.expand === 0){
@@ -61,7 +62,29 @@ function useIds(service, ids, query){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
-  const { request, requestId, setRequestId } = useRequest();
+  const { request, send, removeRequest } = useRequest();
+
+  const getMissingIds = (checkIds = true) => {
+    if(checkIds && matchArray(ids, prevIds)){
+      return;
+    }
+    const prevMissingIds = updateMissingIds();
+    if(missingIds.current.length > 0){
+      if(request && request.status === 'pending' && prevMissingIds.length > 0){
+        setCacheStatus(dispatch, prevMissingIds, '', query);
+      }
+      removeRequest();
+      setCacheStatus(dispatch, missingIds.current, 'pending', query);
+      send({
+        method: 'GET',
+        url: '/' + service,
+        query: {
+          ...query,
+          id: missingIds.current
+        }
+      });
+    }
+  }
 
   // Update cache when request is over
   useEffect(() => {
@@ -73,26 +96,7 @@ function useIds(service, ids, query){
 
   // Make request to get the ids
   useEffect(() => {
-    if(matchArray(ids, prevIds)){
-      return;
-    }
-    const prevMissingIds = updateMissingIds();
-    if(missingIds.current.length > 0){
-      if(request && request.status === 'pending' && prevMissingIds.length > 0){
-        setCacheStatus(dispatch, prevMissingIds, '', query);
-      }
-      dispatch(removeRequest(requestId));
-      setCacheStatus(dispatch, missingIds.current, 'pending', query);
-      const lastRequestId = dispatch(makeRequest({
-        method: 'GET',
-        url: '/' + service,
-        query: {
-          ...query,
-          id: missingIds.current
-        }
-      }));
-      setRequestId(lastRequestId);
-    }
+    getMissingIds();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, service, updateMissingIds, ids]);
 
@@ -130,7 +134,16 @@ function useIds(service, ids, query){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
-  return { items, status, setStatus, reset };
+  // Refresh
+  const refresh = useCallback((callReset = true) => {
+    if(callReset){
+      reset();
+    }
+    getMissingIds(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ids]);
+
+  return { items, status, setStatus, reset, refresh };
 }
 
 export default useIds;
