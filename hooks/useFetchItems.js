@@ -24,10 +24,10 @@ const fetch = async (ids, type, store, lvl = 0) => {
     slices.push(missingIds.slice(index, ITEMS_PER_SLICE + index));
     index += ITEMS_PER_SLICE;
   }
-  
+
   const promises = slices.map((e) => {
-    const url = `/${type}?expand=0&id=[${e.join(',')}]`;
-    const existingRequest = findRequest(state, url, 'GET', undefined, {});
+    const url = `/${type}?expand=0&id=[${e.join(',')}]&from_last=true`;
+    const existingRequest = findRequest(state, url, 'GET');
     if (existingRequest) {
       const promise = state.request[existingRequest].promise;
       return promise;
@@ -37,7 +37,7 @@ const fetch = async (ids, type, store, lvl = 0) => {
       return promise;
     }
   });
-  
+
   let itemList = [];
   const results = await Promise.all(promises);
   results.forEach((e) => {
@@ -60,7 +60,7 @@ const fetch = async (ids, type, store, lvl = 0) => {
       }
     })
   }
-  
+
   if(lvl > 0 && itemList.length) {
     const itemListIds = itemList.reduce((arr, e) => [...arr, ...(e[CHILDREN[type]] || [])], []);
     const result = await fetch(itemListIds, CHILDREN[type], store, lvl-1);
@@ -70,7 +70,7 @@ const fetch = async (ids, type, store, lvl = 0) => {
   }
 }
 
-export const useFetchItems = (objIds, expand) => {
+const useFetchItems = (objIds, expand) => {
   const store = useStore();
   const [[status, items], setState] = useState(['pending', {}]);
 
@@ -80,7 +80,7 @@ export const useFetchItems = (objIds, expand) => {
     if (status !== 'pending') {
       setState(['pending', {}]);
     }
-    
+
     const startFetching = async () => {
       let items = {};
       for (const [type, ids] of Object.entries(objIds || {})) {
@@ -99,7 +99,6 @@ export const useFetchItems = (objIds, expand) => {
 
     startFetching().catch((error) => {
       if (mounted) {
-        console.error(error);
         setState(['error', {}]);
       }
     });
@@ -110,3 +109,5 @@ export const useFetchItems = (objIds, expand) => {
 
   return { status, items };
 }
+
+export default useFetchItems;
