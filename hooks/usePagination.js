@@ -32,26 +32,29 @@ export const useGetTotalCount = ({ url }) => {
 const getPageCount = ({ store, url, requestsRef }) => {
   const state = store.getState();
   const session = getSession(state);
-  const url2 = url.split('?')[0];
 
   let promise;
-  if (cache.countRequests[url2]) {
-    promise = cache.countRequests[url2];
+  if (cache.countRequests[url]) {
+    promise = cache.countRequests[url];
   } else {
-    promise = startRequest(store.dispatch, url2, 'GET', null, {}, session).promise;
+    promise = startRequest(store.dispatch, url, 'GET', null, {}, session).promise;
     requestsRef.current.push(promise);
-    cache.countRequests[url2] = promise;
+    cache.countRequests[url] = promise;
   }
 
   return promise;
 }
 
-const getItems = ({ store, url, max_per_page, page, requestsRef }) => {
+const getItems = ({ store, url, query, max_per_page, page, requestsRef }) => {
   const state = store.getState();
   const session = getSession(state);
   const offset = (page - 1) * max_per_page;
 
   const urlInstance = new URL(`http://${url}`);
+  for (const k in query) {
+    const v = query[k];
+    urlInstance.searchParams.set(k, v);
+  }
   urlInstance.searchParams.set('from_last', true);
   urlInstance.searchParams.set('limit', max_per_page);
   urlInstance.searchParams.set('expand', 0);
@@ -85,7 +88,7 @@ const getItems = ({ store, url, max_per_page, page, requestsRef }) => {
   return { promise, currentCache };
 }
 
-export const usePagination = ({ url, page: pageNo=1, max_per_page=MAX_PER_PAGE }) => {
+export const usePagination = ({ url, query={}, page: pageNo=1, max_per_page=MAX_PER_PAGE }) => {
   const store = useStore();
   const [status, setStatus] = useState();
   const [count, setCount] = useState(0);
@@ -100,7 +103,7 @@ export const usePagination = ({ url, page: pageNo=1, max_per_page=MAX_PER_PAGE }
     setStatus(STATUS.pending);
     
     const promise1 = getPageCount({ store, url, requestsRef });
-    const { promise: promise2, currentCache } = getItems({ store, url, max_per_page, page, requestsRef });
+    const { promise: promise2, currentCache } = getItems({ store, url, query, max_per_page, page, requestsRef });
 
     currentCacheRef.current = currentCache;
 

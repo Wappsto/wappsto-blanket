@@ -82,10 +82,15 @@ export const useFetchItems = (objIds, expand) => {
     }
     
     const startFetching = async () => {
-      const items = {};
+      let items = {};
       for (const [type, ids] of Object.entries(objIds || {})) {
-        const response = await fetch(ids, type, store, expand);
-        items[type] = response;
+        if (CHILDREN[type] || type === 'state') {
+          const response = await fetch(ids, type, store, expand);
+          items[type] = response;
+        } else {
+          const response = await fetch(ids, type, store, 0);
+          items = response[type];
+        }
       }
       if (mounted) {
         setState(['success', items]);
