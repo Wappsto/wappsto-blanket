@@ -88,7 +88,7 @@ const getItems = ({ store, url, query, max_per_page, page, requestsRef }) => {
   return { promise, currentCache };
 }
 
-export const usePagination = ({ url, query={}, page: pageNo=1, max_per_page=MAX_PER_PAGE }) => {
+const usePagination = ({ url, query={}, page: pageNo=1, max_per_page=MAX_PER_PAGE }) => {
   const store = useStore();
   const [status, setStatus] = useState();
   const [count, setCount] = useState(0);
@@ -141,3 +141,5 @@ export const usePagination = ({ url, query={}, page: pageNo=1, max_per_page=MAX_
 
   return { items, count, page, setPage, refresh, status, requests: requestsRef.current };
 }
+
+export default usePagination;
