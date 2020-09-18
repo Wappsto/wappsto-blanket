@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import usePagination from './usePagination';
-import useEntitiesSelector from 'wappsto-blanket/hooks/useEntitiesSelector';
+import useEntitiesSelector from './useEntitiesSelector';
 
-const useStorePagination = ({ url, query, page: pageNo, pageSize }) => {
-  const { items, count, page, setPage, refresh, status, requests, addItem, removeItem } = usePagination({ url, query, page: pageNo, pageSize });
+const useStorePagination = ({ url, query, page: pageNo, pageSize, useCache }) => {
+  const { items, count, page, setPage, refresh, status, requests, addItem, removeItem } = usePagination({ url, query, page: pageNo, pageSize, useCache });
   const firstItem = items && items[0];
   const storeItems = useEntitiesSelector(firstItem?.meta?.type, items?.map((item) => item?.meta?.id));
 

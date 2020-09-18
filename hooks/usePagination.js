@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore } from 'react-redux';
-import useRequest from 'wappsto-blanket/hooks/useRequest';
+import useRequest from './useRequest';
 import { findRequest, startRequest, STATUS } from 'wappsto-redux/actions/request';
 import { getSession } from 'wappsto-redux/selectors/session';
 
@@ -13,13 +13,13 @@ const cache = {
 
 const computeUrl = (url, query, pageSize) => {
   const urlInstance = new URL(`https://${url}`);
+  urlInstance.searchParams.set('from_last', true);
+  urlInstance.searchParams.set('expand', 0);
   for (const k in query) {
     const v = query[k];
     urlInstance.searchParams.set(k, v);
   }
-  urlInstance.searchParams.set('from_last', true);
   urlInstance.searchParams.set('limit', pageSize);
-  urlInstance.searchParams.set('expand', 0);
   return urlInstance;
 }
 
@@ -41,7 +41,21 @@ export const useGetTotalCount = ({ url }) => {
   return count;
 }
 
-const getPageCount = ({ store, url, requestsRef, resetCache }) => {
+const fireRequest = (state, url, store, session, requestsRef, key) => {
+  let id, promise;
+  id = findRequest(state, url, 'GET');
+  if(id){
+    promise = state.request[id].promise;
+  } else {
+    const req = startRequest(store.dispatch, url, 'GET', null, { reset: false }, session);
+    promise = req.promise;
+    id = req.id;
+  }
+  requestsRef.current[key] = { promise, id, status: STATUS.pending };
+  return promise;
+}
+
+const getPageCount = ({ store, url, requestsRef, resetCache, useCache }) => {
   const state = store.getState();
   const session = getSession(state);
 
@@ -50,18 +64,16 @@ const getPageCount = ({ store, url, requestsRef, resetCache }) => {
   }
 
   let promise;
-  if (cache.countRequests[url]) {
+  if (useCache && cache.countRequests[url]) {
     promise = cache.countRequests[url];
   } else {
-    requestsRef.current.count = startRequest(store.dispatch, url, 'GET', null, { reset: false }, session);
-    requestsRef.current.count.status = STATUS.pending;
-    promise = requestsRef.current.count.promise;
+    promise = fireRequest(state, url, store, session, requestsRef, 'count');
   }
 
   return promise;
 }
 
-const getItems = ({ store, url, query, pageSize, page, requestsRef, resetCache }) => {
+const getItems = ({ store, url, query, pageSize, page, requestsRef, resetCache, useCache }) => {
   const state = store.getState();
   const session = getSession(state);
   const offset = (page - 1) * pageSize;
@@ -76,24 +88,18 @@ const getItems = ({ store, url, query, pageSize, page, requestsRef, resetCache }
     cache.pageRequests[cacheUrl].pages = {};
   }
 
-  let promise, id;
-  const pageItems = cache.pageRequests[cacheUrl]?.pages?.[page];
+  let promise;
+  const pageItems = useCache && cache.pageRequests[cacheUrl]?.pages?.[page];
   if(pageItems && !pageItems?.invalid){
     promise = cache.pageRequests[cacheUrl].pages?.[page];
   } else {
-    id = findRequest(state, url2, 'GET');
-    if(id){
-      promise = state.request[id].promise;
-    } else {
-      promise = startRequest(store.dispatch, url2, 'GET', null, { reset: false }, session).promise;
-    }
-    requestsRef.current.items = { promise, id, status: STATUS.pending };
+    promise = fireRequest(state, url2, store, session, requestsRef, 'items');
   }
 
   return { promise, cacheUrl };
 }
 
-const usePagination = ({ url, query={}, page: pageNo=1, pageSize=MAX_PER_PAGE }) => {
+const usePagination = ({ url, query={}, page: pageNo=1, pageSize=MAX_PER_PAGE, useCache=true }) => {
   const store = useStore();
   const [status, setStatus] = useState();
   const [count, setCount] = useState(0);
@@ -107,8 +113,8 @@ const usePagination = ({ url, query={}, page: pageNo=1, pageSize=MAX_PER_PAGE })
     mounted.current = true;
     setStatus(STATUS.pending);
 
-    const promise1 = getPageCount({ store, url, requestsRef, resetCache });
-    const { promise: promise2, cacheUrl } = getItems({ store, url, query, pageSize, page, requestsRef, resetCache });
+    const promise1 = getPageCount({ store, url, requestsRef, resetCache, useCache });
+    const { promise: promise2, cacheUrl } = getItems({ store, url, query, pageSize, page, requestsRef, resetCache, useCache });
 
     Promise.all([promise1, promise2]).then(([resCount, resItems]) => {
       if(!mounted.current) {
