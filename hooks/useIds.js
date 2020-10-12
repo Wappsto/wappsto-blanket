@@ -36,8 +36,10 @@ function useIds(service, ids, query){
     const cacheIds = [];
     ids.forEach(id => {
       const cid = cache[id];
-      if(cid){
-        if(!matchObject(cid.query, query) || cid.status === 'error' || cid.status === 'idle'){
+      if(cid) {
+        const cidQ = {...cid.query, expand: null};
+        const cQ = {...query, expand: null};
+        if(!matchObject(cidQ, cQ) || cid.query.expand < query.expand || cid.status === 'error' || cid.status === 'idle'){
           arr.push(id);
         }
       } else if(!query || !query.expand || query.expand === 0){

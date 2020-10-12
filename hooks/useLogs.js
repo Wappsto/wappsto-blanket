@@ -18,7 +18,7 @@ export const STATUS = {
 function useLogs(stateId, sessionId){
   const [ data, setData ] = useState([]);
   const cachedData = useRef([]);
-  const cachedStatus = useRef();
+  const cachedStatus = useRef(STATUS.IDLE);
   const isCanceled = useRef(false);
   const [ status, setStatus ] = useState(STATUS.IDLE);
   const activeSession = useSelector(state => getSession(state));
@@ -53,7 +53,8 @@ function useLogs(stateId, sessionId){
       try{
         while(more && !isCanceled.current && !unmounted.current){
           if(cachedData.current.length > 0){
-            cOptions.start = cachedData.current[cachedData.current.length - 1].time;
+            const last = cachedData.current[cachedData.current.length - 1];
+            cOptions.start = last.time || last.selected_timestamp;
           }
           const url = `${getServiceUrl('log')}/${stateId}?type=state&limit=3600&${querystring.stringify(cOptions)}`;
           const result = await axios.get(url, {
