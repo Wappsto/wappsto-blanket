@@ -27,13 +27,12 @@ const fetch = async (ids, type, store, lvl = 0) => {
 
   const promises = slices.map((e) => {
     const url = `/${type}?expand=0&id=[${e.join(',')}]&from_last=true`;
-    const existingRequest = findRequest(state, url, 'GET');
+    const existingRequest = findRequest(url, 'GET');
     if (existingRequest) {
-      const promise = state.request[existingRequest].promise;
-      return promise;
+      return existingRequest;
     } else {
       const session = getSession(state);
-      const { promise } = startRequest(store.dispatch, url, 'GET', null, {}, session);
+      const promise = startRequest(store.dispatch, url, 'GET', null, {}, session);
       return promise;
     }
   });

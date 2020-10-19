@@ -42,16 +42,12 @@ export const useGetTotalCount = ({ url }) => {
 }
 
 const fireRequest = (state, url, store, session, requestsRef, key) => {
-  let id, promise;
-  id = findRequest(state, url, 'GET');
-  if(id){
-    promise = state.request[id].promise;
-  } else {
-    const req = startRequest(store.dispatch, url, 'GET', null, { reset: false }, session);
-    promise = req.promise;
-    id = req.id;
+  let promise;
+  promise = findRequest(url, 'GET');
+  if(!promise){
+    promise = startRequest(store.dispatch, url, 'GET', null, { reset: false }, session);
   }
-  requestsRef.current[key] = { promise, id, status: STATUS.pending };
+  requestsRef.current[key] = { promise, status: STATUS.pending };
   return promise;
 }
 
