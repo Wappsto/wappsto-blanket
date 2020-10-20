@@ -100,12 +100,9 @@ function useList(props){
 	const requestIdName = name + '_requestId';
 	const getSavedIdsItem = useMemo(makeItemSelector, []);
 	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || empty;
-	const cachedRequestId = requestIdCache[requestIdName];
-  const { request, requestId, setRequestId, send } = useRequest();
+  const { request, send } = useRequest(requestIdName, true);
 
-  if(cachedRequestId && requestId !== cachedRequestId){
-    setRequestId(cachedRequestId);
-  } if(!cachedRequestId && customRequest.status !== 'pending'){
+  if(!request && customRequest.status !== 'pending'){
 		setCustomRequest({ status: 'pending', options: { query: props.query } });
 	}
 
@@ -143,14 +140,13 @@ function useList(props){
 		if(propsData.url){
 			setCanLoadMore(false);
 			setCustomRequest({ status: 'pending', options: options });
-      const crid = send({
+      send({
 				method: 'GET',
 				url: propsData.url,
 				...options
 			});
-      requestIdCache[requestIdName] = crid;
 		}
-	}, [propsData.url, requestIdName, send]);
+	}, [propsData.url, send]);
 
 	const refresh = useCallback((reset) => {
 		query.current = {
@@ -165,11 +161,9 @@ function useList(props){
 	}, [propsData.query, sendRequest, props.reset]);
 
 	useEffect(() => {
-		if(props.useCache === false || !cachedRequestId || (savedIds === empty && !request) || (request && request.status === 'error')){
+		if(props.useCache === false || !request || (savedIds === empty && !request) || (request && request.status === 'error')){
 			refresh(props.reset);
-		} else if(cachedRequestId !== requestId){
-      setRequestId(cachedRequestId);
-    }
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [propsData.query, props.id, propsData.url, refresh, props.useCache]);
 

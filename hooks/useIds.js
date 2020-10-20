@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, useStore } from 'react-redux';
 
 import { setItem } from 'wappsto-redux/actions/items';
 import { makeEntitiesSelector } from 'wappsto-redux/selectors/entities';
 import { makeItemSelector } from 'wappsto-redux/selectors/items';
+import { getSession } from 'wappsto-redux/selectors/session';
+import { findRequest, startRequest } from 'wappsto-redux/actions/request';
 import usePrevious from '../hooks/usePrevious';
-import useRequest from '../hooks/useRequest';
-import { matchArray, matchObject } from '../util';
+import equal from 'deep-equal';
 
 const itemName = 'useIds_status';
 const cache = {};
@@ -16,7 +17,31 @@ const setCacheStatus = (dispatch, ids, status, query) => {
   dispatch(setItem(itemName, { ...cache }));
 }
 
+
+const sendGetIds = (store, ids, service, query) => {
+  const options = {
+    url: '/' + service,
+    method: 'GET',
+    query: {
+      ...query,
+      id: ids
+    }
+  }
+  let promise = findRequest(options.url, options.method, undefined, options);
+  if(!promise){
+    const state = store.getState();
+    const session = getSession(state);
+    promise = startRequest(store.dispatch, options.url, options.method, null, options, session);
+  }
+  promise.then(result => {
+    setCacheStatus(store.dispatch, ids, result.ok ? 'success' : 'error',query);
+  }).catch(() => {
+    setCacheStatus(store.dispatch, ids, 'error', query);
+  });
+}
+
 function useIds(service, ids, query){
+  const store = useStore();
   const [ status, setStatus ] = useState('idle');
   const prevStatus = usePrevious(status);
   const prevIds = usePrevious(ids);
@@ -29,7 +54,7 @@ function useIds(service, ids, query){
   const idsStatus = useSelector(state => getItem(state, itemName));
 
   const updateMissingIds = useCallback(() => {
-    if(matchArray(ids, prevIds)){
+    if(equal(ids, prevIds)){
       return;
     }
     const arr = [];
@@ -39,7 +64,7 @@ function useIds(service, ids, query){
       if(cid) {
         const cidQ = {...cid.query, expand: null};
         const cQ = {...query, expand: null};
-        if(!matchObject(cidQ, cQ) || cid.query.expand < query.expand || cid.status === 'error' || cid.status === 'idle'){
+        if(!equal(cidQ, cQ) || cid.query.expand < query.expand || cid.status === 'error' || cid.status === 'idle'){
           arr.push(id);
         }
       } else if(!query || !query.expand || query.expand === 0){
@@ -62,37 +87,16 @@ function useIds(service, ids, query){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
-  const { request, send, removeRequest } = useRequest();
-
   const getMissingIds = (checkIds = true) => {
-    if(checkIds && matchArray(ids, prevIds)){
+    if(checkIds && equal(ids, prevIds)){
       return;
     }
-    const prevMissingIds = updateMissingIds();
+    updateMissingIds();
     if(missingIds.current.length > 0){
-      if(request && request.status === 'pending' && prevMissingIds.length > 0){
-        setCacheStatus(dispatch, prevMissingIds, '', query);
-      }
-      removeRequest();
       setCacheStatus(dispatch, missingIds.current, 'pending', query);
-      send({
-        method: 'GET',
-        url: '/' + service,
-        query: {
-          ...query,
-          id: missingIds.current
-        }
-      });
+      sendGetIds(store, missingIds.current, service, query);
     }
   }
-
-  // Update cache when request is over
-  useEffect(() => {
-    if(request){
-      setCacheStatus(dispatch, missingIds.current, request.status, query);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [request]);
 
   // Make request to get the ids
   useEffect(() => {

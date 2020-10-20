@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { getServiceUrl } from '../util';
 import querystring from 'querystring';
 import axios from 'axios';
+import equal from 'deep-equal';
 
 const CancelToken = axios.CancelToken;
 
@@ -15,7 +16,9 @@ export const STATUS = {
   CANCELED: 'canceled'
 };
 
-function useLogs(stateId, sessionId){
+const cache = {};
+
+function useLogs(stateId, sessionId, cacheId){
   const [ data, setData ] = useState([]);
   const cachedData = useRef([]);
   const cachedStatus = useRef(STATUS.IDLE);
@@ -38,6 +41,11 @@ function useLogs(stateId, sessionId){
     if(!cOptions.start || !cOptions.end){
       return;
     }
+    if(cacheId && cache[cacheId] && equal(cache[cacheId].options, options)){
+      setData(cache[cacheId].data);
+      setCurrentStatus(cache[cacheId].status);
+      return;
+    }
     if(cOptions.start.constructor === Date){
       cOptions.start = cOptions.start.toISOString();
     }
@@ -51,7 +59,7 @@ function useLogs(stateId, sessionId){
       cachedData.current = [];
       let more = true;
       try{
-        while(more && !isCanceled.current && !unmounted.current){
+        while(more && !isCanceled.current && (cacheId || (!cacheId && !unmounted.current))){
           if(cachedData.current.length > 0){
             const last = cachedData.current[cachedData.current.length - 1];
             cOptions.start = last.time || last.selected_timestamp;
@@ -69,6 +77,13 @@ function useLogs(stateId, sessionId){
           cachedData.current = cachedData.current.concat(result.data.data);
           more = result.data.more;
         }
+        if(cacheId){
+          cache[cacheId] = {
+            data: cachedData.current,
+            options: options,
+            status: STATUS.SUCCESS
+          };
+        }
         if(unmounted.current){
           return;
         }
@@ -77,6 +92,13 @@ function useLogs(stateId, sessionId){
         }
         setCurrentStatus(STATUS.SUCCESS);
       } catch(e){
+        if(cacheId){
+          cache[cacheId] = {
+            data: cachedData.current,
+            options: options,
+            status: STATUS.ERROR
+          };
+        }
         if(unmounted.current){
           return;
         }
