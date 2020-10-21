@@ -5,7 +5,7 @@ import { setItem } from 'wappsto-redux/actions/items';
 import { makeEntitiesSelector } from 'wappsto-redux/selectors/entities';
 import { makeItemSelector } from 'wappsto-redux/selectors/items';
 import { getSession } from 'wappsto-redux/selectors/session';
-import { findRequest, startRequest } from 'wappsto-redux/actions/request';
+import { startRequest } from 'wappsto-redux/actions/request';
 import usePrevious from '../hooks/usePrevious';
 import equal from 'deep-equal';
 
@@ -27,12 +27,9 @@ const sendGetIds = (store, ids, service, query) => {
       id: ids
     }
   }
-  let promise = findRequest(options.url, options.method, undefined, options);
-  if(!promise){
-    const state = store.getState();
-    const session = getSession(state);
-    promise = startRequest(store.dispatch, options.url, options.method, null, options, session);
-  }
+  const state = store.getState();
+  const session = getSession(state);
+  const promise = startRequest(store.dispatch, options.url, options.method, null, options, session);
   promise.then(result => {
     setCacheStatus(store.dispatch, ids, result.ok ? 'success' : 'error',query);
   }).catch(() => {

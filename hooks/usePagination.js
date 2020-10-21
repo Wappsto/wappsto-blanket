@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore } from 'react-redux';
 import useRequest from './useRequest';
-import { findRequest, startRequest, STATUS } from 'wappsto-redux/actions/request';
+import { startRequest, STATUS } from 'wappsto-redux/actions/request';
 import { getSession } from 'wappsto-redux/selectors/session';
 
 const MAX_PER_PAGE = 10;
@@ -42,11 +42,7 @@ export const useGetTotalCount = ({ url }) => {
 }
 
 const fireRequest = (state, url, store, session, requestsRef, key) => {
-  let promise;
-  promise = findRequest(url, 'GET');
-  if(!promise){
-    promise = startRequest(store.dispatch, url, 'GET', null, { reset: false }, session);
-  }
+  const promise = startRequest(store.dispatch, url, 'GET', null, { reset: false }, session);
   requestsRef.current[key] = { promise, status: STATUS.pending };
   return promise;
 }

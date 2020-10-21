@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStore } from 'react-redux';
-import { findRequest, startRequest } from 'wappsto-redux/actions/request';
+import { startRequest } from 'wappsto-redux/actions/request';
 import { addEntities } from 'wappsto-redux/actions/entities';
 import { getSession } from 'wappsto-redux/selectors/session';
 
@@ -27,14 +27,9 @@ const fetch = async (ids, type, store, lvl = 0) => {
 
   const promises = slices.map((e) => {
     const url = `/${type}?expand=0&id=[${e.join(',')}]&from_last=true`;
-    const existingRequest = findRequest(url, 'GET');
-    if (existingRequest) {
-      return existingRequest;
-    } else {
-      const session = getSession(state);
-      const promise = startRequest(store.dispatch, url, 'GET', null, {}, session);
-      return promise;
-    }
+    const session = getSession(state);
+    const promise = startRequest(store.dispatch, url, 'GET', null, {}, session);
+    return promise;
   });
 
   let itemList = [];
