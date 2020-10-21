@@ -2,6 +2,8 @@ import { getServiceVersion } from 'wappsto-redux/util/helpers';
 import { openStream, closeStream, updateStream as updateReduxStream, status } from 'wappsto-redux/actions/stream';
 import config from 'wappsto-redux/config';
 
+export const ITEMS_PER_SLICE = 100;
+
 export function getLastKey(data){
   if(!data){
     return undefined;

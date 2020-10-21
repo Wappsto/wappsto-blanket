@@ -7,6 +7,7 @@ import { makeItemSelector } from 'wappsto-redux/selectors/items';
 import { getSession } from 'wappsto-redux/selectors/session';
 import { startRequest } from 'wappsto-redux/actions/request';
 import usePrevious from '../hooks/usePrevious';
+import { ITEMS_PER_SLICE } from '../util';
 import equal from 'deep-equal';
 
 const itemName = 'useIds_status';
@@ -17,27 +18,33 @@ const setCacheStatus = (dispatch, ids, status, query) => {
   dispatch(setItem(itemName, { ...cache }));
 }
 
-
-const sendGetIds = (store, ids, service, query) => {
-  const options = {
-    url: '/' + service,
-    method: 'GET',
-    query: {
-      ...query,
-      id: ids
-    }
+const sendGetIds = (store, ids, service, query, sliceLength) => {
+  const res = [];
+  const slices = Math.ceil(ids.length / sliceLength);
+  for(let i = 0; i < slices; i++){
+    res.push(ids.slice(i * sliceLength, (i + 1) * sliceLength));
   }
   const state = store.getState();
   const session = getSession(state);
-  const promise = startRequest(store.dispatch, options.url, options.method, null, options, session);
-  promise.then(result => {
-    setCacheStatus(store.dispatch, ids, result.ok ? 'success' : 'error',query);
-  }).catch(() => {
-    setCacheStatus(store.dispatch, ids, 'error', query);
+  res.forEach(arr => {
+    const options = {
+      url: '/' + service,
+      method: 'GET',
+      query: {
+        ...query,
+        id: arr
+      }
+    }
+    const promise = startRequest(store.dispatch, options.url, options.method, null, options, session);
+    promise.then(result => {
+      setCacheStatus(store.dispatch, arr, result.ok ? 'success' : 'error', query);
+    }).catch(() => {
+      setCacheStatus(store.dispatch, arr, 'error', query);
+    });
   });
 }
 
-function useIds(service, ids, query){
+function useIds(service, ids, query, sliceLength=ITEMS_PER_SLICE){
   const store = useStore();
   const [ status, setStatus ] = useState('idle');
   const prevStatus = usePrevious(status);
@@ -91,7 +98,7 @@ function useIds(service, ids, query){
     updateMissingIds();
     if(missingIds.current.length > 0){
       setCacheStatus(dispatch, missingIds.current, 'pending', query);
-      sendGetIds(store, missingIds.current, service, query);
+      sendGetIds(store, missingIds.current, service, query, sliceLength);
     }
   }
 
