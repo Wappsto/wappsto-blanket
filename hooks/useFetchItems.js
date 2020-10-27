@@ -29,7 +29,7 @@ const fetch = async (ids, type, store, query, lvl = 0) => {
   const promises = slices.map((e) => {
     const url = `/${type}?expand=0&id=[${e.join(',')}]&${querystring.stringify(query)}`;
     const session = getSession(state);
-    const promise = startRequest(store.dispatch, url, 'GET', null, {}, session);
+    const promise = startRequest(store.dispatch, { url, method: 'GET' }, session);
     return promise;
   });
 

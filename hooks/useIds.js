@@ -35,7 +35,7 @@ const sendGetIds = (store, ids, service, query, sliceLength) => {
         id: arr
       }
     }
-    const promise = startRequest(store.dispatch, options.url, options.method, null, options, session);
+    const promise = startRequest(store.dispatch, options, session);
     promise.then(result => {
       setCacheStatus(store.dispatch, arr, result.ok ? 'success' : 'error', query);
     }).catch(() => {

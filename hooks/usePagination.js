@@ -42,7 +42,7 @@ export const useGetTotalCount = ({ url }) => {
 }
 
 const fireRequest = (state, url, store, session, requestsRef, key) => {
-  const promise = startRequest(store.dispatch, url, 'GET', null, { reset: false }, session);
+  const promise = startRequest(store.dispatch, { url, method: 'GET' }, session);
   requestsRef.current[key] = { promise, status: STATUS.pending };
   return promise;
 }
