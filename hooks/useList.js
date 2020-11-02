@@ -56,8 +56,8 @@ function useList(props){
 				type = result.service;
 				entitiesType = type;
 			}
-		} else {
-		url = '/' + type;
+		} else if(type){
+			url = '/' + type;
 			if(id){
 				if(id.startsWith('?')){
 					query = { ...query, ...getQueryObj(id.slice(1)) };
@@ -94,7 +94,7 @@ function useList(props){
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
-	const [ customRequest, setCustomRequest ] = useState({ status: 'pending', options: { query: props.query } });
+	const [ customRequest, setCustomRequest ] = useState({ status: propsData.url ? 'pending' : 'success', options: { query: props.query } });
 	const name = props.name || (propsData.url + JSON.stringify(propsData.query));
 	const idsItemName = name + '_ids';
 	const requestIdName = name + '_requestId';
@@ -102,7 +102,7 @@ function useList(props){
 	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || empty;
   const { request, send } = useRequest(requestIdName, true);
 
-  if(!request && customRequest.status !== 'pending'){
+  if(propsData.url && !request && customRequest.status !== 'pending'){
 		setCustomRequest({ status: 'pending', options: { query: props.query } });
 	}
 
