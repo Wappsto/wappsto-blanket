@@ -8,12 +8,12 @@ import querystring from 'query-string';
 
 const CHILDREN = { 'network': 'device', 'device': 'value', 'value': 'state' }
 
-const fetch = async (ids, type, store, query, lvl = 0) => {
+const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
   const state = store.getState();
   const uniqIds = [...new Set(ids)];
 
   let missingIds;
-  if (state.entities[type+'s']) {
+  if (useCache && state.entities[type+'s']) {
     missingIds = uniqIds.filter(id => !state.entities[type+'s'][id]);
   } else {
     missingIds = uniqIds;
@@ -65,7 +65,7 @@ const fetch = async (ids, type, store, query, lvl = 0) => {
   }
 }
 
-const useFetchItems = (objIds, query) => {
+const useFetchItems = (objIds, query, useCache=true) => {
   const store = useStore();
   const [[status, items], setState] = useState(['pending', {}]);
   const [queryClone, lvl] = useMemo(() => {
@@ -94,10 +94,10 @@ const useFetchItems = (objIds, query) => {
       let items = {};
       for (const [type, ids] of Object.entries(objIds || {})) {
         if (CHILDREN[type] || type === 'state') {
-          const response = await fetch(ids, type, store, queryClone, lvl);
+          const response = await fetch(ids, type, store, queryClone, lvl, useCache);
           items[type] = response;
         } else {
-          const response = await fetch(ids, type, store, queryClone, 0);
+          const response = await fetch(ids, type, store, queryClone, 0, useCache);
           items = response[type];
         }
       }
