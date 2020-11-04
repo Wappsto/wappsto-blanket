@@ -91,7 +91,7 @@ const getItems = ({ store, url, query, pageSize, page, requestsRef, resetCache, 
   return { promise, cacheUrl };
 }
 
-const usePagination = ({ url, query={}, page: pageNo=1, pageSize=MAX_PER_PAGE, useCache=true }) => {
+const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useCache=true }) => {
   const store = useStore();
   const [status, setStatus] = useState();
   const [count, setCount] = useState(0);
@@ -263,7 +263,7 @@ const usePagination = ({ url, query={}, page: pageNo=1, pageSize=MAX_PER_PAGE, u
     start();
     return () => mounted.current = false;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, page, store, pageSize]);
+  }, [url, page, store, pageSize, query]);
 
   return { items, count, page, setPage, refresh, status, requests: requestsRef.current, addItem, removeItem };
 }
