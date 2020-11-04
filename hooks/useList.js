@@ -235,7 +235,7 @@ function useList(props){
 	}, [canLoadMore, propsData.query, items.length, sendRequest]);
 
 	const addItem = useCallback((id, position = 'start') => {
-		const found = savedIds.find(obj => obj.meta.id === id);
+		const found = savedIds.find(existingId => existingId === id);
 		if(!found){
 			dispatch(setItem(idsItemName, (ids = []) => {
 				if(position === 'start'){
@@ -248,7 +248,7 @@ function useList(props){
 	}, [dispatch, idsItemName, savedIds]);
 
 	const removeItem = useCallback((id) => {
-		const index = savedIds.findIndex(obj => obj.meta.id === id);
+		const index = savedIds.findIndex(existingId => existingId === id);
 		if(index !== -1){
 			dispatch(setItem(idsItemName, (ids = []) => [...ids.slice(0, index), ...ids.slice(index + 1)]));
 		}
