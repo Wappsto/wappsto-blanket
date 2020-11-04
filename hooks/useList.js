@@ -108,7 +108,7 @@ function useList(props){
 
 	const limit = propsData.query.limit;
 
-	const options = { filter: savedIds, limit: savedIds.length };
+	const options = { ids: savedIds, limit: savedIds.length };
 
 	const getEntities = useMemo(makeEntitiesSelector, []);
 	let items = useSelector(state => getEntities(state, propsData.entitiesType, options));
@@ -176,7 +176,7 @@ function useList(props){
 				}
 				if(request.json){
 					if(request.json.constructor === Array){
-						ids = [...(ids || []), ...request.json.map(item => item.constructor === Object ? ({ meta: { id: item.meta.id }}) : ({ meta: { id: item }}))];
+						ids = [...(ids || []), ...request.json.map(item => item.constructor === Object ? item.meta.id : item)];
 					} else if(request.json.meta.type === 'attributelist'){
 						ids = [propsData.id];
 					}
@@ -239,9 +239,9 @@ function useList(props){
 		if(!found){
 			dispatch(setItem(idsItemName, (ids = []) => {
 				if(position === 'start'){
-					return [{ meta: { id }}, ...ids];
+					return [id, ...ids];
 				} else {
-					return [...ids, { meta: { id }}];
+					return [...ids, id];
 				}
 			}));
 		}
