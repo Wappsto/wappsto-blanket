@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 
 import { setItem } from 'wappsto-redux/actions/items';
@@ -103,13 +103,13 @@ function useIds(service, ids, query, sliceLength=ITEMS_PER_SLICE){
   }
 
   // Make request to get the ids
-  useEffect(() => {
+  useMemo(() => {
     getMissingIds();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, service, updateMissingIds, ids]);
 
   // Update status
-  useEffect(() => {
+  useMemo(() => {
     if(status !== 'success' || prevIds !== ids){
       for(let i = 0; i < ids.length; i++){
         const idStatus = cache[ids[i]] && cache[ids[i]].status;
@@ -129,7 +129,7 @@ function useIds(service, ids, query, sliceLength=ITEMS_PER_SLICE){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids, idsStatus]);
 
-  useEffect(() => {
+  useMemo(() => {
     if(status === 'success'){
       setItems(cacheItems);
     }
