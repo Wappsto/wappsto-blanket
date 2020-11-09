@@ -191,11 +191,13 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
         }
         currentPage++;
       }
-      Object.keys(pagesCache).forEach(pageNumber => {
-        if(pageNumber > currentPage){
-          pagesCache[pageNumber].invalid = true
-        }
-      });
+      if(currentPage * pageSize < cache.countRequests[url].count){
+        Object.keys(pagesCache).forEach(pageNumber => {
+          if(pageNumber > currentPage){
+            pagesCache[pageNumber].invalid = true
+          }
+        });
+      }
       setCount(cache.countRequests[url].count);
       const pageItems = cache.pageRequests[cacheUrl].pages[page];
       if(pageItems && !pageItems?.invalid){
@@ -218,11 +220,13 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
         currentPage++;
       }
 
-      Object.keys(pagesCache).forEach(pageNumber => {
-        if(pageNumber >= currentPage){
-          pagesCache[pageNumber].invalid = true;
-        }
-      });
+      if(currentPage * pageSize < cache.countRequests[url].count){
+        Object.keys(pagesCache).forEach(pageNumber => {
+          if(pageNumber >= currentPage){
+            pagesCache[pageNumber].invalid = true;
+          }
+        });
+      }
     }
 
     const urlInstance = computeUrl(url, query, pageSize);
