@@ -17,7 +17,11 @@ const computeUrl = (url, query, pageSize) => {
   urlInstance.searchParams.set('expand', 0);
   for (const k in query) {
     const v = query[k];
-    urlInstance.searchParams.set(k, v);
+    if(v !== null){
+      urlInstance.searchParams.set(k, v);
+    } else{
+      urlInstance.searchParams.delete(k);
+    }
   }
   urlInstance.searchParams.set('limit', pageSize);
   return urlInstance;

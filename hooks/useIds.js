@@ -44,7 +44,7 @@ const sendGetIds = (store, ids, service, query, sliceLength) => {
   });
 }
 
-function useIds(service, ids, query, sliceLength=ITEMS_PER_SLICE){
+function useIds(service, ids, query={}, sliceLength=ITEMS_PER_SLICE){
   const store = useStore();
   const [ status, setStatus ] = useState('idle');
   const prevStatus = usePrevious(status);
