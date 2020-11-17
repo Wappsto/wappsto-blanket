@@ -131,6 +131,9 @@ function useLogs(stateId, sessionId, cacheId){
     if(cancelFunc.current){
       cancelFunc.current('Operation canceled');
     }
+    if(cacheId){
+      delete cache[cacheId];
+    }
     setData([]);
     setCurrentStatus(STATUS.IDLE);
     isCanceled.current = false;
