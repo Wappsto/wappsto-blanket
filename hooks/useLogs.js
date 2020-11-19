@@ -44,7 +44,7 @@ function useLogs(stateId, sessionId, cacheId){
     if(cacheId && cache[cacheId] && equal(cache[cacheId].options, options)){
       setData(cache[cacheId].data);
       setCurrentStatus(cache[cacheId].status);
-      return;
+      return true;
     }
     if(cOptions.start.constructor === Date){
       cOptions.start = cOptions.start.toISOString();
@@ -127,11 +127,11 @@ function useLogs(stateId, sessionId, cacheId){
     }
   }, []);
 
-  const reset = useCallback(() => {
+  const reset = useCallback((resetCache = true) => {
     if(cancelFunc.current){
       cancelFunc.current('Operation canceled');
     }
-    if(cacheId){
+    if(cacheId && resetCache){
       delete cache[cacheId];
     }
     setData([]);

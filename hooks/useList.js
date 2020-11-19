@@ -244,14 +244,18 @@ function useList(props){
 					return [...ids, id];
 				}
 			}));
+			return true;
 		}
+		return false;
 	}, [dispatch, idsItemName, savedIds]);
 
 	const removeItem = useCallback((id) => {
 		const index = savedIds.findIndex(existingId => existingId === id);
 		if(index !== -1){
 			dispatch(setItem(idsItemName, (ids = []) => [...ids.slice(0, index), ...ids.slice(index + 1)]));
+			return true;
 		}
+		return false;
 	}, [dispatch, idsItemName, savedIds]);
 
 	return { items, canLoadMore, request: customRequest, refresh, loadMore, addItem, removeItem };
