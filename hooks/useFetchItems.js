@@ -46,14 +46,14 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
   });
 
   const cachedResults = state.entities[type+'s'];
-  if (cachedResults) {
+  if (useCache && cachedResults) {
     const cachedIds = uniqIds.filter(id => state.entities[type+'s'][id]);
     cachedIds.forEach((e) => {
       const item = cachedResults[e];
-      if (item) {
-        itemList = [...itemList, item];
+      if (item && !itemList.find(i => i.meta.id === e)) {
+        itemList.push(item);
       }
-    })
+    });
   }
 
   if(lvl > 0 && itemList.length) {
