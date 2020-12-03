@@ -98,7 +98,7 @@ const useFetchItems = (objIds, query, useCache=true) => {
           items[type] = response;
         } else {
           const response = await fetch(ids, type, store, queryClone, 0, useCache);
-          items = response[type];
+          Object.assign(items, response);
         }
       }
       if (mounted) {
