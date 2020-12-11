@@ -102,6 +102,7 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
   const [page, setPage] = useState(pageNo);
   const [items, setItems] = useState([]);
   const mounted = useRef(true);
+  const skipPageChange = useRef(false);
   const requestsRef = useRef({ items: null, count: null });
 
   const start = (currentPage=page, resetCache) => {
@@ -153,7 +154,10 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
         return;
       }
       if (mounted.current) {
-        setPage(currentPage);
+        if(currentPage !== page){
+          skipPageChange.current = true;
+          setPage(currentPage);
+        }
         setCount(countRes.count);
         setStatus(STATUS.success);
         setItems(itemsRes);
@@ -269,6 +273,10 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
   }
 
   useEffect(() => {
+    if(skipPageChange.current){
+      skipPageChange.current = false;
+      return;
+    }
     start();
     return () => mounted.current = false;
   // eslint-disable-next-line react-hooks/exhaustive-deps
