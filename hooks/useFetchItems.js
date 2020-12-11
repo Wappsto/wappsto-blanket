@@ -114,7 +114,7 @@ const useFetchItems = (objIds, query, useCache=true) => {
 
     return () => mounted = false;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [objIds, query]);
+  }, [objIds, query]);
 
   return { status, items };
 }

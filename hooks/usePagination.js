@@ -104,13 +104,13 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
   const mounted = useRef(true);
   const requestsRef = useRef({ items: null, count: null });
 
-  const start = (resetCache) => {
+  const start = (currentPage=page, resetCache) => {
     requestsRef.current = { items: { status: STATUS.pending }, count: { status: STATUS.pending } };
     mounted.current = true;
     setStatus(STATUS.pending);
 
     const promise1 = getPageCount({ store, url, requestsRef, resetCache, useCache });
-    const { promise: promise2, cacheUrl } = getItems({ store, url, query, pageSize, page, requestsRef, resetCache, useCache });
+    const { promise: promise2, cacheUrl } = getItems({ store, url, query, pageSize, page: currentPage, requestsRef, resetCache, useCache });
 
     Promise.all([promise1, promise2]).then(([resCount, resItems]) => {
       if(!mounted.current) {
@@ -147,12 +147,13 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
       if(!cache.pageRequests[cacheUrl]){
         cache.pageRequests[cacheUrl] = { pages: {} };
       }
-      cache.pageRequests[cacheUrl].pages[page] = itemsRes;
-      if (page > 1 && !itemsRes.length) {
-        setPage(page-1);
+      cache.pageRequests[cacheUrl].pages[currentPage] = itemsRes;
+      if (currentPage > 1 && !itemsRes.length) {
+        setPage(1);
         return;
       }
       if (mounted.current) {
+        setPage(currentPage);
         setCount(countRes.count);
         setStatus(STATUS.success);
         setItems(itemsRes);
@@ -167,7 +168,7 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
   };
 
   const refresh = () => {
-    start(true);
+    start(null, true);
   }
 
   const addItem = (item, addInPage=1) => {
@@ -271,7 +272,12 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
     start();
     return () => mounted.current = false;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, page, store, pageSize, query]);
+  }, [page, store, pageSize]);
+
+  useEffect(() => {
+    start(1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, query]);
 
   return { items, count, page, setPage, refresh, status, requests: requestsRef.current, addItem, removeItem };
 }

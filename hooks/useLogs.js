@@ -138,7 +138,7 @@ function useLogs(stateId, sessionId, cacheId){
     setCurrentStatus(STATUS.IDLE);
     isCanceled.current = false;
     cachedData.current = [];
-  }, []);
+  }, [cacheId]);
 
   return { data, status, getLogs, reset, cancel };
 }
