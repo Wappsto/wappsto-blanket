@@ -58,7 +58,7 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
 
   if(lvl > 0 && itemList.length) {
     const itemListIds = itemList.reduce((arr, e) => [...arr, ...(e[CHILDREN[type]] || [])], []);
-    const result = await fetch(itemListIds, CHILDREN[type], store, query, lvl-1);
+    const result = await fetch(itemListIds, CHILDREN[type], store, query, lvl-1, useCache);
     return { [type]: itemList, ...result };
   } else {
     return type ? { [type]: itemList } : {};

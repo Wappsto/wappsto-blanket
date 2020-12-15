@@ -54,7 +54,7 @@ function useIds(service, ids, query={}, sliceLength=ITEMS_PER_SLICE){
   const [ items, setItems] = useState([]);
   const getEntities = useMemo(makeEntitiesSelector, []);
   const getItem = useMemo(makeItemSelector, []);
-  const cacheItems = useSelector(state => getEntities(state, service, { filter: ids.map(id => ({ meta: { id: id } }))}));
+  const cacheItems = useSelector(state => getEntities(state, service, ids));
   const idsStatus = useSelector(state => getItem(state, itemName));
 
   const updateMissingIds = useCallback(() => {
