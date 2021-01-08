@@ -5,6 +5,7 @@ import { getServiceUrl } from '../util';
 import querystring from 'querystring';
 import axios from 'axios';
 import equal from 'deep-equal';
+import * as cache from 'wappsto-redux/globalCache';
 
 const CancelToken = axios.CancelToken;
 
@@ -16,7 +17,8 @@ export const STATUS = {
   CANCELED: 'canceled'
 };
 
-const cache = {};
+const cacheKey = 'useLogs';
+cache.initialize(cacheKey, {});
 
 function useLogs(stateId, sessionId, cacheId){
   const [ data, setData ] = useState([]);
@@ -41,9 +43,10 @@ function useLogs(stateId, sessionId, cacheId){
     if(!cOptions.start || !cOptions.end){
       return;
     }
-    if(cacheId && cache[cacheId] && equal(cache[cacheId].options, options)){
-      setData(cache[cacheId].data);
-      setCurrentStatus(cache[cacheId].status);
+    const currentCache = cache.get(cacheKey);
+    if(cacheId && currentCache[cacheId] && equal(currentCache[cacheId].options, options)){
+      setData(currentCache[cacheId].data);
+      setCurrentStatus(currentCache[cacheId].status);
       return true;
     }
     if(cOptions.start.constructor === Date){
@@ -78,7 +81,7 @@ function useLogs(stateId, sessionId, cacheId){
           more = result.data.more;
         }
         if(cacheId){
-          cache[cacheId] = {
+          currentCache[cacheId] = {
             data: cachedData.current,
             options: options,
             status: STATUS.SUCCESS
@@ -93,7 +96,7 @@ function useLogs(stateId, sessionId, cacheId){
         setCurrentStatus(STATUS.SUCCESS);
       } catch(e){
         if(cacheId){
-          cache[cacheId] = {
+          currentCache[cacheId] = {
             data: cachedData.current,
             options: options,
             status: STATUS.ERROR
@@ -132,7 +135,7 @@ function useLogs(stateId, sessionId, cacheId){
       cancelFunc.current('Operation canceled');
     }
     if(cacheId && resetCache){
-      delete cache[cacheId];
+      delete cache.get(cacheKey)[cacheId];
     }
     setData([]);
     setCurrentStatus(STATUS.IDLE);

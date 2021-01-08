@@ -1,8 +1,11 @@
 import { useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateStream } from '../util';
+import * as cache from 'wappsto-redux/globalCache';
 
-const pathSubscribedCache = {};
+const cacheKey = 'usePathSubscribe';
+cache.initialize(cacheKey, {});
+
 const usePathSubscribe = (items, cacheId) => {
   const dispatch = useDispatch();
   const arr = useMemo(() => items ? (items.constructor === Array ? items : [items]) : [], [items]);
@@ -10,13 +13,13 @@ const usePathSubscribe = (items, cacheId) => {
 
   // subscribe to stream
   useEffect(() => {
-    if(!pathSubscribedCache[cacheId]){
+    if(!cache.get(cacheKey)[cacheId]){
       updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'add');
     }
     return () => {
       if(window.location.pathname !== path){
         updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'remove');
-        delete pathSubscribedCache[cacheId];
+        delete cache.get(cacheKey)[cacheId];
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

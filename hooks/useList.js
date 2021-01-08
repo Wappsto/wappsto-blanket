@@ -27,7 +27,6 @@ function getQueryObj(query) {
 props: url, type, id, childType, query, reset, resetOnEmpty, sort
 */
 const empty = [];
-const requestIdCache = {};
 function useList(props){
 	const dispatch = useDispatch();
 	const prevQuery = usePrevious(props.query);
