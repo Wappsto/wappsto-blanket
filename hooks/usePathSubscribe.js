@@ -1,10 +1,10 @@
 import { useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateStream } from '../util';
-import * as globalCache from 'wappsto-redux/globalCache';
+import { onLogout } from 'wappsto-redux/events';
 
-const cacheKey = 'usePathSubscribe';
-globalCache.initialize(cacheKey, {});
+let cache = {};
+onLogout(() => cache = {});
 
 const usePathSubscribe = (items, cacheId) => {
   const dispatch = useDispatch();
@@ -13,13 +13,13 @@ const usePathSubscribe = (items, cacheId) => {
 
   // subscribe to stream
   useEffect(() => {
-    if(!globalCache.get(cacheKey)[cacheId]){
+    if(!cache[cacheId]){
       updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'add');
     }
     return () => {
       if(window.location.pathname !== path){
         updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'remove');
-        delete globalCache.get(cacheKey)[cacheId];
+        delete cache[cacheId];
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

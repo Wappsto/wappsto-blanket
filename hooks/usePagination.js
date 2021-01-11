@@ -3,12 +3,15 @@ import { useStore } from 'react-redux';
 import useRequest from './useRequest';
 import { startRequest, STATUS } from 'wappsto-redux/actions/request';
 import { getSession } from 'wappsto-redux/selectors/session';
-import * as globalCache from 'wappsto-redux/globalCache';
+import { onLogout } from 'wappsto-redux/events';
 
 const MAX_PER_PAGE = 10;
 
-const cacheKey = 'usePagination';
-globalCache.initialize(cacheKey, {
+let cache = {
+  countRequests: {},
+  pageRequests: {}
+}
+onLogout(() => cache = {
   countRequests: {},
   pageRequests: {}
 });
@@ -56,7 +59,6 @@ const fireRequest = (state, url, store, session, requestsRef, key) => {
 const getPageCount = ({ store, url, requestsRef, resetCache, useCache }) => {
   const state = store.getState();
   const session = getSession(state);
-  const cache = globalCache.get(cacheKey);
 
   if(resetCache){
     delete cache.countRequests[url];
@@ -73,7 +75,6 @@ const getPageCount = ({ store, url, requestsRef, resetCache, useCache }) => {
 }
 
 const getItems = ({ store, url, query, pageSize, page, requestsRef, resetCache, useCache }) => {
-  const cache = globalCache.get(cacheKey);
   const state = store.getState();
   const session = getSession(state);
   const offset = (page - 1) * pageSize;
@@ -148,7 +149,6 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
       }
       const countRes = requestsRef.current.count.json;
       const itemsRes = requestsRef.current.items.json;
-      const cache = globalCache.get(cacheKey);
       cache.countRequests[url] = countRes;
       if(!cache.pageRequests[cacheUrl]){
         cache.pageRequests[cacheUrl] = { pages: {} };
@@ -183,7 +183,6 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
   const addItem = (item, addInPage=1) => {
     const urlInstance = computeUrl(url, query, pageSize);
     const cacheUrl = urlInstance.toString();
-    const cache = globalCache.get(cacheKey);
     if(!cache.pageRequests[cacheUrl]){
       cache.pageRequests[cacheUrl].pages = { [addInPage]: [] };
     }
@@ -225,7 +224,6 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
   }
 
   const removeItem = (item, deleteInPage=page) => {
-    const cache = globalCache.get(cacheKey);
     const shiftRemove = (page, index, pagesCache) => {
       //shifting
       pagesCache[page] = [...pagesCache[page].slice(0, index), ...pagesCache[page].slice(index + 1)];

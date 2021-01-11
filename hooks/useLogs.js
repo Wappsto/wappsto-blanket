@@ -5,7 +5,7 @@ import { getServiceUrl } from '../util';
 import querystring from 'querystring';
 import axios from 'axios';
 import equal from 'deep-equal';
-import * as globalCache from 'wappsto-redux/globalCache';
+import { onLogout } from 'wappsto-redux/events';
 
 const CancelToken = axios.CancelToken;
 
@@ -17,8 +17,8 @@ export const STATUS = {
   CANCELED: 'canceled'
 };
 
-const cacheKey = 'useLogs';
-globalCache.initialize(cacheKey, {});
+let cache = {};
+onLogout(() => cache = {});
 
 function useLogs(stateId, sessionId, cacheId){
   const [ data, setData ] = useState([]);
@@ -43,7 +43,6 @@ function useLogs(stateId, sessionId, cacheId){
     if(!cOptions.start || !cOptions.end){
       return;
     }
-    const cache = globalCache.get(cacheKey);
     if(cacheId && cache[cacheId] && equal(cache[cacheId].options, options)){
       setData(cache[cacheId].data);
       setCurrentStatus(cache[cacheId].status);
@@ -135,7 +134,7 @@ function useLogs(stateId, sessionId, cacheId){
       cancelFunc.current('Operation canceled');
     }
     if(cacheId && resetCache){
-      delete globalCache.get(cacheKey)[cacheId];
+      delete cache[cacheId];
     }
     setData([]);
     setCurrentStatus(STATUS.IDLE);
