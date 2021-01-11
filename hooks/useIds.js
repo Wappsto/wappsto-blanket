@@ -11,11 +11,9 @@ import { ITEMS_PER_SLICE } from '../util';
 import equal from 'deep-equal';
 import * as cache from 'wappsto-redux/globalCache';
 
-
 const itemName = 'useIds_status';
 const cacheKey = 'useIds';
 cache.initialize(cacheKey, {});
-
 
 const setCacheStatus = (dispatch, ids, status, query) => {
   const currentCache = cache.get(cacheKey);

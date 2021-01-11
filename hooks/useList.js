@@ -99,7 +99,7 @@ function useList(props){
 	const requestIdName = name + '_requestId';
 	const getSavedIdsItem = useMemo(makeItemSelector, []);
 	const savedIds = useSelector(state => getSavedIdsItem(state, idsItemName)) || empty;
-  const { request, send } = useRequest(requestIdName, true);
+  const { request, send } = useRequest(requestIdName);
 
   if(propsData.url && !request && customRequest.status !== 'pending'){
 		setCustomRequest({ status: 'pending', options: { query: props.query } });
