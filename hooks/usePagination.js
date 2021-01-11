@@ -3,12 +3,12 @@ import { useStore } from 'react-redux';
 import useRequest from './useRequest';
 import { startRequest, STATUS } from 'wappsto-redux/actions/request';
 import { getSession } from 'wappsto-redux/selectors/session';
-import * as cache from 'wappsto-redux/globalCache';
+import * as globalCache from 'wappsto-redux/globalCache';
 
 const MAX_PER_PAGE = 10;
 
 const cacheKey = 'usePagination';
-cache.initialize(cacheKey, {
+globalCache.initialize(cacheKey, {
   countRequests: {},
   pageRequests: {}
 });
@@ -56,15 +56,15 @@ const fireRequest = (state, url, store, session, requestsRef, key) => {
 const getPageCount = ({ store, url, requestsRef, resetCache, useCache }) => {
   const state = store.getState();
   const session = getSession(state);
-  const currentCache = cache.get(cacheKey);
+  const cache = globalCache.get(cacheKey);
 
   if(resetCache){
-    delete currentCache.countRequests[url];
+    delete cache.countRequests[url];
   }
 
   let promise;
-  if (useCache && currentCache.countRequests[url]) {
-    promise = currentCache.countRequests[url];
+  if (useCache && cache.countRequests[url]) {
+    promise = cache.countRequests[url];
   } else {
     promise = fireRequest(state, url, store, session, requestsRef, 'count');
   }
@@ -73,7 +73,7 @@ const getPageCount = ({ store, url, requestsRef, resetCache, useCache }) => {
 }
 
 const getItems = ({ store, url, query, pageSize, page, requestsRef, resetCache, useCache }) => {
-  const currentCache = cache.get(cacheKey);
+  const cache = globalCache.get(cacheKey);
   const state = store.getState();
   const session = getSession(state);
   const offset = (page - 1) * pageSize;
@@ -84,14 +84,14 @@ const getItems = ({ store, url, query, pageSize, page, requestsRef, resetCache, 
   urlInstance.searchParams.set('offset', offset);
   const url2 = urlInstance.toString().replace('https:/', '').replace('/?', '?');
 
-  if(resetCache && currentCache.pageRequests[cacheUrl]){
-    currentCache.pageRequests[cacheUrl].pages = {};
+  if(resetCache && cache.pageRequests[cacheUrl]){
+    cache.pageRequests[cacheUrl].pages = {};
   }
 
   let promise;
-  const pageItems = useCache && currentCache.pageRequests[cacheUrl]?.pages?.[page];
+  const pageItems = useCache && cache.pageRequests[cacheUrl]?.pages?.[page];
   if(pageItems && !pageItems?.invalid){
-    promise = currentCache.pageRequests[cacheUrl].pages?.[page];
+    promise = cache.pageRequests[cacheUrl].pages?.[page];
   } else {
     promise = fireRequest(state, url2, store, session, requestsRef, 'items');
   }
@@ -148,12 +148,12 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
       }
       const countRes = requestsRef.current.count.json;
       const itemsRes = requestsRef.current.items.json;
-      const currentCache = cache.get(cacheKey);
-      currentCache.countRequests[url] = countRes;
-      if(!currentCache.pageRequests[cacheUrl]){
-        currentCache.pageRequests[cacheUrl] = { pages: {} };
+      const cache = globalCache.get(cacheKey);
+      cache.countRequests[url] = countRes;
+      if(!cache.pageRequests[cacheUrl]){
+        cache.pageRequests[cacheUrl] = { pages: {} };
       }
-      currentCache.pageRequests[cacheUrl].pages[currentPage] = itemsRes;
+      cache.pageRequests[cacheUrl].pages[currentPage] = itemsRes;
       if (currentPage > 1 && !itemsRes.length) {
         setPage(1);
         return;
@@ -183,16 +183,16 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
   const addItem = (item, addInPage=1) => {
     const urlInstance = computeUrl(url, query, pageSize);
     const cacheUrl = urlInstance.toString();
-    const currentCache = cache.get(cacheKey);
-    if(!currentCache.pageRequests[cacheUrl]){
-      currentCache.pageRequests[cacheUrl].pages = { [addInPage]: [] };
+    const cache = globalCache.get(cacheKey);
+    if(!cache.pageRequests[cacheUrl]){
+      cache.pageRequests[cacheUrl].pages = { [addInPage]: [] };
     }
-    const pagesCache = currentCache.pageRequests[cacheUrl].pages;
+    const pagesCache = cache.pageRequests[cacheUrl].pages;
     if(!pagesCache[addInPage].find(i => i?.meta?.id === item?.meta?.id)){
-      if(!currentCache.countRequests[url]){
-        currentCache.countRequests[url] = { count: 1 };
+      if(!cache.countRequests[url]){
+        cache.countRequests[url] = { count: 1 };
       } else {
-        currentCache.countRequests[url].count++;
+        cache.countRequests[url].count++;
       }
       pagesCache[addInPage] = [{...item}, ...pagesCache[addInPage]];
       //shifting
@@ -206,17 +206,17 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
         }
         currentPage++;
       }
-      if(currentPage * pageSize < currentCache.countRequests[url].count){
+      if(currentPage * pageSize < cache.countRequests[url].count){
         Object.keys(pagesCache).forEach(pageNumber => {
           if(pageNumber > currentPage){
             pagesCache[pageNumber].invalid = true
           }
         });
       }
-      setCount(currentCache.countRequests[url].count);
-      const pageItems = currentCache.pageRequests[cacheUrl].pages[page];
+      setCount(cache.countRequests[url].count);
+      const pageItems = cache.pageRequests[cacheUrl].pages[page];
       if(pageItems && !pageItems?.invalid){
-        setItems(currentCache.pageRequests[cacheUrl].pages[page] || []);
+        setItems(cache.pageRequests[cacheUrl].pages[page] || []);
       } else {
         setItems([]);
         start();
@@ -225,7 +225,7 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
   }
 
   const removeItem = (item, deleteInPage=page) => {
-    const currentCache = cache.get(cacheKey);
+    const cache = globalCache.get(cacheKey);
     const shiftRemove = (page, index, pagesCache) => {
       //shifting
       pagesCache[page] = [...pagesCache[page].slice(0, index), ...pagesCache[page].slice(index + 1)];
@@ -236,7 +236,7 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
         currentPage++;
       }
 
-      if(currentPage * pageSize < currentCache.countRequests[url].count){
+      if(currentPage * pageSize < cache.countRequests[url].count){
         Object.keys(pagesCache).forEach(pageNumber => {
           if(pageNumber >= currentPage){
             pagesCache[pageNumber].invalid = true;
@@ -247,7 +247,7 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
 
     const urlInstance = computeUrl(url, query, pageSize);
     const cacheUrl = urlInstance.toString();
-    const pagesCache = currentCache.pageRequests[cacheUrl]?.pages;
+    const pagesCache = cache.pageRequests[cacheUrl]?.pages;
     if(pagesCache){
       if(deleteInPage){
         if(pagesCache[deleteInPage]){
@@ -267,11 +267,11 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
           }
         }
       }
-      currentCache.countRequests[url].count--;
-      setCount(currentCache.countRequests[url].count);
-      const pageItems = currentCache.pageRequests[cacheUrl].pages[page];
+      cache.countRequests[url].count--;
+      setCount(cache.countRequests[url].count);
+      const pageItems = cache.pageRequests[cacheUrl].pages[page];
       if(pageItems && !pageItems?.invalid){
-        setItems(currentCache.pageRequests[cacheUrl].pages[page] || []);
+        setItems(cache.pageRequests[cacheUrl].pages[page] || []);
       } else {
         setItems([]);
         start();

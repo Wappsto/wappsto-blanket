@@ -9,16 +9,16 @@ import { startRequest } from 'wappsto-redux/actions/request';
 import usePrevious from '../hooks/usePrevious';
 import { ITEMS_PER_SLICE } from '../util';
 import equal from 'deep-equal';
-import * as cache from 'wappsto-redux/globalCache';
+import * as globalCache from 'wappsto-redux/globalCache';
 
 const itemName = 'useIds_status';
 const cacheKey = 'useIds';
-cache.initialize(cacheKey, {});
+globalCache.initialize(cacheKey, {});
 
 const setCacheStatus = (dispatch, ids, status, query) => {
-  const currentCache = cache.get(cacheKey);
-  ids.forEach(id => currentCache[id] = { status, query });
-  dispatch(setItem(itemName, { ...currentCache }));
+  const cache = globalCache.get(cacheKey);
+  ids.forEach(id => cache[id] = { status, query });
+  dispatch(setItem(itemName, { ...cache }));
 }
 
 const sendGetIds = (store, ids, service, query, sliceLength) => {
@@ -67,7 +67,7 @@ function useIds(service, ids, query={}, sliceLength=ITEMS_PER_SLICE){
     const arr = [];
     const cacheIds = [];
     ids.forEach(id => {
-      const cid = cache.get(cacheKey)[id];
+      const cid = globalCache.get(cacheKey)[id];
       if(cid) {
         const cidQ = {...cid.query, expand: null};
         const cQ = {...query, expand: null};
@@ -114,9 +114,9 @@ function useIds(service, ids, query={}, sliceLength=ITEMS_PER_SLICE){
   // Update status
   useMemo(() => {
     if(status !== 'success' || prevIds !== ids){
-      const currentCache = cache.get(cacheKey);
+      const cache = globalCache.get(cacheKey);
       for(let i = 0; i < ids.length; i++){
-        const idStatus = currentCache[ids[i]] && currentCache[ids[i]].status;
+        const idStatus = cache[ids[i]] && cache[ids[i]].status;
         if(idStatus === 'error'){
           setStatus('error');
           return;

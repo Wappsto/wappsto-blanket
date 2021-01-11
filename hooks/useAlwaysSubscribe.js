@@ -2,21 +2,21 @@ import { useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import usePrevious from './usePrevious';
 import { updateStream } from '../util';
-import * as cache from 'wappsto-redux/globalCache';
+import * as globalCache from 'wappsto-redux/globalCache';
 
 const cacheKey = 'useAlwaysSubscribe';
-cache.initialize(cacheKey, {});
+globalCache.initialize(cacheKey, {});
 
 const useAlwaysSubscribe = (items) => {
   const dispatch = useDispatch();
   const arr = useMemo(() => {
     const result = [];
     const allItems = items ? (items.constructor === Array ? items : [items]) : [];
-    const currentCache = cache.get(cacheKey);
+    const cache = globalCache.get(cacheKey);
     allItems.forEach(item => {
       const itemPath = '/' + item.meta.type + '/' + item.meta.id;
-      if(!currentCache[itemPath]){
-        currentCache[itemPath] = true;
+      if(!cache[itemPath]){
+        cache[itemPath] = true;
         result.push(itemPath);
       }
     });
@@ -28,9 +28,9 @@ const useAlwaysSubscribe = (items) => {
   useEffect(() => {
     //remove old subscriptions
     if(prevArr){
-      const currentCache = cache.get(cacheKey);
+      const cache = globalCache.get(cacheKey);
       prevArr.forEach(itemPath => {
-        delete currentCache[itemPath];
+        delete cache[itemPath];
       });
       updateStream(dispatch, prevArr, 'remove');
     }

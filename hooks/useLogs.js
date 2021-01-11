@@ -5,7 +5,7 @@ import { getServiceUrl } from '../util';
 import querystring from 'querystring';
 import axios from 'axios';
 import equal from 'deep-equal';
-import * as cache from 'wappsto-redux/globalCache';
+import * as globalCache from 'wappsto-redux/globalCache';
 
 const CancelToken = axios.CancelToken;
 
@@ -18,7 +18,7 @@ export const STATUS = {
 };
 
 const cacheKey = 'useLogs';
-cache.initialize(cacheKey, {});
+globalCache.initialize(cacheKey, {});
 
 function useLogs(stateId, sessionId, cacheId){
   const [ data, setData ] = useState([]);
@@ -43,10 +43,10 @@ function useLogs(stateId, sessionId, cacheId){
     if(!cOptions.start || !cOptions.end){
       return;
     }
-    const currentCache = cache.get(cacheKey);
-    if(cacheId && currentCache[cacheId] && equal(currentCache[cacheId].options, options)){
-      setData(currentCache[cacheId].data);
-      setCurrentStatus(currentCache[cacheId].status);
+    const cache = globalCache.get(cacheKey);
+    if(cacheId && cache[cacheId] && equal(cache[cacheId].options, options)){
+      setData(cache[cacheId].data);
+      setCurrentStatus(cache[cacheId].status);
       return true;
     }
     if(cOptions.start.constructor === Date){
@@ -81,7 +81,7 @@ function useLogs(stateId, sessionId, cacheId){
           more = result.data.more;
         }
         if(cacheId){
-          currentCache[cacheId] = {
+          cache[cacheId] = {
             data: cachedData.current,
             options: options,
             status: STATUS.SUCCESS
@@ -96,7 +96,7 @@ function useLogs(stateId, sessionId, cacheId){
         setCurrentStatus(STATUS.SUCCESS);
       } catch(e){
         if(cacheId){
-          currentCache[cacheId] = {
+          cache[cacheId] = {
             data: cachedData.current,
             options: options,
             status: STATUS.ERROR
@@ -135,7 +135,7 @@ function useLogs(stateId, sessionId, cacheId){
       cancelFunc.current('Operation canceled');
     }
     if(cacheId && resetCache){
-      delete cache.get(cacheKey)[cacheId];
+      delete globalCache.get(cacheKey)[cacheId];
     }
     setData([]);
     setCurrentStatus(STATUS.IDLE);
