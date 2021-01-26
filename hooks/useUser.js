@@ -4,7 +4,7 @@ import useRequest from 'wappsto-blanket/hooks/useRequest';
 import { getUserData } from 'wappsto-redux/selectors/entities';
 
 const useUser = () => {
-  const user = useSelector((state) => getUserData(state));
+  const user = useSelector(getUserData);
   const { request, send } = useRequest();
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const useUser = () => {
   const icon = user?.provider?.[0]?.picture;
   const status = request?.status || 'pending';
 
-  return { status, icon, name };
+  return { status, icon, name, user, request };
 }
 
 export default useUser;
