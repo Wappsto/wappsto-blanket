@@ -27,10 +27,13 @@ function mergeUnique(arr1, arr2){
   return arr;
 }
 
-const defaultOptions = {
+let defaultOptions = {
   endPoint: 'websocket',
   version: '2.0'
 };
+export function setDefaultStreamOptions(options){
+  defaultOptions = options;
+}
 const subscriptions = {};
 const subscriptionNumber = {};
 let timeout;

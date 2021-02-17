@@ -3,6 +3,7 @@ import { useStore } from 'react-redux';
 import { startRequest } from 'wappsto-redux/actions/request';
 import { addEntities } from 'wappsto-redux/actions/entities';
 import { getSession } from 'wappsto-redux/selectors/session';
+import schemas from 'wappsto-redux/util/schemas';
 import { ITEMS_PER_SLICE } from '../util';
 import querystring from 'query-string';
 
@@ -11,10 +12,11 @@ const CHILDREN = { 'network': 'device', 'device': 'value', 'value': 'state' }
 const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
   const state = store.getState();
   const uniqIds = [...new Set(ids)];
+  const typeKey = schemas.getSchemaTree(type).name;
 
   let missingIds;
-  if (useCache && state.entities[type+'s']) {
-    missingIds = uniqIds.filter(id => !state.entities[type+'s'][id]);
+  if (useCache && state.entities[typeKey]) {
+    missingIds = uniqIds.filter(id => !state.entities[typeKey][id]);
   } else {
     missingIds = uniqIds;
   }
@@ -45,9 +47,9 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
     }
   });
 
-  const cachedResults = state.entities[type+'s'];
+  const cachedResults = state.entities[typeKey];
   if (useCache && cachedResults) {
-    const cachedIds = uniqIds.filter(id => state.entities[type+'s'][id]);
+    const cachedIds = uniqIds.filter(id => state.entities[typeKey][id]);
     cachedIds.forEach((e) => {
       const item = cachedResults[e];
       if (item && !itemList.find(i => i.meta.id === e)) {

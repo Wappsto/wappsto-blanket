@@ -170,8 +170,8 @@ const usePagination = ({ url, query, page: pageNo=1, pageSize=MAX_PER_PAGE, useC
           setPage(currentPage);
         }
         setCount(countRes.count);
-        setStatus(STATUS.success);
         setItems(itemsRes);
+        setStatus(STATUS.success);
       }
     }).catch(() => {
       if (mounted.current) {
