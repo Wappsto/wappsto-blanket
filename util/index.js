@@ -106,11 +106,13 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
         return;
       }
       timeout = setTimeout(() => {
+        dispatch(closeStream(secondaryStream));
         const ws = dispatch(openStream({ name: secondaryStream, subscription: newSubscriptions, full: options.full || false }, null, options));
         ws.addEventListener('open', () => {
+          dispatch(updateReduxStream(secondaryStream, status.CLOSED, null, null, null));
           dispatch(closeStream(mainStream, true));
           dispatch(updateReduxStream(mainStream, status.OPEN, null, ws, { subscription: newSubscriptions, name: mainStream, full: options.full || false }));
-          subscriptions.old = subscriptions.new;
+          subscriptions.old = newSubscriptions;
           subscriptions.new = null;
         });
       }, 500);
