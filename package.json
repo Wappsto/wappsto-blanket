@@ -16,6 +16,8 @@
   },
   "homepage": "https://github.com/Wappsto/wappsto-blanket#readme",
   "dependencies": {
+    "deep-equal": "^2.0.5",
+    "query-string": "^6.14.1",
     "uuid": "^8.3.1"
   }
 }
