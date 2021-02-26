@@ -66,7 +66,7 @@ function useLogs(stateId, sessionId, cacheId){
             const last = cachedData.current[cachedData.current.length - 1];
             cOptions.start = last.time || last.selected_timestamp;
           }
-          const url = `${getServiceUrl('log')}/${stateId}?type=state&limit=3600&${querystring.stringify(cOptions)}`;
+          const url = `${getServiceUrl('log')}/${stateId}?type=state${cOptions.limit ? '' : '&limit=3600'}&${querystring.stringify(cOptions)}`;
           const result = await axios.get(url, {
             headers: { "x-session": sessionId || activeSession.meta.id },
             cancelToken: new CancelToken(function executor(cancel) {
@@ -77,7 +77,7 @@ function useLogs(stateId, sessionId, cacheId){
             throw new Error("error");
           }
           cachedData.current = cachedData.current.concat(result.data.data);
-          more = result.data.more;
+          more = result.data.more && (!cOptions.limit || result.data.length < cOptions.limit);
         }
         if(cacheId){
           cache[cacheId] = {
