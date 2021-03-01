@@ -205,7 +205,13 @@ const usePagination = (paginationInit) => {
 
   const add = (item) => {
     const idUrl = getUrl({ url, query });
-    if (cache.url[idUrl]) {
+    if (!useCache) {
+      setItems(([items, pageLength]) => {
+        let newItems = [item, ...items];
+        newItems.pop();
+        return [newItems, pageLength];
+      });
+    } else if (cache.url[idUrl]) {
       const id = item.meta.id;
       cache.url[idUrl].count++;
       cache.item[id] = item;
@@ -242,8 +248,11 @@ const usePagination = (paginationInit) => {
   
   const remove = ((id) => {
     const idUrl = getUrl({ url, query });
-    if (cache.url[idUrl]) {
-      if (id?.constructor === Object) id = id.meta.id;
+    if (id?.constructor === Object) id = id.meta.id;
+    if (!useCache) {
+      const found = items.find((e) => e.meta.id === id);
+      found && refresh();
+    } else if (cache.url[idUrl]) {
       const arrCachePage = Object.entries(cache.url[idUrl].page);
       const [deletePageNo, pageIds] = arrCachePage.find(([, v]) => v.includes(id)) || [];
       if (!pageIds) return;
