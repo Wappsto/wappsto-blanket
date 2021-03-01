@@ -2,10 +2,9 @@ import { useEffect } from 'react';
 import usePagination from './usePagination';
 import useEntitiesSelector from './useEntitiesSelector';
 
-const useStorePagination = ({ url, query, page: pageNo, pageSize, useCache }) => {
-  const { items, count, page, setPage, refresh, status, requests, addItem, removeItem } = usePagination({ url, query, page: pageNo, pageSize, useCache });
-  const firstItem = items && items[0];
-  const storeItems = useEntitiesSelector(firstItem?.meta?.type, items?.map((item) => item?.meta?.id));
+const useStorePagination = (...props) => {
+  const { items, removeItem, updateItem, ...rest } = usePagination(...props);
+  const storeItems = useEntitiesSelector(items?.[0]?.meta?.type, items?.map((item) => item?.meta?.id));
 
   useEffect(() => {
     if(storeItems.length !== items.length){
@@ -18,7 +17,7 @@ const useStorePagination = ({ url, query, page: pageNo, pageSize, useCache }) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ storeItems ]);
 
-  return { items: storeItems, count, page, setPage, refresh, status, requests, addItem, removeItem };
+  return { items: storeItems, removeItem, ...rest };
 }
 
 export default useStorePagination;
