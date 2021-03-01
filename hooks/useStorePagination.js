@@ -3,7 +3,7 @@ import usePagination from './usePagination';
 import useEntitiesSelector from './useEntitiesSelector';
 
 const useStorePagination = (...props) => {
-  const { items, removeItem, updateItem, ...rest } = usePagination(...props);
+  const { items, removeItem, ...rest } = usePagination(...props);
   const storeItems = useEntitiesSelector(items?.[0]?.meta?.type, items?.map((item) => item?.meta?.id));
 
   useEffect(() => {
