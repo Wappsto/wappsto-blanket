@@ -159,6 +159,7 @@ const usePagination = (paginationInit) => {
     const startPagination = async () => {
       if (!url) return;
       setStatus(STATUS.pending);
+      const pageNumber = parseInt(pageNo) || 1;
       const sessionObj = getSessionObj({ store, session });
       const urlFull = getUrl({ url, query });
       if (resetCache && cache.url[urlFull]) {
@@ -166,10 +167,10 @@ const usePagination = (paginationInit) => {
         ids.forEach((e) => delete cache.item[e]);
         delete cache.url[urlFull];
       }
-      const { count, pages } = await getPages({ url: urlFull, store, useCache, page: pageNo, requestsRef, pageSize, sessionObj });
-      const items = await getCurrentPageItems({ url: urlFull, store, useCache, page: pageNo, requestsRef, pages, pageSize, sessionObj });
+      const { count, pages } = await getPages({ url: urlFull, store, useCache, page: pageNumber, requestsRef, pageSize, sessionObj });
+      const items = await getCurrentPageItems({ url: urlFull, store, useCache, page: pageNumber, requestsRef, pages, pageSize, sessionObj });
       if (isMounted) {
-        setPage(pageNo);
+        setPage(pageNumber);
         setCount(count);
         setItems([items, pageSize]);
         setStatus(STATUS.success);
@@ -206,11 +207,15 @@ const usePagination = (paginationInit) => {
   const add = (item) => {
     const idUrl = getUrl({ url, query });
     if (!useCache) {
-      setItems(([items, pageLength]) => {
-        let newItems = [item, ...items];
-        newItems.pop();
-        return [newItems, pageLength];
-      });
+      if (page === 1) {
+        setItems(([items, pageLength]) => {
+          let newItems = [item, ...items];
+          newItems.pop();
+          return [newItems, pageLength];
+        });
+      } else {
+        refresh();
+      }
     } else if (cache.url[idUrl]) {
       const id = item.meta.id;
       cache.url[idUrl].count++;
@@ -274,7 +279,7 @@ const usePagination = (paginationInit) => {
           delete cache.url[idUrl].page[+page];
         }
       });
-      if (pageNo > lastPage) {
+      if (page > lastPage) {
         setCurrentPage(lastPage || 1);
       } else {
         setPagination((current) => ({ ...current, resetCache: false }));
