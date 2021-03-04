@@ -210,7 +210,8 @@ const usePagination = (paginationInit) => {
       if (page === 1) {
         setItems(([items, pageLength]) => {
           let newItems = [item, ...items];
-          newItems.pop();
+          newItems.length > pageLength && newItems.pop();
+          setCount((current) => current + 1);
           return [newItems, pageLength];
         });
       } else {
