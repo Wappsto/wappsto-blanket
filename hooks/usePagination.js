@@ -101,7 +101,6 @@ const getCurrentPageItems = async ({ url, store, useCache, page, requestsRef, pa
       return items;
     }
   }
-
   const [baseUrl, query] = url.split('?');
   const query1 = new URLSearchParams(query);
   const query2 = new URLSearchParams();
@@ -168,6 +167,11 @@ const usePagination = (paginationInit) => {
         delete cache.url[urlFull];
       }
       const { count, pages } = await getPages({ url: urlFull, store, useCache, page: pageNumber, requestsRef, pageSize, sessionObj });
+      const lastPage = Math.ceil(count / pageSize);
+      if (pageNumber > lastPage && lastPage > 0) {
+        setCurrentPage(lastPage);
+        return;
+      }
       const items = await getCurrentPageItems({ url: urlFull, store, useCache, page: pageNumber, requestsRef, pages, pageSize, sessionObj });
       if (isMounted) {
         setPage(pageNumber);
