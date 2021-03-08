@@ -148,19 +148,27 @@ const usePagination = (paginationInit) => {
   const [page, setPage] = useState(pageNo);
   const [status, setStatus] = useState();
   const [count, setCount] = useState(0);
+  const [itemIds, setItemIds] = useState([]);
   const requestsRef = useRef({ count: undefined, items: undefined });
   const functionRef = useRef({});
+  const isInit = useRef(true);
   const store = useStore();
 
   useEffect(() => {
     let isMounted = true;
 
     const startPagination = async () => {
-      if (!url) return;
+      if (!url) {
+        return;
+      }
       setStatus(STATUS.pending);
-      const pageNumber = parseInt(pageNo) || 1;
+      let pageNumber = parseInt(pageNo) || 1;
       const sessionObj = getSessionObj({ store, session });
       const urlFull = getUrl({ url, query });
+      if (isInit.current && paginationInit && paginationInit.page) {
+        pageNumber = parseInt(paginationInit.page) || pageNumber;
+      }
+      isInit.current = false;
       if (resetCache && cache.url[urlFull]) {
         const ids = Object.values(cache.url[urlFull].page).flat();
         ids.forEach((e) => delete cache.item[e]);
@@ -177,11 +185,11 @@ const usePagination = (paginationInit) => {
         setPage(pageNumber);
         setCount(count);
         setItems([items, pageSize]);
+        setItemIds(pages[pageNumber] || []);
         setStatus(STATUS.success);
       }
     }
-    startPagination().catch((error) => {
-      console.error(error);
+    startPagination().catch(() => {
       if (isMounted) {
         setStatus(STATUS.error);
         setItems((current) => current.length ? [] : current);
@@ -312,7 +320,7 @@ const usePagination = (paginationInit) => {
 
   return {
     items, count, page, pageSize: pageLength, setPage: setCurrentPage, refresh, status, get: setPagination,
-    addItem, removeItem, updateItem, requests: requestsRef.current
+    addItem, removeItem, updateItem, requests: requestsRef.current, itemIds
   };
 }
 
