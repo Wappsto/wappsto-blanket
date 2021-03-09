@@ -1,5 +1,5 @@
 import { getServiceVersion } from 'wappsto-redux/util/helpers';
-import { openStream, status } from 'wappsto-redux/actions/stream';
+import { openStream } from 'wappsto-redux/actions/stream';
 import config from 'wappsto-redux/config';
 import equal from 'deep-equal';
 import uuid from 'uuid/v4';
@@ -19,16 +19,6 @@ export function getNextKey(data){
   return parseInt(lastKey) + 1;
 }
 
-function mergeUnique(arr1, arr2){
-  let arr = [...arr1];
-  arr2.forEach(e => {
-    if(!arr1.includes(e)){
-      arr.push(e);
-    }
-  });
-  return arr;
-}
-
 let defaultOptions = {
   endPoint: 'websocket',
   version: '2.0'
@@ -43,19 +33,20 @@ let ws;
 
 const mainStream = 'stream-main';
 function updateSubscriptions(options){
-  if(!equal(subscriptions, newSubscriptions)){
-    const sub = Object.keys(newSubscriptions);
+  const subscriptionsKeys = Object.keys(subscriptions);
+  const newSubscriptionsKeys = Object.keys(newSubscriptions);
+  if(!equal(subscriptionsKeys, newSubscriptionsKeys)){
     ws.send(JSON.stringify({
       jsonrpc: '2.0',
       method: 'PATCH',
       id: uuid(),
       params: {
         url: `${getServiceUrl(options.endPoint || options.service, options)}/open/subscription`,
-        data: sub,
+        data: newSubscriptionsKeys,
       }
     }));
-    subscriptions = {...newSubscriptions};
   }
+  subscriptions = {...newSubscriptions};
 }
 export function updateStream(dispatch, subscription, type, options=defaultOptions){
   clearTimeout(timeout);
@@ -75,7 +66,6 @@ export function updateStream(dispatch, subscription, type, options=defaultOption
     if(!ws || ws.readyState !== ws.OPEN){
       ws = dispatch(openStream({ name: mainStream, subscription: [], full: options.full || false }, null, options));
       ws.addEventListener('open', () => updateSubscriptions(options));
-      window.samiWs = ws;
     } else {
       updateSubscriptions(options);
     }
