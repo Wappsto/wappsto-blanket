@@ -1,19 +1,34 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateStream } from '../util';
+import equal from 'deep-equal';
 
-const useSubscribe = (items) => {
+const useSubscribe = (type, ids) => {
   const dispatch = useDispatch();
-  const arr = useMemo(() => items ? (items.constructor === Array ? items : [items]) : [], [items]);
+  const cached = useRef([]);
+  const arr = useMemo(() => {
+    let arr;
+    if(ids){
+      if(ids.constructor === Array){
+        arr = ids.map(id => '/' + type + '/' + id)
+      } else {
+        arr = ['/' + type + '/' + ids];
+      }
+    }
+    if(!equal(arr, cached.current)){
+      cached.current = arr;
+    }
+    return cached.current;
+  }, [type, ids]);
 
   // subscribe to stream
   useEffect(() => {
-    updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'add');
+    updateStream(dispatch, arr, 'add');
     return () => {
-      updateStream(dispatch, arr.map(item => '/' + item.meta.type + '/' + item.meta.id), 'remove');
+      updateStream(dispatch, arr, 'remove');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items]);
+  }, [arr]);
 }
 
 export default useSubscribe;

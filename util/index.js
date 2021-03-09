@@ -1,6 +1,8 @@
 import { getServiceVersion } from 'wappsto-redux/util/helpers';
-import { openStream, closeStream, updateStream as updateReduxStream, status } from 'wappsto-redux/actions/stream';
+import { openStream, status } from 'wappsto-redux/actions/stream';
 import config from 'wappsto-redux/config';
+import equal from 'deep-equal';
+import uuid from 'uuid/v4';
 
 export const ITEMS_PER_SLICE = 100;
 
@@ -34,121 +36,55 @@ let defaultOptions = {
 export function setDefaultStreamOptions(options){
   defaultOptions = options;
 }
-const subscriptions = {};
-const subscriptionNumber = {};
+let subscriptions = {};
+let newSubscriptions = {...subscriptions};
 let timeout;
-function removeArr(arr1, arr2){
-  return arr1.filter(path => {
-    if((!subscriptionNumber[path] || subscriptionNumber[path] < 1) && arr2.find(path2 => path2 === path)){
-      return false;
-    }
-    return true;
-  });
-}
-
-function updateSubscriptionNumber(subscriptions, number=1){
-  subscriptions.forEach(path => {
-    subscriptionNumber[path] = (subscriptionNumber[path] || 0) + number;
-    if(subscriptionNumber[path] < 1){
-      delete subscriptionNumber[path];
-    }
-  });
-}
+let ws;
 
 const mainStream = 'stream-main';
-const secondaryStream = 'stream-secondary';
-const arrayEqual = (arr1, arr2) => {
-  if(arr1.length !== arr2.length){
-    return false;
+function updateSubscriptions(options){
+  if(!equal(subscriptions, newSubscriptions)){
+    const sub = Object.keys(newSubscriptions);
+    ws.send(JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'PATCH',
+      id: uuid(),
+      params: {
+        url: `${getServiceUrl(options.endPoint || options.service, options)}/open/subscription`,
+        data: sub,
+      }
+    }));
+    subscriptions = {...newSubscriptions};
   }
-  for(let i = 0; i < arr1.length; i++){
-    if(arr2.indexOf(arr1[i]) === -1){
-      return false;
-    }
-  }
-  return true;
 }
 export function updateStream(dispatch, subscription, type, options=defaultOptions){
-  if(subscription.length === 0){
-    return;
-  }
-  if(!subscriptions.old){
-    if(type === 'add'){
-      clearTimeout(timeout);
-      subscriptions.old = subscription;
-      dispatch(openStream({ name: mainStream, subscription, full: options.full || false }, null, options));
-      updateSubscriptionNumber(subscription, 1);
-    }
+  clearTimeout(timeout);
+  if(type === 'add'){
+    subscription.forEach(path => {
+      newSubscriptions[path] = (newSubscriptions[path] || 0) + 1;
+    });
   } else {
-    clearTimeout(timeout);
-    let newSubscriptions;
-    let func;
-    if(type === 'add'){
-      func = mergeUnique;
-      updateSubscriptionNumber(subscription, 1);
-    } else {
-      func = removeArr;
-      updateSubscriptionNumber(subscription, -1);
-    }
-    if(subscriptions.new){
-      newSubscriptions = func(subscriptions.new, subscription);
-      subscriptions.new = null;
-      if(arrayEqual(newSubscriptions, subscriptions.old)){
-        return;
+    subscription.forEach(path => {
+      newSubscriptions[path] = (newSubscriptions[path] || 0) - 1;
+      if(newSubscriptions[path] < 1){
+        delete newSubscriptions[path];
       }
-      dispatch(closeStream(secondaryStream));
-    } else {
-      newSubscriptions = func(subscriptions.old, subscription);
-    }
-    subscriptions.new = newSubscriptions;
-    if(newSubscriptions.length > 0){
-      if(arrayEqual(newSubscriptions, subscriptions.old)){
-        return;
-      }
-      timeout = setTimeout(() => {
-        dispatch(closeStream(secondaryStream));
-        const ws = dispatch(openStream({ name: secondaryStream, subscription: newSubscriptions, full: options.full || false }, null, options));
-        ws.addEventListener('open', () => {
-          dispatch(updateReduxStream(secondaryStream, status.CLOSED, null, null, null));
-          dispatch(closeStream(mainStream, true));
-          dispatch(updateReduxStream(mainStream, status.OPEN, null, ws, { subscription: newSubscriptions, name: mainStream, full: options.full || false }));
-          subscriptions.old = newSubscriptions;
-          subscriptions.new = null;
-        });
-      }, 500);
-    } else {
-      timeout = setTimeout(() => {
-        dispatch(closeStream(mainStream));
-        subscriptions.old = null;
-      }, 500);
-    }
+    });
   }
+  timeout = setTimeout(function () {
+    if(!ws || ws.readyState !== ws.OPEN){
+      ws = dispatch(openStream({ name: mainStream, subscription: [], full: options.full || false }, null, options));
+      ws.addEventListener('open', () => updateSubscriptions(options));
+      window.samiWs = ws;
+    } else {
+      updateSubscriptions(options);
+    }
+  }, 200);
 }
 
 export function getServiceUrl(service, options){
   const version = options && options.hasOwnProperty('version') ? options.version : getServiceVersion(service);
   return config.baseUrl + (version ? '/' + version : '') + '/' + service;
-}
-
-export function matchObject(obj1, obj2) {
-  for (const key in obj2) {
-    if(obj1.hasOwnProperty(key)){
-      let left = obj1[key];
-      let right = obj2[key];
-      if (left && right && left.constructor !== right.constructor) {
-        return false;
-      } else if (typeof(left) === 'object') {
-        if (!matchObject(left, right)) {
-          return false;
-        }
-      } else if (left !== right) {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-  return true;
 }
 
 export function isPrototype(item){
@@ -157,19 +93,6 @@ export function isPrototype(item){
 
 export function cannotAccessState(state){
   return state.status_payment === 'not_shared' || state.status_payment === 'not_paid' || state.status_payment === 'open';
-}
-
-export function matchArray(arr1 = [], arr2 = []){
-  if(arr1.length !== arr2.length){
-    return false;
-  } else {
-    for(let i = 0; i < arr1.length; i++){
-      if(arr2.indexOf(arr1[i]) === -1){
-        return false;
-      }
-    }
-  }
-  return true;
 }
 
 export function getDottedText(text, num = 4, separator = ' ... '){
