@@ -47,7 +47,7 @@ const getUrl = ({ url, query={} }) => {
 
 const paginateIds = ({ ids, url, pageSize, useCache, offset=0 }) => {
   const idsLength = ids.length;
-  const pages = { 1: [] };
+  const pages = {};
   let index = 0;
   while (index < idsLength) {
     const chunk = ids.slice(index, index += pageSize);
@@ -89,29 +89,43 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
     cache.url[url].count = count;
     cache.url[url].pageSize = pageSize;
   }
-
   return { count, pages };
 }
 
-const getCurrentPageItems = async ({ url, store, useCache, page, requestsRef, pages, pageSize, sessionObj }) => {
+const getCurrentPageItems = async ({ url, store, useCache, page, requestsRef, pages, currentItems, sessionObj }) => {
+  let currentItemsObj = {};
+  let fetchIds = pages[page] || [];
+
   if (useCache) {
-    const ids = pages[page]?.filter((e) => !cache.item[e]);
-    if (ids?.length === 0) {
-      const items = pages[page].map((e) => cache.item[e]);
-      return items;
-    }
+    currentItemsObj = cache.item;
+  } else if (currentItems) {
+    currentItems.forEach((e) => currentItemsObj[e.meta.id] = e);
   }
+
+  if (useCache) {
+    if (pages[page]) {
+      fetchIds = pages[page].filter((e) => !cache.item[e]);
+      if (fetchIds.length === 0) {
+        return pages[page].map((e) => cache.item[e]);
+      }
+    }
+  } else if (pages[page] && currentItems.length) {
+    fetchIds = pages[page].filter((id) => !currentItemsObj[id]);
+  }
+
   const [baseUrl, query] = url.split('?');
   const query1 = new URLSearchParams(query);
   const query2 = new URLSearchParams();
   query2.set('expand', 0);
-  if (query1.has('verbose')) query2.set('verbose', query1.get('verbose'));
+  if (query1.has('verbose')) {
+    query2.set('verbose', query1.get('verbose'));
+  }
 
   const urls = [];
-  const idsLength = pages[page]?.length || 0;
+  const idsLength = fetchIds.length;
   let index = 0;
   while (index < idsLength) {
-    const queryIds = pages[page].slice(index, 100 + index).join(',');
+    const queryIds = fetchIds.slice(index, 100 + index).join(',');
     query2.set('id', `[${queryIds}]`);
     const url = `${baseUrl}?${query2.toString()}`;
     urls.push(url);
@@ -119,25 +133,34 @@ const getCurrentPageItems = async ({ url, store, useCache, page, requestsRef, pa
   }
 
   const promises = urls.map((e) => fireRequest(e, store, sessionObj, requestsRef, 'items'));
-  if (urls.length) requestsRef.current.items.promise = promises;
+  if (urls.length) {
+    requestsRef.current.items.promise = promises;
+  }
+  const newItems = {};
   const response = await Promise.all(promises);
-
-  const items = response.reduce((arr, e) => {
+  response.forEach((e) => {
     if (!e.ok) {
       requestsRef.current.items = e;
       requestsRef.current.items.status = STATUS.error;
       throw e;
     }
-    return [...arr, ...e.json];
-  }, []);
-  requestsRef.current.items = { ok: true, status: STATUS.success, json: items };
+    e.json.forEach((obj) => newItems[obj.meta.id] = obj);
+  });
 
-  if (useCache) {
-    items.forEach((e) => {
-      const id = e.meta.id;
-      cache.item[id] = e;
+  const items = [];
+  if (pages[page]) {
+    pages[page].forEach((id) => {
+      if (newItems[id]) {
+        items.push(newItems[id]);
+        if (useCache) {
+          cache.item[id] = newItems[id];
+        }
+      } else if (currentItemsObj[id]) {
+        items.push(currentItemsObj[id]);
+      }
     });
   }
+  requestsRef.current.items = { ok: true, status: STATUS.success, json: items };
   return items;
 }
 
@@ -180,19 +203,20 @@ const usePagination = (paginationInit) => {
         setCurrentPage(lastPage);
         return;
       }
-      const items = await getCurrentPageItems({ url: urlFull, store, useCache, page: pageNumber, requestsRef, pages, pageSize, sessionObj });
+      const newItems = await getCurrentPageItems({ url: urlFull, store, useCache, page: pageNumber, requestsRef, pages, currentItems: items, sessionObj });
       if (isMounted) {
         setPage(pageNumber);
         setCount(count);
-        setItems([items, pageSize]);
+        setItems([newItems, pageSize]);
         setItemIds(pages[pageNumber] || []);
         setStatus(STATUS.success);
       }
     }
     startPagination().catch(() => {
       if (isMounted) {
-        setStatus(STATUS.error);
         setItems((current) => current.length ? [] : current);
+        setItemIds((current) => current.length ? [] : current);
+        setStatus(STATUS.error);
       }
     });
 
@@ -202,12 +226,12 @@ const usePagination = (paginationInit) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination]);
 
-  const refresh = useCallback(() => {
+  const _refresh = () => {
     setPagination((current) => {
       if (current?.constructor !== Object) return current;
-      return { ...current, resetCache: true };
+      return { ...current, page, resetCache: true };
     });
-  }, []);
+  }
 
   const setCurrentPage = useCallback((pageNo) => {
     setPagination((current) => {
@@ -220,12 +244,13 @@ const usePagination = (paginationInit) => {
     const idUrl = getUrl({ url, query });
     if (!useCache) {
       if (page === 1) {
-        setItems(([items, pageLength]) => {
-          let newItems = [item, ...items];
-          newItems.length > pageLength && newItems.pop();
-          setCount((current) => current + 1);
-          return [newItems, pageLength];
-        });
+        let newItems = [item, ...items];
+        if (newItems.length > pageLength) {
+          newItems.pop();
+        }
+        setCount((current) => current + 1);
+        setItemIds(newItems.map((e) => e.meta.id));
+        setItems([newItems, pageLength]);
       } else {
         refresh();
       }
@@ -235,27 +260,26 @@ const usePagination = (paginationInit) => {
       cache.item[id] = item;
       const lastPage = Math.ceil(cache.url[idUrl].count / pageSize);
       const lastPageOld = Math.ceil((cache.url[idUrl].count - 1) / pageSize);
-      if (lastPage > lastPageOld) cache.url[idUrl].page[lastPage] ||= [];
+      if (lastPage > lastPageOld && !cache.url[idUrl].page[lastPage]) {
+        cache.url[idUrl].page[lastPage] = [];
+      }
       if (idUrl.includes('from_last=true')) {
-        let prevTemp;
-        Object.entries(cache.url[idUrl].page).forEach(([page, ids], i, arr) => {
-          if (page == 1) {
-            ids.unshift(id);
-            if (arr.length === 1 && ids > cache.url[idUrl].pageSize) {
-              ids.pop();
-            }
-            return;
-          }
-          const prevPage = cache.url[idUrl].page[+page - 1] || prevTemp?.[+page - 1];
-          if (prevPage) {
-            const shiftedId = prevPage.pop();
-            ids.unshift(shiftedId);
-            if (!cache.url[idUrl].page[+page + 1] && page != lastPage) ids.pop();
+        let prevPage = 0;
+        let prevId = id;
+        for (const page in cache.url[idUrl].page) {
+          const ids = cache.url[idUrl].page[+page];
+          if (prevPage == +page - 1) {
+            ids.unshift(prevId);
           } else {
-            prevTemp = { [+page]: ids };
+            prevPage = page;
+            prevId = ids.pop();
             delete cache.url[idUrl].page[+page];
           }
-        });
+          if (ids.length > cache.url[idUrl].pageSize) {
+            prevPage = page;
+            prevId = ids.pop();
+          }
+        }
         setPagination((current) => ({ ...current, resetCache: false }));
       } else if (cache.url[idUrl].page[lastPage]) {
         cache.url[idUrl].page[lastPage].push(id);
@@ -263,24 +287,41 @@ const usePagination = (paginationInit) => {
       }
     }
   };
-  
+
   const remove = ((id) => {
     const idUrl = getUrl({ url, query });
-    if (id?.constructor === Object) id = id.meta.id;
+    if (id?.constructor === Object) {
+      id = id.meta.id;
+    }
     if (!useCache) {
-      const found = items.find((e) => e.meta.id === id);
-      found && refresh();
+      const found = items.findIndex((e) => e.meta.id === id);
+      if(found !== -1) {
+        let newItems = [...items];
+        newItems.splice(found, 1);
+        setItems([newItems, pageLength]);
+        const lastPage = Math.ceil(count / pageSize);
+        if (lastPage !== page || !newItems.length) {
+          refresh();
+        } else {
+          setCount((current) => current - 1);
+          setItemIds(newItems.map((e) => e.meta.id));
+        }
+      }
     } else if (cache.url[idUrl]) {
       const arrCachePage = Object.entries(cache.url[idUrl].page);
       const [deletePageNo, pageIds] = arrCachePage.find(([, v]) => v.includes(id)) || [];
-      if (!pageIds) return;
+      if (!pageIds) {
+        return;
+      }
       let index = pageIds.indexOf(id);
       pageIds.splice(index, 1);
       delete cache.item[id];
       cache.url[idUrl].count--;
       const lastPage = Math.ceil(cache.url[idUrl].count / pageSize);
       arrCachePage.forEach(([page, ids], i) => {
-        if (+page < deletePageNo) return;
+        if (+page < deletePageNo) {
+          return;
+        }
         const [nextPageNo, nextPageIds] = arrCachePage[i+1] || [];
         if (!cache.url[idUrl].page[(+page - 1)] && page !== deletePageNo) {
           ids.shift();
@@ -307,16 +348,20 @@ const usePagination = (paginationInit) => {
       const idUrl = getUrl({ url, query });
       const pageItems = cache.url[idUrl].page[page];
       const found = pageItems.includes(id);
-      found && setPagination((current) => ({ ...current, resetCache: false }));
+      if (found) {
+        setPagination((current) => ({ ...current, resetCache: false }));
+      }
     }
   });
   
   functionRef.current.update = update;
   functionRef.current.remove = remove;
   functionRef.current.add = add;
+  functionRef.current.refresh = _refresh;
   const updateItem = useCallback((...args) => functionRef.current.update(...args), []);
   const removeItem = useCallback((...args) => functionRef.current.remove(...args), []);
   const addItem = useCallback((...args) => functionRef.current.add(...args), []);
+  const refresh = useCallback((...args) => functionRef.current.refresh(...args), []);
 
   return {
     items, count, page, pageSize: pageLength, setPage: setCurrentPage, refresh, status, get: setPagination,
