@@ -23,9 +23,13 @@ const useSubscribe = (type, ids) => {
 
   // subscribe to stream
   useEffect(() => {
-    updateStream(dispatch, arr, 'add');
+    if(arr){
+      updateStream(dispatch, arr, 'add');
+    }
     return () => {
-      updateStream(dispatch, arr, 'remove');
+      if(arr){
+        updateStream(dispatch, arr, 'remove');
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arr]);
