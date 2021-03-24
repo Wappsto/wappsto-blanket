@@ -26,9 +26,13 @@ const getSessionObj = ({ store, session }) => {
 }
 
 const getUrl = ({ url, query={} }) => {
-  const [baseUrl, queryStr] = url?.split('?') || [];
+  if (!url) {
+    return '';
+  }
+  const [baseUrl, queryStr] = url.split('?');
   const queryInstance = new URLSearchParams(queryStr);
-  for (const [key, value] of Object.entries(query)) {
+  for (const key in query) {
+    const value = query[key];
     if (Array.isArray(value)) {
       value.sort();
       const str = value.join(',');
@@ -37,10 +41,16 @@ const getUrl = ({ url, query={} }) => {
       queryInstance.append(key, value);
     }
   }
-  if (!queryInstance.has('from_last')) queryInstance.set('from_last', true);
+  if (!queryInstance.has('from_last')) {
+    queryInstance.set('from_last', true);
+  }
   queryInstance.set('limit', MAX_PER_PAGE_IDS);
   queryInstance.delete('expand');
-  Object.entries(query).forEach(([k, v]) => v === null && queryInstance.delete(k));
+  for (const key in query) {
+    if (query[key] === null) {
+      queryInstance.delete(key)
+    }
+  }
   const url2 = `${baseUrl}?${queryInstance.toString()}`;
   return url2;
 }
@@ -55,17 +65,22 @@ const paginateIds = ({ ids, url, pageSize, useCache, offset=0 }) => {
     pages[page] = chunk;
   }
   if (useCache) {
-    cache.url[url] ||= {};
+    if (!cache.url[url]) {
+      cache.url[url] = {};
+    }
     cache.url[url].page = { ...cache.url[url].page, ...pages };
   }
   return pages;
 }
 
 const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, sessionObj }) => {
-  if ((useCache && cache.url[url]?.pageSize === pageSize && cache.url[url].page[page]) || cache.url[url]?.count === 0) {
+  if (
+    (useCache && cache.url[url] && cache.url[url].pageSize === pageSize && cache.url[url].page[page]) ||
+    (cache.url[url] && cache.url[url].count === 0)
+  ) {
     return { count: cache.url[url].count, pages: cache.url[url].page };
   }
-  
+
   const paginationIdsPage = Math.ceil((page * pageSize) / MAX_PER_PAGE_IDS) - 1;
   const idsOffset = paginationIdsPage * (MAX_PER_PAGE_IDS / pageSize);
   const offset = paginationIdsPage * MAX_PER_PAGE_IDS;
@@ -193,8 +208,9 @@ const usePagination = (paginationInit) => {
       }
       isInit.current = false;
       if (resetCache && cache.url[urlFull]) {
-        const ids = Object.values(cache.url[urlFull].page).flat();
-        ids.forEach((e) => delete cache.item[e]);
+        for (const k in cache.url[urlFull].page) {
+          cache.url[urlFull].page[k].forEach((id) => delete cache.item[id]);
+        }
         delete cache.url[urlFull];
       }
       const { count, pages } = await getPages({ url: urlFull, store, useCache, page: pageNumber, requestsRef, pageSize, sessionObj });
@@ -227,16 +243,18 @@ const usePagination = (paginationInit) => {
   }, [pagination]);
 
   const _refresh = () => {
-    setPagination((current) => {
-      if (current?.constructor !== Object) return current;
-      return { ...current, page, resetCache: true };
-    });
+    if (pagination && pagination.constructor === Object) {
+      setPagination((current) => ({ ...current, page, resetCache: true }));
+    }
   }
 
   const setCurrentPage = useCallback((pageNo) => {
     setPagination((current) => {
-      if (current?.constructor !== Object) return current;
-      return { ...current, page: pageNo, resetCache: false };
+      if (current && current.constructor === Object) {
+        return { ...current, page: pageNo, resetCache: false };
+      } else {
+        return current;
+      }
     });
   }, []);
 
@@ -290,7 +308,7 @@ const usePagination = (paginationInit) => {
 
   const remove = ((id) => {
     const idUrl = getUrl({ url, query });
-    if (id?.constructor === Object) {
+    if (id && id.constructor === Object) {
       id = id.meta.id;
     }
     if (!useCache) {
