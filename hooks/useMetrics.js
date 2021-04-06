@@ -115,7 +115,7 @@ function useMetrics(id){
       const data = [];
       let more = true;
 
-      while(more && !isCanceled.current && !unmounted.current) {
+      while(more && !isCanceled.current) {
         const url = `${getServiceUrl('log')}/${networkId}/online_iot?${querystring.stringify(options)}`;
         const result = await axios.get(url, {
           headers: { 'x-session': activeSession.meta.id },
@@ -123,6 +123,9 @@ function useMetrics(id){
             cancelFunc.current = cancel;
           })
         });
+        if(unmounted.current) {
+          return;
+        }
         if(result.status !== 200) {
           throw new Error("error");
         }
