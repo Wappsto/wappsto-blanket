@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setItem } from 'wappsto-redux/actions/items';
 import { getSession } from 'wappsto-redux/selectors/session';
 import { makeItemSelector } from 'wappsto-redux/selectors/items';
+import querystring from 'querystring';
 import { getServiceUrl } from '../util';
 import axios from 'axios';
 
@@ -91,6 +92,61 @@ function useMetrics(id){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const getOnlineIot = useCallback(async (start, end, networkId) => {
+    if(!start || !end || !networkId) {
+      return;
+    }
+    if(start.constructor === Date) {
+      start = start.toISOString();
+    }
+    if(end.constructor === Date) {
+      end = end.toISOString();
+    }
+    if(cachedStatus.current === STATUS.PENDING && cancelFunc.current) {
+      cancelFunc.current('Operation canceled');
+    }
+    setData();
+    dispatch(setItem(itemName, undefined));
+    setCurrentStatus(STATUS.PENDING);
+    isCanceled.current = false;
+
+    try {
+      const options = { limit: 3600, start, end };
+      const data = [];
+      let more = true;
+
+      while(more && !isCanceled.current && !unmounted.current) {
+        const url = `${getServiceUrl('log')}/${networkId}/online_iot?${querystring.stringify(options)}`;
+        const result = await axios.get(url, {
+          headers: { 'x-session': activeSession.meta.id },
+          cancelToken: new CancelToken(function executor(cancel) {
+            cancelFunc.current = cancel;
+          })
+        });
+        if(result.status !== 200) {
+          throw new Error("error");
+        }
+        data.push(...result.data.data);
+        more = result.data.more;
+        if(more) {
+          const last = data.pop();
+          options.start = last.time;
+        }
+      }
+      if(!isCanceled.current) {
+        setData(data);
+        dispatch(setItem(itemName, data));
+      }
+      setCurrentStatus(STATUS.SUCCESS);
+    } catch (error) {
+      if(unmounted.current){
+        return;
+      }
+      setCurrentStatus(STATUS.ERROR);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     return () => {
       unmounted.current = true;
@@ -119,7 +175,7 @@ function useMetrics(id){
     isCanceled.current = false;
   }, [dispatch, itemName]);
 
-  return { data, status, getData, reset, cancel };
+  return { data, status, getData, reset, cancel, getOnlineIot };
 }
 
 export default useMetrics;
