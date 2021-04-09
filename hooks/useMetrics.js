@@ -92,14 +92,14 @@ function useMetrics(id){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getOnlineIot = useCallback(async (start, end, networkId) => {
-    if(!start || !end || !networkId) {
+  const getOnlineIot = useCallback(async ({ start, end, networkId, limit: initLimit }) => {
+    if(!networkId) {
       return;
     }
-    if(start.constructor === Date) {
+    if(start && start.constructor === Date) {
       start = start.toISOString();
     }
-    if(end.constructor === Date) {
+    if(end && end.constructor === Date) {
       end = end.toISOString();
     }
     if(cachedStatus.current === STATUS.PENDING && cancelFunc.current) {
@@ -110,11 +110,20 @@ function useMetrics(id){
     setCurrentStatus(STATUS.PENDING);
     isCanceled.current = false;
 
-    try {
-      const options = { limit: 3600, start, end };
-      const data = [];
-      let more = true;
+    let limit = initLimit || 3600;
+    if (limit > 3600) {
+      limit = 3600
+    }
 
+    const options = { limit, order: 'descending' };
+    if (start && end) {
+      options.start = start;
+      options.end = end;
+    }
+
+    try {
+      let data = [];
+      let more = true;
       while(more && !isCanceled.current) {
         const url = `${getServiceUrl('log')}/${networkId}/online_iot?${querystring.stringify(options)}`;
         const result = await axios.get(url, {
@@ -127,16 +136,21 @@ function useMetrics(id){
           return;
         }
         if(result.status !== 200) {
-          throw new Error("error");
+          throw new Error('error');
         }
         data.push(...result.data.data);
-        more = result.data.more;
-        if(more) {
-          const last = data.pop();
-          options.start = last.time;
+        if (data.length < initLimit) {
+          more = result.data.more;
+          if(more) {
+            const last = data.pop();
+            options.start = last.time;
+          }
+        } else {
+          more = false;
         }
       }
       if(!isCanceled.current) {
+        data = data.reverse();  
         setData(data);
         dispatch(setItem(itemName, data));
       }
