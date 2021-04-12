@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setItem } from 'wappsto-redux/actions/items';
 import { getSession } from 'wappsto-redux/selectors/session';
 import { makeItemSelector } from 'wappsto-redux/selectors/items';
-import querystring from 'querystring';
 import { getServiceUrl } from '../util';
 import axios from 'axios';
 
@@ -90,78 +89,6 @@ function useMetrics(id){
       setCurrentStatus(STATUS.ERROR);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const getOnlineIot = useCallback(async ({ start, end, networkId, limit: initLimit }) => {
-    if(!networkId) {
-      return;
-    }
-    if(start && start.constructor === Date) {
-      start = start.toISOString();
-    }
-    if(end && end.constructor === Date) {
-      end = end.toISOString();
-    }
-    if(cachedStatus.current === STATUS.PENDING && cancelFunc.current) {
-      cancelFunc.current('Operation canceled');
-    }
-    setData();
-    dispatch(setItem(itemName, undefined));
-    setCurrentStatus(STATUS.PENDING);
-    isCanceled.current = false;
-
-    let limit = initLimit || 3600;
-    if (limit > 3600) {
-      limit = 3600
-    }
-
-    const options = { limit, order: 'descending' };
-    if (start && end) {
-      options.start = start;
-      options.end = end;
-    }
-
-    try {
-      let data = [];
-      let more = true;
-      while(more && !isCanceled.current) {
-        const url = `${getServiceUrl('log')}/${networkId}/online_iot?${querystring.stringify(options)}`;
-        const result = await axios.get(url, {
-          headers: { 'x-session': activeSession.meta.id },
-          cancelToken: new CancelToken(function executor(cancel) {
-            cancelFunc.current = cancel;
-          })
-        });
-        if(unmounted.current) {
-          return;
-        }
-        if(result.status !== 200) {
-          throw new Error('error');
-        }
-        data.push(...result.data.data);
-        if (data.length < initLimit) {
-          more = result.data.more;
-          if(more) {
-            const last = data.pop();
-            options.start = last.time;
-          }
-        } else {
-          more = false;
-        }
-      }
-      if(!isCanceled.current) {
-        data = data.reverse();  
-        setData(data);
-        dispatch(setItem(itemName, data));
-      }
-      setCurrentStatus(STATUS.SUCCESS);
-    } catch (error) {
-      if(unmounted.current){
-        return;
-      }
-      setCurrentStatus(STATUS.ERROR);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
