@@ -119,7 +119,7 @@ function useMetrics(id){
     isCanceled.current = false;
   }, [dispatch, itemName]);
 
-  return { data, status, getData, reset, cancel, getOnlineIot };
+  return { data, status, getData, reset, cancel };
 }
 
 export default useMetrics;
