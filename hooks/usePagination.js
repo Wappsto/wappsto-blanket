@@ -7,12 +7,11 @@ import useMountedRef from './useMounted';
 
 const MAX_PER_PAGE_IDS = 1000;
 const MAX_PER_PAGE_ITEMS = 10;
-const SEARCH_QUERY = {
+const DEFAULT_QUERY = {
   from_last: true,
+  verbose: true,
   order_by: 'this_meta.created',
-  method: 'retrieve'
-}
-const ITEMS_QUERY = {
+  method: 'retrieve',
   expand: 0
 }
 const cache = { url: {}, item: {} };
@@ -50,9 +49,9 @@ const getUrl = ({ url, query={}, pageSize }) => {
       queryInstance.set(key, value);
     }
   }
-  for (const k in SEARCH_QUERY) {
+  for (const k in DEFAULT_QUERY) {
     if (!queryInstance.has(k)) {
-      queryInstance.set(k, SEARCH_QUERY[k]);
+      queryInstance.set(k, DEFAULT_QUERY[k]);
     }
   }
   if (!queryInstance.has('limit')) {
@@ -152,12 +151,6 @@ const getCurrentPageItems = async ({ url, store, useCache, page, requestsRef, pa
 
   const [baseUrl, query] = url.split('?');
   const query2 = new URLSearchParams(query);
-
-  for (const k in ITEMS_QUERY) {
-    if (!query2.has(k)) {
-      query2.set(k, ITEMS_QUERY[k]);
-    }
-  }
 
   const urls = [];
   const idsLength = fetchIds.length;
