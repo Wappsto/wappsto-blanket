@@ -3,9 +3,18 @@ import { useStore } from 'react-redux';
 import { startRequest, STATUS } from 'wappsto-redux/actions/request';
 import { getSession } from 'wappsto-redux/selectors/session';
 import { onLogout } from 'wappsto-redux/events';
+import useMountedRef from './useMounted';
 
 const MAX_PER_PAGE_IDS = 1000;
 const MAX_PER_PAGE_ITEMS = 10;
+const SEARCH_QUERY = {
+  from_last: true,
+  order_by: 'this_meta.created',
+  method: 'retrieve'
+}
+const ITEMS_QUERY = {
+  expand: 0
+}
 const cache = { url: {}, item: {} };
 
 onLogout(() => {
@@ -36,21 +45,22 @@ const getUrl = ({ url, query={}, pageSize }) => {
     if (Array.isArray(value)) {
       value.sort();
       const str = value.join(',');
-      queryInstance.append(key, `[${str}]`);
+      queryInstance.set(key, `[${str}]`);
     } else {
-      queryInstance.append(key, value);
+      queryInstance.set(key, value);
     }
   }
-  if (!queryInstance.has('from_last')) {
-    queryInstance.set('from_last', true);
+  for (const k in SEARCH_QUERY) {
+    if (!queryInstance.has(k)) {
+      queryInstance.set(k, SEARCH_QUERY[k]);
+    }
   }
-  queryInstance.set('limit', getMaxPerPageIds(pageSize));
-  queryInstance.set('order_by', 'this_meta.created');
-  queryInstance.set('method', 'retrieve');
-  queryInstance.delete('expand');
+  if (!queryInstance.has('limit')) {
+    queryInstance.set('limit', getMaxPerPageIds(pageSize));
+  }
   for (const key in query) {
     if (query[key] === null) {
-      queryInstance.delete(key)
+      queryInstance.delete(key);
     }
   }
   const url2 = `${baseUrl}?${queryInstance.toString()}`;
@@ -98,6 +108,7 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
   const [baseUrl, queryStr] = url.split('?');
   const query = new URLSearchParams(queryStr);
   query.set('offset', offset);
+  query.delete('expand');
   const url2 = `${baseUrl}?${query.toString()}`;
 
   const response = await fireRequest(url2, store, sessionObj, requestsRef, 'count');
@@ -140,11 +151,12 @@ const getCurrentPageItems = async ({ url, store, useCache, page, requestsRef, pa
   }
 
   const [baseUrl, query] = url.split('?');
-  const query1 = new URLSearchParams(query);
-  const query2 = new URLSearchParams();
-  query2.set('expand', 0);
-  if (query1.has('verbose')) {
-    query2.set('verbose', query1.get('verbose'));
+  const query2 = new URLSearchParams(query);
+
+  for (const k in ITEMS_QUERY) {
+    if (!query2.has(k)) {
+      query2.set(k, ITEMS_QUERY[k]);
+    }
   }
 
   const urls = [];
@@ -198,13 +210,12 @@ const usePagination = (paginationInit) => {
   const [status, setStatus] = useState();
   const [count, setCount] = useState(0);
   const [itemIds, setItemIds] = useState([]);
+  const isMountedRef = useMountedRef();
   const requestsRef = useRef({ count: undefined, items: undefined });
   const functionRef = useRef({});
   const store = useStore();
 
   useEffect(() => {
-    let isMounted = true;
-
     const startPagination = async () => {
       if (!url) {
         return;
@@ -220,7 +231,7 @@ const usePagination = (paginationInit) => {
         return;
       }
       const newItems = await getCurrentPageItems({ url: urlFull, store, useCache, page: pageNumber, requestsRef, pages, currentItems: items, sessionObj });
-      if (isMounted) {
+      if (isMountedRef.current) {
         setPage(pageNumber);
         setCount(count);
         setItems([newItems, pageSize]);
@@ -229,16 +240,12 @@ const usePagination = (paginationInit) => {
       }
     }
     startPagination().catch(() => {
-      if (isMounted) {
+      if (isMountedRef.current) {
         setItems((current) => current.length ? [] : current);
         setItemIds((current) => current.length ? [] : current);
         setStatus(STATUS.error);
       }
     });
-
-    return () => {
-      isMounted = false;
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination]);
 
@@ -367,7 +374,11 @@ const usePagination = (paginationInit) => {
     }
   });
 
-  const get = useCallback((newState) => setPagination((current) => ({ ...current || {}, ...newState || {} })), []);
+  const get = useCallback((newState) => {
+    if (isMountedRef.current) {
+      setPagination((current) => ({ ...current || {}, ...newState || {} }));
+    }
+  }, [isMountedRef]);
   const setCurrentPage = useCallback((pageNo) => get({ page: pageNo }), [get]);
   
   functionRef.current.update = update;
