@@ -104,9 +104,15 @@ export function countDecimals(value) {
   return 0;
 }
 
+
 export function roundBasedOnStep(number, step, min) {
-  if(isNaN(number) || step === 0 ) { return number; }
-  let roundedNumber = step * Math.round(((number - min) / step)) + min;
+  let roundedNumber;
+  if(isNaN(number) || step === 0) { return number; }
+  if(((number - min) + min) !== number){
+    roundedNumber = Number(number);
+  } else {
+    roundedNumber = step * Math.round(((number - min) / step)) + min;
+  }
   roundedNumber = roundedNumber.toFixed(countDecimals(step));
   return roundedNumber;
 }
