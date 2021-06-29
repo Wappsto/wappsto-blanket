@@ -82,7 +82,7 @@ export function isPrototype(item){
 }
 
 export function cannotAccessState(state){
-  return state.status_payment === 'not_shared' || state.status_payment === 'not_paid' || state.status_payment === 'open';
+  return state.status_payment === 'not_shared' || state.status_payment === 'not_paid' || state.status_payment === 'no_points' || state.status_payment === 'open';
 }
 
 export function getDottedText(text, num = 4, separator = ' ... '){
