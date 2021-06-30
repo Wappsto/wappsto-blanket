@@ -1,13 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getSession } from 'wappsto-redux/selectors/session';
-import { useSelector } from 'react-redux';
-import { getServiceUrl } from '../util';
+import { useDispatch } from 'react-redux';
 import querystring from 'querystring';
-import axios from 'axios';
 import equal from 'deep-equal';
 import { onLogout } from 'wappsto-redux/events';
-
-const CancelToken = axios.CancelToken;
+import { makeRequest } from 'wappsto-redux/actions/request';
 
 export const STATUS = {
   IDLE: 'idle',
@@ -26,7 +22,7 @@ function useLogs(stateId, sessionId, cacheId){
   const cachedStatus = useRef(STATUS.IDLE);
   const isCanceled = useRef(false);
   const [ status, setStatus ] = useState(STATUS.IDLE);
-  const activeSession = useSelector(state => getSession(state));
+  const dispatch = useDispatch();
   const cancelFunc = useRef();
   const unmounted = useRef(false);
 
@@ -66,18 +62,24 @@ function useLogs(stateId, sessionId, cacheId){
             const last = cachedData.current[cachedData.current.length - 1];
             cOptions.start = last.time || last.selected_timestamp;
           }
-          const url = `${getServiceUrl('log')}/${stateId}?type=state${cOptions.limit ? '' : '&limit=3600'}&${querystring.stringify(cOptions)}`;
-          const result = await axios.get(url, {
-            headers: { "x-session": sessionId || activeSession.meta.id },
-            cancelToken: new CancelToken(function executor(cancel) {
-              cancelFunc.current = cancel;
-            })
-          });
-          if(result.status !== 200){
+          const url = `/log/${stateId}?type=state${cOptions.limit ? '' : '&limit=3600'}&${querystring.stringify(cOptions)}`;
+          const controller = new AbortController();
+          cancelFunc.current = controller.abort;
+          const result = await dispatch(makeRequest({
+            url,
+            method: 'GET',
+            signal: controller.signal,
+            dispatchEntities: false,
+            headers: {
+              'x-session': sessionId
+            }
+          }));
+          cancelFunc.current = null;
+          if(!result.ok || !result.json){
             throw new Error("error");
           }
-          cachedData.current = cachedData.current.concat(result.data.data);
-          more = result.data.more && (!cOptions.limit || result.data.length < cOptions.limit);
+          cachedData.current = cachedData.current.concat(result.json.data);
+          more = result.json.more && (!cOptions.limit || result.json.length < cOptions.limit);
         }
         if(cacheId){
           cache[cacheId] = {
@@ -94,6 +96,7 @@ function useLogs(stateId, sessionId, cacheId){
         }
         setCurrentStatus(STATUS.SUCCESS);
       } catch(e){
+        cancelFunc.current = null;
         if(cacheId){
           cache[cacheId] = {
             data: cachedData.current,

@@ -3,10 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setItem } from 'wappsto-redux/actions/items';
 import { getSession } from 'wappsto-redux/selectors/session';
 import { makeItemSelector } from 'wappsto-redux/selectors/items';
-import { getServiceUrl } from '../util';
-import axios from 'axios';
-
-const CancelToken = axios.CancelToken;
+import { makeRequest } from 'wappsto-redux/actions/request';
 
 export const STATUS = {
   IDLE: 'idle',
@@ -21,7 +18,6 @@ function useMetrics(id){
   const getItem = useMemo(makeItemSelector, []);
   const itemName = 'metrics_cache_'+id;
   const cachedData = useSelector(state => getItem(state, itemName));
-  const activeSession = useSelector(state => getSession(state));
   const [ data, setData ] = useState(cachedData);
   const savedStatus = cachedData ? STATUS.SUCCESS : STATUS.IDLE;
   const cachedStatus = useRef(savedStatus);
@@ -61,28 +57,29 @@ function useMetrics(id){
           resolution: resolution,
         }
       };
-      const result = await axios.post(
-        getServiceUrl('metrics'),
+      const controller = new AbortController();
+      cancelFunc.current = controller.abort;
+      const result = await dispatch(makeRequest({
+        method: 'POST',
+        url: '/metrics',
+        signal: controller.signal,
+        dispatchEntities: false,
         body,
-        {
-          headers: { "x-session": activeSession.meta.id },
-          cancelToken: new CancelToken(function executor(cancel) {
-            cancelFunc.current = cancel;
-          })
-        }
-      );
+      }));
+      cancelFunc.current = null;
       if(unmounted.current){
         return;
       }
-      if(result.status !== 200){
+      if(!result.ok || !result.json){
         throw new Error("error");
       }
       if(!isCanceled.current){
-        setData(result.data);
-        dispatch(setItem(itemName, result.data));
+        setData(result.json);
+        dispatch(setItem(itemName, result.json));
       }
       setCurrentStatus(STATUS.SUCCESS);
     } catch(e){
+      cancelFunc.current = null;
       if(unmounted.current){
         return;
       }
@@ -99,7 +96,7 @@ function useMetrics(id){
 
   const cancel = useCallback(() => {
     if(cancelFunc.current){
-      cancelFunc.current('Operation canceled');
+      cancelFunc.current();
     }
     if(!isCanceled.current){
       setData();
@@ -111,7 +108,7 @@ function useMetrics(id){
 
   const reset = useCallback(() => {
     if(cancelFunc.current){
-      cancelFunc.current('Operation canceled');
+      cancelFunc.current();
     }
     setData();
     dispatch(setItem(itemName, undefined));
