@@ -11,7 +11,6 @@ const DEFAULT_QUERY = {
   from_last: true,
   verbose: true,
   order_by: 'this_meta.created',
-  method: 'retrieve',
   expand: 0
 }
 const cache = { url: {}, item: {} };
