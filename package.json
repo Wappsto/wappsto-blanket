@@ -3,14 +3,21 @@
   "version": "1.2.6",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint hooks/*.js util/*.js",
+    "lint:fix": "yarn lint --fix",
+    "prettify": "prettier hooks/*.js util/*.js --write",
+    "test": "jest --coverage"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Wappsto/wappsto-blanket.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "Seluxit A/S",
+    "email": "developer@wappsto.com",
+    "url": "https://wappsto.com"
+  },
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/Wappsto/wappsto-blanket/issues"
   },
@@ -19,5 +26,37 @@
     "deep-equal": "^2.0.5",
     "querystring": "^0.2.1",
     "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "@typescript-eslint/parser": "^5.10.1",
+    "babel-jest": "^27.4.6",
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jest": "^26.1.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^7.0.4",
+    "jest": "^27.4.7",
+    "jest-fetch-mock": "^3.0.3",
+    "lint-staged": "^12.3.2",
+    "prettier": "^2.5.1",
+    "react-scripts": "^5.0.0",
+    "react-test-renderer": "^17.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint && yarn test"
+    }
+  },
+  "prettier": {
+    "printWidth": 90,
+    "bracketSpacing": true,
+    "trailingComma": "es5",
+    "semi": false,
+    "singleQuote": true
+  },
+  "lint-staged": {
+    "*.js": "npm run lint:fix"
   }
 }
