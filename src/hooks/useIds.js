@@ -1,27 +1,28 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { useSelector, useDispatch, useStore } from 'react-redux'
-
-import { setItem } from 'wappsto-redux/actions/items'
-import { makeEntitiesSelector } from 'wappsto-redux/selectors/entities'
-import { makeItemSelector } from 'wappsto-redux/selectors/items'
-import { getSession } from 'wappsto-redux/selectors/session'
-import { startRequest } from 'wappsto-redux/actions/request'
-import usePrevious from '../hooks/usePrevious'
+import {
+  setItem,
+  makeEntitiesSelector,
+  makeItemSelector,
+  getSession,
+  startRequest,
+  onLogout,
+} from 'wappsto-redux'
+import { usePrevious } from './usePrevious'
 import { ITEMS_PER_SLICE } from '../util'
 import equal from 'deep-equal'
-import { onLogout } from 'wappsto-redux/events'
 
 const itemName = 'useIds_status'
 
 let cache = {}
 onLogout(() => (cache = {}))
 
-const setCacheStatus = (dispatch, ids, status, query) => {
+function setCacheStatus(dispatch, ids, status, query) {
   ids.forEach((id) => (cache[id] = { status, query }))
   dispatch(setItem(itemName, { ...cache }))
 }
 
-const sendGetIds = (store, ids, service, query, sliceLength) => {
+function sendGetIds(store, ids, service, query, sliceLength) {
   const res = []
   const slices = Math.ceil(ids.length / sliceLength)
   for (let i = 0; i < slices; i++) {
@@ -49,7 +50,7 @@ const sendGetIds = (store, ids, service, query, sliceLength) => {
   })
 }
 
-function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) {
+export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) {
   const store = useStore()
   const [status, setStatus] = useState('idle')
   const prevStatus = usePrevious(status)
@@ -166,5 +167,3 @@ function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) {
 
   return { items, status, setStatus, reset, refresh }
 }
-
-export default useIds

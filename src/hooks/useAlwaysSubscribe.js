@@ -1,13 +1,13 @@
 import { useMemo, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import usePrevious from './usePrevious'
+import { usePrevious } from './usePrevious'
 import { updateStream } from '../util'
-import { onLogout } from 'wappsto-redux/events'
+import { onLogout } from 'wappsto-redux'
 
 let cache = {}
 onLogout(() => (cache = {}))
 
-const useAlwaysSubscribe = (items) => {
+export function useAlwaysSubscribe(items) {
   const dispatch = useDispatch()
   const arr = useMemo(() => {
     const result = []
@@ -38,5 +38,3 @@ const useAlwaysSubscribe = (items) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items])
 }
-
-export default useAlwaysSubscribe

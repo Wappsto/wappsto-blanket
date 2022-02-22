@@ -1,12 +1,9 @@
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
-import useItemSelector from 'wappsto-blanket/hooks/useItemSelector'
-import {
-  setItem as setReduxItem,
-  removeItem as removeReduxItem,
-} from 'wappsto-redux/actions/items'
+import { useItemSelector } from './useItemSelector'
+import { setItem as setReduxItem, removeItem as removeReduxItem } from 'wappsto-redux'
 
-const useStoreItem = (id) => {
+export function useStoreItem(id) {
   const dispatch = useDispatch()
   const item = useItemSelector(id)
 
@@ -23,5 +20,3 @@ const useStoreItem = (id) => {
 
   return [item, setItem, removeItem]
 }
-
-export default useStoreItem

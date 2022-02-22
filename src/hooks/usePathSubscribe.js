@@ -1,12 +1,12 @@
 import { useMemo, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { updateStream } from '../util'
-import { onLogout } from 'wappsto-redux/events'
+import { onLogout } from 'wappsto-redux'
 
 let cache = {}
 onLogout(() => (cache = {}))
 
-const usePathSubscribe = (items, cacheId) => {
+export function usePathSubscribe(items, cacheId) {
   const dispatch = useDispatch()
   const arr = useMemo(
     () => (items ? (items.constructor === Array ? items : [items]) : []),
@@ -36,5 +36,3 @@ const usePathSubscribe = (items, cacheId) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items])
 }
-
-export default usePathSubscribe

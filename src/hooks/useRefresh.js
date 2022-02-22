@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const useRefresh = (time) => {
+export function useRefresh(time) {
   const [, setRefresh] = useState()
   useEffect(() => {
     let timer
@@ -12,5 +12,3 @@ const useRefresh = (time) => {
     }
   }, [time])
 }
-
-export default useRefresh

@@ -2,21 +2,13 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import querystring from 'querystring'
 import equal from 'deep-equal'
-import { onLogout } from 'wappsto-redux/events'
-import { makeRequest } from 'wappsto-redux/actions/request'
-
-export const STATUS = {
-  IDLE: 'idle',
-  PENDING: 'pending',
-  SUCCESS: 'success',
-  ERROR: 'error',
-  CANCELED: 'canceled',
-}
+import { onLogout, makeRequest } from 'wappsto-redux'
+import { STATUS } from '../util'
 
 let cache = {}
 onLogout(() => (cache = {}))
 
-function useLogs(stateId, sessionId, cacheId) {
+export function useLogs(stateId, sessionId, cacheId) {
   const [data, setData] = useState([])
   const cachedData = useRef([])
   const cachedStatus = useRef(STATUS.IDLE)
@@ -162,5 +154,3 @@ function useLogs(stateId, sessionId, cacheId) {
 
   return { data, status, getLogs, reset, cancel }
 }
-
-export default useLogs

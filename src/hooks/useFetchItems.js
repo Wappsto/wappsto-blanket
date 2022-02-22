@@ -1,9 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useStore } from 'react-redux'
-import { startRequest } from 'wappsto-redux/actions/request'
-import { addEntities } from 'wappsto-redux/actions/entities'
-import { getSession } from 'wappsto-redux/selectors/session'
-import schemas from 'wappsto-redux/util/schemas'
+import { startRequest, addEntities, getSession, schemas } from 'wappsto-redux'
 import { ITEMS_PER_SLICE } from '../util'
 import querystring from 'query-string'
 
@@ -77,7 +74,7 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
   }
 }
 
-const useFetchItems = (objIds, query, useCache = true) => {
+export function useFetchItems(objIds, query, useCache = true) {
   const store = useStore()
   const [[status, items], setState] = useState(['pending', {}])
   const [queryClone, lvl] = useMemo(() => {
@@ -118,7 +115,7 @@ const useFetchItems = (objIds, query, useCache = true) => {
       }
     }
 
-    startFetching().catch((error) => {
+    startFetching().catch(() => {
       if (mounted) {
         setState(['error', {}])
       }
@@ -130,5 +127,3 @@ const useFetchItems = (objIds, query, useCache = true) => {
 
   return { status, items }
 }
-
-export default useFetchItems

@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import { updateStream } from '../util'
 import equal from 'deep-equal'
 
-const useSubscribe = (type, ids) => {
+export function useSubscribe(type, ids) {
   const dispatch = useDispatch()
   const cached = useRef([])
   const arr = useMemo(() => {
@@ -34,5 +34,3 @@ const useSubscribe = (type, ids) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arr])
 }
-
-export default useSubscribe

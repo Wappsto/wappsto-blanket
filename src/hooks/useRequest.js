@@ -1,13 +1,13 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeRequestSelector } from 'wappsto-redux/selectors/request'
 import {
+  makeRequestSelector,
   makeRequest,
   removeRequest as removeStoreRequest,
-} from 'wappsto-redux/actions/request'
-import uuidv4 from 'uuid/v4'
+} from 'wappsto-redux'
+import { v4 as uuidv4 } from 'uuid'
 
-const useRequest = (id, removeOldRequest) => {
+export function useRequest(id, removeOldRequest) {
   const dispatch = useDispatch()
   const [requestId, setRequestId] = useState(() => {
     return id || uuidv4()
@@ -37,5 +37,3 @@ const useRequest = (id, removeOldRequest) => {
 
   return { request, requestId, setRequestId, send, removeRequest }
 }
-
-export default useRequest

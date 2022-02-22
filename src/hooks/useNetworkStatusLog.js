@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from 'react-redux'
 import querystring from 'query-string'
-import { onLogout } from 'wappsto-redux/events'
-import { startRequest, STATUS } from 'wappsto-redux/actions/request'
-import { getSession } from 'wappsto-redux/selectors/session'
+import { onLogout, startRequest, STATUS, getSession } from 'wappsto-redux'
 
 const MAX_LOG_LIMIT = 3600
 
@@ -11,7 +9,7 @@ let cache = {}
 
 onLogout(() => (cache = {}))
 
-const useNetworkStatusLog = (networkId) => {
+export function useNetworkStatusLog(networkId) {
   const [{ data, status }, setResult] = useState({})
   const functionRef = useRef({})
   const isMountedRef = useRef(true)
@@ -111,5 +109,3 @@ const useNetworkStatusLog = (networkId) => {
 
   return { data, status, get }
 }
-
-export default useNetworkStatusLog

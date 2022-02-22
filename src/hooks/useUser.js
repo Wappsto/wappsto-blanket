@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import useRequest from 'wappsto-blanket/hooks/useRequest'
-import { getUserData } from 'wappsto-redux/selectors/entities'
+import { useRequest } from './useRequest'
+import { getUserData } from 'wappsto-redux'
 
-const useUser = () => {
+export function useUser() {
   const user = useSelector(getUserData)
   const { request, send } = useRequest()
 
@@ -45,5 +45,3 @@ const useUser = () => {
 
   return { status, icon, name, user, request }
 }
-
-export default useUser

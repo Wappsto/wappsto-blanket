@@ -1,37 +1,28 @@
-import { getServiceVersion } from 'wappsto-redux/util/helpers'
-import { openStream } from 'wappsto-redux/actions/stream'
-import config from 'wappsto-redux/config'
+import { getServiceVersion, openStream, config } from 'wappsto-redux'
 import equal from 'deep-equal'
-import uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid'
 
-export const ITEMS_PER_SLICE = 100
-
-export function getLastKey(data) {
-  if (!data) {
-    return undefined
-  }
-  let keys = Object.keys(data)
-  return keys[keys.length - 1]
-}
-
-export function getNextKey(data) {
-  const lastKey = getLastKey(data) || 0
-  return parseInt(lastKey) + 1
-}
-
-let defaultOptions = {
-  endPoint: 'websocket',
-  version: '2.0',
-}
-export function setDefaultStreamOptions(options) {
-  defaultOptions = options
-}
+const mainStream = 'stream-main'
 let subscriptions = {}
 let newSubscriptions = { ...subscriptions }
 let timeout
 let ws
 
-const mainStream = 'stream-main'
+let defaultOptions = {
+  endPoint: 'websocket',
+  version: '2.0',
+}
+
+export const STATUS = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  SUCCESS: 'success',
+  ERROR: 'error',
+  CANCELED: 'canceled',
+}
+
+export const ITEMS_PER_SLICE = 100
+
 function updateSubscriptions(options) {
   const subscriptionsKeys = Object.keys(subscriptions)
   const newSubscriptionsKeys = Object.keys(newSubscriptions)
@@ -53,6 +44,24 @@ function updateSubscriptions(options) {
   }
   subscriptions = { ...newSubscriptions }
 }
+
+export function getLastKey(data) {
+  if (!data) {
+    return undefined
+  }
+  let keys = Object.keys(data)
+  return keys[keys.length - 1]
+}
+
+export function getNextKey(data) {
+  const lastKey = getLastKey(data) || 0
+  return parseInt(lastKey) + 1
+}
+
+export function setDefaultStreamOptions(options) {
+  defaultOptions = options
+}
+
 export function updateStream(dispatch, subscription, type, options = defaultOptions) {
   clearTimeout(timeout)
   if (type === 'add') {

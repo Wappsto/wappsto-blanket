@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import {
+  setItem,
+  makeEntitiesSelector,
+  makeItemSelector,
+  getUrlInfo,
+} from 'wappsto-redux'
+import { usePrevious } from './usePrevious'
+import { useRequest } from './useRequest'
 
-import { setItem } from 'wappsto-redux/actions/items'
-
-import { makeEntitiesSelector } from 'wappsto-redux/selectors/entities'
-import { makeItemSelector } from 'wappsto-redux/selectors/items'
-import { getUrlInfo } from 'wappsto-redux/util/helpers'
-
-import usePrevious from '../hooks/usePrevious'
-import useRequest from '../hooks/useRequest'
+const empty = []
 
 function getQueryObj(query) {
   var urlParams = {}
@@ -28,8 +29,7 @@ function getQueryObj(query) {
 /*
 props: url, type, id, childType, query, reset, resetOnEmpty, sort
 */
-const empty = []
-function useList(props) {
+export function useList(props) {
   const dispatch = useDispatch()
   const prevQuery = usePrevious(props.query)
   const query = useRef({})
@@ -323,5 +323,3 @@ function useList(props) {
     removeItem,
   }
 }
-
-export default useList

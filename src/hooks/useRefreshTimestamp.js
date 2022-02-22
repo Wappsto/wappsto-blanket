@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import useRefresh from './useRefresh'
+import { useRefresh } from './useRefresh'
 
-const useRefreshTimestamp = (timestamp) => {
+export function useRefreshTimestamp(timestamp) {
   const date = useMemo(() => new Date(timestamp), [timestamp])
   const now = Date.now()
   let time
@@ -10,5 +10,3 @@ const useRefreshTimestamp = (timestamp) => {
   }
   useRefresh(time)
 }
-
-export default useRefreshTimestamp

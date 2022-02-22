@@ -1,19 +1,9 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { setItem } from 'wappsto-redux/actions/items'
-import { getSession } from 'wappsto-redux/selectors/session'
-import { makeItemSelector } from 'wappsto-redux/selectors/items'
-import { makeRequest } from 'wappsto-redux/actions/request'
+import { setItem, makeItemSelector, makeRequest } from 'wappsto-redux'
+import { STATUS } from '../util'
 
-export const STATUS = {
-  IDLE: 'idle',
-  PENDING: 'pending',
-  SUCCESS: 'success',
-  ERROR: 'error',
-  CANCELED: 'canceled',
-}
-
-function useMetrics(id) {
+export function useMetrics(id) {
   const dispatch = useDispatch()
   const getItem = useMemo(makeItemSelector, [])
   const itemName = 'metrics_cache_' + id
@@ -120,5 +110,3 @@ function useMetrics(id) {
 
   return { data, status, getData, reset, cancel }
 }
-
-export default useMetrics

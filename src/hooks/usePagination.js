@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useStore } from 'react-redux'
-import { startRequest, STATUS } from 'wappsto-redux/actions/request'
-import { getSession } from 'wappsto-redux/selectors/session'
-import { onLogout } from 'wappsto-redux/events'
-import useMountedRef from './useMounted'
+import { startRequest, STATUS, getSession, onLogout } from 'wappsto-redux'
+import { useMountedRef } from './useMounted'
 
 const MAX_PER_PAGE_IDS = 1000
 const MAX_PER_PAGE_ITEMS = 10
@@ -20,19 +18,19 @@ onLogout(() => {
   cache.item = {}
 })
 
-const fireRequest = (url, store, sessionObj, requestsRef, key) => {
+function fireRequest(url, store, sessionObj, requestsRef, key) {
   const promise = startRequest(store.dispatch, { url, method: 'GET' }, sessionObj)
   requestsRef.current[key] = { promise, status: STATUS.pending }
   return promise
 }
 
-const getSessionObj = ({ store, session }) => {
+function getSessionObj({ store, session }) {
   const state = store.getState()
   const sessionObj = session ? { meta: { id: session, type: 'session' } } : undefined
   return sessionObj || getSession(state)
 }
 
-const getUrl = ({ url, query = {}, pageSize }) => {
+function getUrl({ url, query = {}, pageSize }) {
   if (!url) {
     return ''
   }
@@ -65,7 +63,7 @@ const getUrl = ({ url, query = {}, pageSize }) => {
   return url2
 }
 
-const paginateIds = ({ ids, url, pageSize, useCache, offset = 0 }) => {
+function paginateIds({ ids, url, pageSize, useCache, offset = 0 }) {
   const idsLength = ids.length
   const pages = {}
   let index = 0
@@ -83,7 +81,7 @@ const paginateIds = ({ ids, url, pageSize, useCache, offset = 0 }) => {
   return pages
 }
 
-const getMaxPerPageIds = (no) => {
+function getMaxPerPageIds(no) {
   for (let i = MAX_PER_PAGE_IDS; i >= 0; i--) {
     if (i % no === 0) {
       return i
@@ -222,7 +220,7 @@ const getCurrentPageItems = async ({
   return items
 }
 
-const usePagination = (paginationInit) => {
+export function usePagination(paginationInit) {
   const [pagination, setPagination] = useState(paginationInit)
   const {
     url,
@@ -453,5 +451,3 @@ const usePagination = (paginationInit) => {
     itemIds,
   }
 }
-
-export default usePagination

@@ -2,10 +2,13 @@
   "name": "wappsto-blanket",
   "version": "1.2.6",
   "description": "",
+  "main": "dist/index.js",
+  "files": ["dist"],
   "scripts": {
-    "lint": "eslint hooks/*.js util/*.js",
+    "build": "babel src -d dist",
+    "lint": "eslint src",
     "lint:fix": "yarn lint --fix",
-    "prettify": "prettier hooks/*.js util/*.js --write",
+    "prettify": "prettier src --write",
     "test": "jest --coverage"
   },
   "repository": {
@@ -21,17 +24,27 @@
   "bugs": {
     "url": "https://github.com/Wappsto/wappsto-blanket/issues"
   },
+  "engines": {
+    "node": ">=16"
+  },
   "homepage": "https://github.com/Wappsto/wappsto-blanket#readme",
   "dependencies": {
     "deep-equal": "^2.0.5",
     "querystring": "^0.2.1",
-    "uuid": "^8.3.1"
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-redux": "^7.2.6",
+    "uuid": "^8.3.1",
+    "wappsto-redux": "^3.5.7"
   },
   "devDependencies": {
+    "@babel/cli": "^7.17.6",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-react": "^7.16.7",
     "@typescript-eslint/parser": "^5.10.1",
+    "are-you-es5": "^2.1.2",
     "babel-jest": "^27.4.6",
+    "babel-polyfill": "^6.26.0",
     "eslint": "^8.9.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-jest": "^26.1.1",
