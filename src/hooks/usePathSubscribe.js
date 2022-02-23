@@ -1,18 +1,18 @@
-import { useMemo, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { updateStream } from '../util'
-import { onLogout } from 'wappsto-redux'
+import { useMemo, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { updateStream } from '../util';
+import { onLogout } from 'wappsto-redux';
 
-let cache = {}
-onLogout(() => (cache = {}))
+let cache = {};
+onLogout(() => (cache = {}));
 
 export function usePathSubscribe(items, cacheId) {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const arr = useMemo(
     () => (items ? (items.constructor === Array ? items : [items]) : []),
     [items]
-  )
-  const path = useMemo(() => window.location.pathname, [])
+  );
+  const path = useMemo(() => window.location.pathname, []);
 
   // subscribe to stream
   useEffect(() => {
@@ -21,7 +21,7 @@ export function usePathSubscribe(items, cacheId) {
         dispatch,
         arr.map((item) => '/' + item.meta.type + '/' + item.meta.id),
         'add'
-      )
+      );
     }
     return () => {
       if (window.location.pathname !== path) {
@@ -29,10 +29,10 @@ export function usePathSubscribe(items, cacheId) {
           dispatch,
           arr.map((item) => '/' + item.meta.type + '/' + item.meta.id),
           'remove'
-        )
-        delete cache[cacheId]
+        );
+        delete cache[cacheId];
       }
-    }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items])
+  }, [items]);
 }

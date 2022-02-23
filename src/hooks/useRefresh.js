@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
 export function useRefresh(time) {
-  const [, setRefresh] = useState()
+  const [, setRefresh] = useState();
   useEffect(() => {
-    let timer
+    let timer;
     if (time) {
-      timer = setInterval(() => setRefresh({}), time)
+      timer = setInterval(() => setRefresh({}), time);
     }
     return () => {
-      clearInterval(timer)
-    }
-  }, [time])
+      clearInterval(timer);
+    };
+  }, [time]);
 }

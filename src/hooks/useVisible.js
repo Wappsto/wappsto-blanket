@@ -1,15 +1,15 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react';
 
 export function useVisible(initialValue) {
-  const [visible, setVisible] = useState(initialValue)
+  const [visible, setVisible] = useState(initialValue);
 
   const show = useCallback(() => {
-    setVisible(true)
-  }, [])
+    setVisible(true);
+  }, []);
 
   const hide = useCallback(() => {
-    setVisible(false)
-  }, [])
+    setVisible(false);
+  }, []);
 
-  return [visible, show, hide]
+  return [visible, show, hide];
 }

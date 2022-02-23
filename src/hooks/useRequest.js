@@ -1,39 +1,39 @@
-import { useMemo, useState, useCallback, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   makeRequestSelector,
   makeRequest,
-  removeRequest as removeStoreRequest,
-} from 'wappsto-redux'
-import { v4 as uuidv4 } from 'uuid'
+  removeRequest as removeStoreRequest
+} from 'wappsto-redux';
+import { v4 as uuidv4 } from 'uuid';
 
 export function useRequest(id, removeOldRequest) {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const [requestId, setRequestId] = useState(() => {
-    return id || uuidv4()
-  })
-  const getRequest = useMemo(makeRequestSelector, [])
-  const request = useSelector((state) => getRequest(state, requestId))
+    return id || uuidv4();
+  });
+  const getRequest = useMemo(makeRequestSelector, []);
+  const request = useSelector((state) => getRequest(state, requestId));
 
   const removeRequest = useCallback(() => {
-    dispatch(removeStoreRequest(requestId))
-  }, [dispatch, requestId])
+    dispatch(removeStoreRequest(requestId));
+  }, [dispatch, requestId]);
 
   const send = useCallback(
     (obj) => {
-      return dispatch(makeRequest({ ...obj, id: requestId }))
+      return dispatch(makeRequest({ ...obj, id: requestId }));
     },
     [dispatch, requestId]
-  )
+  );
 
   useEffect(
     () => () => {
       if ((removeOldRequest && requestId) || (!id && removeOldRequest !== false)) {
-        removeRequest()
+        removeRequest();
       }
     },
     [removeOldRequest, requestId, removeRequest, id]
-  )
+  );
 
-  return { request, requestId, setRequestId, send, removeRequest }
+  return { request, requestId, setRequestId, send, removeRequest };
 }
