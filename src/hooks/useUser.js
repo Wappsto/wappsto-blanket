@@ -15,8 +15,7 @@ export function useUser() {
         query: { expand: 1 }
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user, send]);
 
   let name = '';
   if (user) {
@@ -41,7 +40,7 @@ export function useUser() {
   }
 
   const icon = user?.provider?.[0]?.picture;
-  const status = request?.status || 'pending';
+  const status = request?.status || 'success';
 
   return { status, icon, name, user, request };
 }
