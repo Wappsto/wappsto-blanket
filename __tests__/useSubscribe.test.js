@@ -24,7 +24,7 @@ describe('useSubscribe', () => {
     const networkType = 'network';
     const networkIds = 'network_id';
     const { result, waitForNextUpdate, rerender } = renderHook(
-      ({type, ids}) => useSubscribe(type, ids),
+      ({ type, ids }) => useSubscribe(type, ids),
       {
         initialProps: { type: networkType, ids: networkIds },
         wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
@@ -39,14 +39,17 @@ describe('useSubscribe', () => {
         params: { data: ['/network/network_id'], url: '/services/2.0/websocket/open/subscription' }
       })
     );
-    rerender({ids: undefined});
+    rerender({ ids: undefined });
 
-    await expect(server).toReceiveMessage(expect.objectContaining({
-      jsonrpc: "2.0",
-      method: "PATCH",
-      params: {"data": [], "url": "/services/2.0/websocket/open/subscription"}}));
+    await expect(server).toReceiveMessage(
+      expect.objectContaining({
+        jsonrpc: '2.0',
+        method: 'PATCH',
+        params: { data: [], url: '/services/2.0/websocket/open/subscription' }
+      })
+    );
 
-    rerender({type: networkType, ids: ['network_id_2', 'network_id_3']});
+    rerender({ type: networkType, ids: ['network_id_2', 'network_id_3'] });
 
     await expect(server).toReceiveMessage(
       expect.objectContaining({
@@ -59,13 +62,16 @@ describe('useSubscribe', () => {
       })
     );
 
-    rerender({type: networkType, ids: ['network_id_2', 'network_id_3']});
+    rerender({ type: networkType, ids: ['network_id_2', 'network_id_3'] });
 
-    rerender({type: networkType, ids: []});
+    rerender({ type: networkType, ids: [] });
 
-    await expect(server).toReceiveMessage(expect.objectContaining({
-      jsonrpc: "2.0",
-      method: "PATCH",
-      params: {"data": [], "url": "/services/2.0/websocket/open/subscription"}}));
+    await expect(server).toReceiveMessage(
+      expect.objectContaining({
+        jsonrpc: '2.0',
+        method: 'PATCH',
+        params: { data: [], url: '/services/2.0/websocket/open/subscription' }
+      })
+    );
   });
 });
