@@ -17,7 +17,6 @@ export function useStorePagination(...props) {
         }
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeItems]);
 
   return { items: storeItems, removeItem, ...rest };

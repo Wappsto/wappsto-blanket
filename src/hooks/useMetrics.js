@@ -77,7 +77,6 @@ export function useMetrics(id) {
       }
       setCurrentStatus(STATUS.ERROR);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useStore } from 'react-redux';
 import { startRequest, addEntities, getSession, schemas } from 'wappsto-redux';
-import { ITEMS_PER_SLICE } from '../util';
+import { STATUS, ITEMS_PER_SLICE } from '../util';
 import querystring from 'query-string';
 
 const CHILDREN = { network: 'device', device: 'value', value: 'state' };
@@ -66,7 +66,7 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
 
 export function useFetchItems(objIds, query, useCache = true) {
   const store = useStore();
-  const [[status, items], setState] = useState(['pending', {}]);
+  const [[status, items], setState] = useState([STATUS.PENDING, {}]);
   const [queryClone, lvl] = useMemo(() => {
     if (query && query.constructor === Object) {
       const queryClone = { ...query };
@@ -85,8 +85,8 @@ export function useFetchItems(objIds, query, useCache = true) {
   useEffect(() => {
     let mounted = true;
 
-    if (status !== 'pending') {
-      setState(['pending', {}]);
+    if (status !== STATUS.PENDING) {
+      setState([STATUS.PENDING, {}]);
     }
 
     const startFetching = async () => {
@@ -101,18 +101,17 @@ export function useFetchItems(objIds, query, useCache = true) {
         }
       }
       if (mounted) {
-        setState(['success', items]);
+        setState([STATUS.SUCCESS, items]);
       }
     };
 
     startFetching().catch(() => {
       if (mounted) {
-        setState(['error', {}]);
+        setState([STATUS.ERROR, {}]);
       }
     });
 
     return () => (mounted = false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [objIds, query]);
 
   return { status, items };

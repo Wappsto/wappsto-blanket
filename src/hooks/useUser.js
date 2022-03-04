@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useRequest } from './useRequest';
 import { getUserData } from 'wappsto-redux';
+import { STATUS } from '../util';
 
 export function useUser() {
   const user = useSelector(getUserData);
@@ -40,7 +41,7 @@ export function useUser() {
   }
 
   const icon = user?.provider?.[0]?.picture;
-  const status = request?.status || 'success';
+  const status = request?.status || STATUS.SUCCESS;
 
   return { status, icon, name, user, request };
 }

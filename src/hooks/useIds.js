@@ -9,7 +9,7 @@ import {
   onLogout
 } from 'wappsto-redux';
 import { usePrevious } from './usePrevious';
-import { ITEMS_PER_SLICE } from '../util';
+import { STATUS, ITEMS_PER_SLICE } from '../util';
 import equal from 'deep-equal';
 
 const itemName = 'useIds_status';
@@ -42,17 +42,17 @@ function sendGetIds(store, ids, service, query, sliceLength) {
     const promise = startRequest(store.dispatch, options, session);
     promise
       .then((result) => {
-        setCacheStatus(store.dispatch, arr, result.ok ? 'success' : 'error', query);
+        setCacheStatus(store.dispatch, arr, result.ok ? STATUS.SUCCESS : STATUS.ERROR, query);
       })
       .catch(() => {
-        setCacheStatus(store.dispatch, arr, 'error', query);
+        setCacheStatus(store.dispatch, arr, STATUS.ERROR, query);
       });
   });
 }
 
 export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) {
   const store = useStore();
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState(STATUS.IDLE);
   const prevStatus = usePrevious(status);
   const prevIds = usePrevious(ids);
   const missingIds = useRef([]);
@@ -77,8 +77,8 @@ export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) 
         if (
           !equal(cidQ, cQ) ||
           cid.query.expand < query.expand ||
-          cid.status === 'error' ||
-          cid.status === 'idle'
+          cid.status === STATUS.ERROR ||
+          cid.status === STATUS.IDLE
         ) {
           arr.push(id);
         }
@@ -96,10 +96,9 @@ export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) 
     const prevMissingIds = missingIds.current;
     missingIds.current = arr;
     if (cacheIds.length > 0) {
-      setCacheStatus(dispatch, cacheIds, 'success', query);
+      setCacheStatus(dispatch, cacheIds, STATUS.SUCCESS, query);
     }
     return prevMissingIds;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
   const getMissingIds = (checkIds = true) => {
@@ -108,7 +107,7 @@ export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) 
     }
     updateMissingIds();
     if (missingIds.current.length > 0) {
-      setCacheStatus(dispatch, missingIds.current, 'pending', query);
+      setCacheStatus(dispatch, missingIds.current, STATUS.PENDING, query);
       sendGetIds(store, missingIds.current, service, query, sliceLength);
     }
   };
@@ -116,41 +115,37 @@ export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) 
   // Make request to get the ids
   useMemo(() => {
     getMissingIds();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, service, updateMissingIds, ids]);
 
   // Update status
   useMemo(() => {
-    if (status !== 'success' || prevIds !== ids) {
+    if (status !== STATUS.SUCCESS || prevIds !== ids) {
       for (let i = 0; i < ids.length; i++) {
         const idStatus = cache[ids[i]] && cache[ids[i]].status;
-        if (idStatus === 'error') {
-          setStatus('error');
+        if (idStatus === STATUS.ERROR) {
+          setStatus(STATUS.ERROR);
           return;
-        } else if (idStatus === 'pending') {
-          setStatus('pending');
+        } else if (idStatus === STATUS.PENDING) {
+          setStatus(STATUS.PENDING);
           return;
         }
       }
-      setStatus('success');
+      setStatus(STATUS.SUCCESS);
       setItems(cacheItems);
-    } else if (prevStatus !== 'success' && status === 'success') {
+    } else if (prevStatus !== STATUS.SUCCESS && status === STATUS.SUCCESS) {
       setItems(cacheItems);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids, idsStatus]);
 
   useMemo(() => {
-    if (status === 'success') {
+    if (status === STATUS.SUCCESS) {
       setItems(cacheItems);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheItems]);
 
   // Reset current ids cache
   const reset = useCallback(() => {
-    setCacheStatus(dispatch, ids, 'idle', query);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setCacheStatus(dispatch, ids, STATUS.IDLE, query);
   }, [ids]);
 
   // Refresh
@@ -160,7 +155,6 @@ export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) 
         reset();
       }
       getMissingIds(false);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [ids]
   );

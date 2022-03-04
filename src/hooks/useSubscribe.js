@@ -31,6 +31,5 @@ export function useSubscribe(type, ids) {
         updateStream(dispatch, arr, 'remove');
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [arr]);
+  }, [arr, dispatch]);
 }

@@ -87,7 +87,6 @@ export function useList(props) {
       query: query,
       parent: parent
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
   const [customRequest, setCustomRequest] = useState({
@@ -178,7 +177,6 @@ export function useList(props) {
     ) {
       refresh(props.reset);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propsData.query, props.id, propsData.url, refresh, props.useCache]);
 
   // function updateItemCount
@@ -251,7 +249,6 @@ export function useList(props) {
         setCustomRequest(request);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prevRequest, request]);
 
   const loadMore = useCallback(() => {

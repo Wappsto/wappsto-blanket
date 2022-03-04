@@ -35,6 +35,5 @@ export function useAlwaysSubscribe(items) {
 
     //add new subscriptions
     updateStream(dispatch, arr, 'add');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items]);
+  }, [items, arr, dispatch, prevArr]);
 }

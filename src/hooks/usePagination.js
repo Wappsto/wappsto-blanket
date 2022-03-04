@@ -278,7 +278,6 @@ export function usePagination(paginationInit) {
         setStatus(STATUS.error);
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination]);
 
   const _refresh = () => {

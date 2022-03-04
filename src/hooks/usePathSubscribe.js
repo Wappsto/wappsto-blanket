@@ -33,6 +33,5 @@ export function usePathSubscribe(items, cacheId) {
         delete cache[cacheId];
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 }

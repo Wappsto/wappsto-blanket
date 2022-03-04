@@ -110,7 +110,6 @@ export function useLogs(stateId, sessionId, cacheId) {
           setCurrentStatus(STATUS.ERROR);
         }
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [status]
   );

@@ -73,9 +73,9 @@ export function updateStream(dispatch, subscription, type, options = defaultOpti
       }
     });
   }
-  timeout = setTimeout(function () {
+  timeout = setTimeout(async function () {
     if (!ws || ws.readyState !== ws.OPEN) {
-      ws = dispatch(
+      ws = await dispatch(
         openStream(
           { name: mainStream, subscription: [], full: options.full || false },
           null,
