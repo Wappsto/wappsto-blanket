@@ -1,7 +1,7 @@
 import { roundBasedOnStep } from '../src';
 
 describe('roundBasedOnStep', () => {
-  it('can round', () => {
+  it('runs correctly', () => {
     expect(roundBasedOnStep(10, 1, 1)).toBe('10');
     expect(roundBasedOnStep('bla', 1, 1)).toBe('bla');
     expect(roundBasedOnStep(10, 0, 1)).toBe(10);

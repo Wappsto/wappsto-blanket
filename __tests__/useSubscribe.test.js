@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { renderHook, act, cleanup } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-hooks';
 import { Provider } from 'react-redux';
 import { configureStore } from 'wappsto-redux';
 import WS from 'jest-websocket-mock';
@@ -19,17 +19,14 @@ describe('useSubscribe', () => {
     WS.clean();
   });
 
-  it('can subscribe', async () => {
+  it('runs correctly', async () => {
     const store = new configureStore();
     const networkType = 'network';
     const networkIds = 'network_id';
-    const { result, waitForNextUpdate, rerender } = renderHook(
-      ({ type, ids }) => useSubscribe(type, ids),
-      {
-        initialProps: { type: networkType, ids: networkIds },
-        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-      }
-    );
+    const { rerender } = renderHook(({ type, ids }) => useSubscribe(type, ids), {
+      initialProps: { type: networkType, ids: networkIds },
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+    });
 
     await server.connected;
     await expect(server).toReceiveMessage(

@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-hooks';
 import { Provider } from 'react-redux';
 import { configureStore } from 'wappsto-redux';
 import { useEntitySelector } from '../src';
@@ -18,13 +18,13 @@ describe('useEntitySelector', () => {
     const id = 'network_id';
     const wrong_id = 'wrong_id';
 
-    const { result, rerender } = renderHook(({service, id}) => useEntitySelector(service, id), {
+    const { result, rerender } = renderHook(({ service, id }) => useEntitySelector(service, id), {
       initialProps: { service: service, id: wrong_id },
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
     });
 
     expect(result.current).toBe(undefined);
-    rerender({service: service, id: id});
+    rerender({ service: service, id: id });
     expect(result.current.name).toEqual('network name');
   });
 });
