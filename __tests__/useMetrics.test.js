@@ -38,6 +38,27 @@ describe('useMetrics', () => {
 
     expect(result.current.status).toBe('success');
     expect(result.current.data.name).toBe('metrics');
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/services/metrics",
+      expect.objectContaining({
+        "headers": {"Accept": "application/json", "Content-Type": "application/json"},
+        "method": "POST",
+        "rawOptions": expect.objectContaining({
+          "body": {
+            "operation": "count_online_iot",
+            "query": {
+              "begin": "begin",
+              "end": "end",
+              "resolution": "red"
+            }
+          },
+          "dispatchEntities": false,
+          "method": "POST",
+          "url": "/metrics"
+        }),
+        "url": "/services/metrics"
+      })
+    );
 
     act(() => {
       result.current.reset();
