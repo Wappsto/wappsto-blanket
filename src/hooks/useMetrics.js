@@ -77,7 +77,7 @@ export function useMetrics(id) {
       }
       setCurrentStatus(STATUS.ERROR);
     }
-  }, []);
+  }, [dispatch, itemName]);
 
   useEffect(() => {
     return () => {
