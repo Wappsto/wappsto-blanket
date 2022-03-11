@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setItem, makeEntitiesSelector, makeItemSelector, getUrlInfo } from 'wappsto-redux';
 import { usePrevious } from './usePrevious';
 import { useRequest } from './useRequest';
+import { STATUS } from '../util';
 
 const empty = [];
 
@@ -90,7 +91,7 @@ export function useList(props) {
   }, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
   const [customRequest, setCustomRequest] = useState({
-    status: propsData.url ? 'pending' : 'success',
+    status: propsData.url ? STATUS.PENDING : STATUS.SUCCESS,
     options: { query: props.query }
   });
   const name = props.name || propsData.url + JSON.stringify(propsData.query);
@@ -100,8 +101,8 @@ export function useList(props) {
   const savedIds = useSelector((state) => getSavedIdsItem(state, idsItemName)) || empty;
   const { request, send } = useRequest(requestIdName);
 
-  if (propsData.url && !request && customRequest.status !== 'pending') {
-    setCustomRequest({ status: 'pending', options: { query: props.query } });
+  if (propsData.url && !request && customRequest.status !== STATUS.PENDING) {
+    setCustomRequest({ status: STATUS.PENDING, options: { query: props.query } });
   }
 
   const limit = propsData.query.limit;
@@ -114,10 +115,10 @@ export function useList(props) {
   if (
     !request ||
     items.length === 0 ||
-    (request && request.status === 'error') ||
+    (request && request.status === STATUS.ERROR) ||
     (props.resetOnEmpty &&
       request &&
-      request.status === 'pending' &&
+      request.status === STATUS.PENDING &&
       query.current.offset === propsData.query.offset)
   ) {
     items = empty;
@@ -142,7 +143,7 @@ export function useList(props) {
     (options) => {
       if (propsData.url) {
         setCanLoadMore(false);
-        setCustomRequest({ status: 'pending', options: options });
+        setCustomRequest({ status: STATUS.PENDING, options: options });
         send({
           method: 'GET',
           url: propsData.url,
@@ -173,7 +174,7 @@ export function useList(props) {
       props.useCache === false ||
       !request ||
       (savedIds === empty && !request) ||
-      (request && request.status === 'error')
+      (request && request.status === STATUS.ERROR)
     ) {
       refresh(props.reset);
     }
@@ -183,9 +184,9 @@ export function useList(props) {
   useEffect(() => {
     if (
       prevRequest &&
-      prevRequest.status === 'pending' &&
+      prevRequest.status === STATUS.PENDING &&
       request &&
-      request.status === 'success'
+      request.status === STATUS.SUCCESS
     ) {
       dispatch(
         setItem(idsItemName, (ids) => {
@@ -215,8 +216,8 @@ export function useList(props) {
     if (
       request &&
       prevRequest &&
-      prevRequest.status !== 'success' &&
-      request.status === 'success'
+      prevRequest.status !== STATUS.SUCCESS &&
+      request.status === STATUS.SUCCESS
     ) {
       let data;
       if (request.json) {
@@ -239,12 +240,12 @@ export function useList(props) {
   // updateCustomRequest
   useEffect(() => {
     if (request) {
-      if (request.status !== 'success') {
+      if (request.status !== STATUS.SUCCESS) {
         setCustomRequest(request);
       } else if (
-        (!prevRequest || prevRequest.status === 'success') &&
-        request.status === 'success' &&
-        (customRequest.status !== 'success' || customRequest.id !== request.id)
+        (!prevRequest || prevRequest.status === STATUS.SUCCESS) &&
+        request.status === STATUS.SUCCESS &&
+        (customRequest.status !== STATUS.SUCCESS || customRequest.id !== request.id)
       ) {
         setCustomRequest(request);
       }
