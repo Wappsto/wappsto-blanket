@@ -16,18 +16,12 @@ describe('useMetrics', () => {
   it('runs correctly', async () => {
     const id = 'test';
     fetch
-      .mockResponseOnce(
-        JSON.stringify({ name: 'metrics' })
-      ).mockRejectOnce(
-        JSON.stringify({ name: 'metrics' })
-      )
+      .mockResponseOnce(JSON.stringify({ name: 'metrics' }))
+      .mockRejectOnce(JSON.stringify({ name: 'metrics' }));
 
-    const { result, waitForNextUpdate, rerender, unmount } = renderHook(
-      () => useMetrics(id),
-      {
-        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-      }
-    );
+    const { result, waitForNextUpdate, rerender, unmount } = renderHook(() => useMetrics(id), {
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+    });
 
     expect(result.current.data).toBe(undefined);
     expect(result.current.status).toBe('idle');
@@ -39,24 +33,24 @@ describe('useMetrics', () => {
     expect(result.current.status).toBe('success');
     expect(result.current.data.name).toBe('metrics');
     expect(fetchMock).toHaveBeenCalledWith(
-      "/services/metrics",
+      '/services/metrics',
       expect.objectContaining({
-        "headers": {"Accept": "application/json", "Content-Type": "application/json"},
-        "method": "POST",
-        "rawOptions": expect.objectContaining({
-          "body": {
-            "operation": "count_online_iot",
-            "query": {
-              "begin": "begin",
-              "end": "end",
-              "resolution": "red"
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        method: 'POST',
+        rawOptions: expect.objectContaining({
+          body: {
+            operation: 'count_online_iot',
+            query: {
+              begin: 'begin',
+              end: 'end',
+              resolution: 'red'
             }
           },
-          "dispatchEntities": false,
-          "method": "POST",
-          "url": "/metrics"
+          dispatchEntities: false,
+          method: 'POST',
+          url: '/metrics'
         }),
-        "url": "/services/metrics"
+        url: '/services/metrics'
       })
     );
 
