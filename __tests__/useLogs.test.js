@@ -22,10 +22,10 @@ describe('useMetrics', () => {
       .mockRejectOnce(JSON.stringify({ name: 'metrics' }))
       .mockResponseOnce(JSON.stringify({ data: [1, 2, 3] }));
 
-    const { result, waitForNextUpdate, rerender, unmount } = renderHook(
+    const { result, unmount } = renderHook(
       ({ stateId, sessionId, cacheId }) => useLogs(stateId, sessionId, cacheId),
       {
-        initialProps: { stateId: stateId, sessionId, sessionId, cacheId: cacheId },
+        initialProps: { stateId: stateId, sessionId: sessionId, cacheId: cacheId },
         wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
       }
     );

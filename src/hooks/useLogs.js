@@ -111,7 +111,7 @@ export function useLogs(stateId, sessionId, cacheId) {
         }
       }
     },
-    [acheId, dispatch, sessionId, stateId]
+    [cacheId, dispatch, sessionId, stateId]
   );
 
   useEffect(() => {
