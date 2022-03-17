@@ -1,25 +1,28 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useStore } from 'react-redux';
-import { startRequest, addEntities, getSession, schemas } from 'wappsto-redux';
+import { startRequest, addEntities, getSession, schema } from 'wappsto-redux';
 import { STATUS, ITEMS_PER_SLICE } from '../util';
 import querystring from 'query-string';
+import { useMounted } from './useMounted';
 
 const CHILDREN = { network: 'device', device: 'value', value: 'state' };
 
 const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
   const state = store.getState();
   const uniqIds = [...new Set(ids)];
-  const typeKey = schemas.getSchemaTree(type).name;
-
+  const typeKey = schema.getSchemaTree(type).name;
+  const session = getSession(state);
+  const slices = [];
   let missingIds;
+  let index = 0;
+  let itemList = [];
+
   if (useCache && state.entities[typeKey]) {
     missingIds = uniqIds.filter((id) => !state.entities[typeKey][id]);
   } else {
     missingIds = uniqIds;
   }
 
-  const slices = [];
-  let index = 0;
   while (index < missingIds.length) {
     slices.push(missingIds.slice(index, ITEMS_PER_SLICE + index));
     index += ITEMS_PER_SLICE;
@@ -27,12 +30,10 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
 
   const promises = slices.map((e) => {
     const url = `/${type}?expand=0&id=[${e.join(',')}]&${querystring.stringify(query)}`;
-    const session = getSession(state);
     const promise = startRequest(store.dispatch, { url, method: 'GET' }, session);
     return promise;
   });
 
-  let itemList = [];
   const results = await Promise.all(promises);
   results.forEach((e) => {
     if (e.status !== 200 || e.status === false) {
@@ -65,8 +66,10 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
 };
 
 export function useFetchItems(objIds, query, useCache = true) {
+  const isMounted = useMounted();
   const store = useStore();
-  const [[status, items], setState] = useState([STATUS.PENDING, {}]);
+  const [status, setStatus] = useState(STATUS.PENDING);
+  const [items, setItems] = useState({});
   const [queryClone, lvl] = useMemo(() => {
     if (query && query.constructor === Object) {
       const queryClone = { ...query };
@@ -83,36 +86,33 @@ export function useFetchItems(objIds, query, useCache = true) {
   }, [query]);
 
   useEffect(() => {
-    let mounted = true;
-
-    if (status !== STATUS.PENDING) {
-      setState([STATUS.PENDING, {}]);
-    }
+    setStatus(STATUS.PENDING);
+    setItems({});
 
     const startFetching = async () => {
-      let items = {};
+      const newItems = {};
       for (const [type, ids] of Object.entries(objIds || {})) {
         if (CHILDREN[type] || type === 'state') {
           const response = await fetch(ids, type, store, queryClone, lvl, useCache);
-          items[type] = response;
+          newItems[type] = response;
         } else {
           const response = await fetch(ids, type, store, queryClone, 0, useCache);
-          Object.assign(items, response);
+          Object.assign(newItems, response);
         }
       }
-      if (mounted) {
-        setState([STATUS.SUCCESS, items]);
+      if (isMounted) {
+        setStatus(STATUS.SUCCESS);
+        setItems(newItems);
       }
     };
 
     startFetching().catch(() => {
-      if (mounted) {
-        setState([STATUS.ERROR, {}]);
+      if (isMounted) {
+        setStatus(STATUS.ERROR);
+        setItems({});
       }
     });
-
-    return () => (mounted = false);
-  }, [objIds, query]);
+  }, [objIds, query, queryClone, store, lvl, useCache, isMounted]);
 
   return { status, items };
 }
