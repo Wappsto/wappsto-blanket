@@ -9,7 +9,6 @@ export * from './useLogs';
 export * from './useMetrics';
 export * from './useMounted';
 export * from './usePagination';
-export * from './usePathSubscribe';
 export * from './usePrevious';
 export * from './useRefresh';
 export * from './useRefreshTimestamp';
