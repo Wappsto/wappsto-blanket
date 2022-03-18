@@ -42,19 +42,6 @@ function updateSubscriptions(options) {
   subscriptions = { ...newSubscriptions };
 }
 
-export function getLastKey(data) {
-  if (!data) {
-    return undefined;
-  }
-  let keys = Object.keys(data);
-  return keys[keys.length - 1];
-}
-
-export function getNextKey(data) {
-  const lastKey = getLastKey(data) || 0;
-  return parseInt(lastKey) + 1;
-}
-
 export function setDefaultStreamOptions(options) {
   defaultOptions = options;
 }
@@ -95,10 +82,6 @@ export function getServiceUrl(service, options) {
   return config.baseUrl + (version ? '/' + version : '') + '/' + service;
 }
 
-export function isPrototype(item) {
-  return item.meta && !item.meta.iot && !item.meta.application;
-}
-
 export function cannotAccessState(state) {
   return (
     state.status_payment === 'not_shared' ||
@@ -106,10 +89,6 @@ export function cannotAccessState(state) {
     state.status_payment === 'no_points' ||
     state.status_payment === 'open'
   );
-}
-
-export function getDottedText(text, num = 4, separator = ' ... ') {
-  return text.slice(0, num) + separator + text.slice(-num);
 }
 
 export function countDecimals(value) {
