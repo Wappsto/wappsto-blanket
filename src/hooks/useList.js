@@ -8,11 +8,11 @@ import { STATUS } from '../util';
 const empty = [];
 
 function getQueryObj(query) {
-  var urlParams = {};
-  var match,
-    pl = /\+/g,
-    search = /([^&=]+)=?([^&]*)/g,
-    decode = function (s) {
+  const urlParams = {};
+  let match;
+    const pl = /\+/g;
+    const search = /([^&=]+)=?([^&]*)/g;
+    const decode = function (s) {
       return decodeURIComponent(s.replace(pl, ' '));
     };
 
@@ -25,25 +25,26 @@ function getQueryObj(query) {
 /*
 props: url, type, id, childType, query, reset, resetOnEmpty, sort
 */
-export function useList(props) {
+export function useList(inputProps) {
+  const props = inputProps || {};
   const dispatch = useDispatch();
   const prevQuery = usePrevious(props.query);
   const query = useRef({});
   const differentQuery = useRef(0);
   if (JSON.stringify(prevQuery) !== JSON.stringify(props.query)) {
-    differentQuery.current = differentQuery.current + 1;
+    differentQuery.current += 1;
   }
 
   const propsData = useMemo(() => {
     let { type, id, childType, url } = props;
-    let parent, entitiesType;
+    let parent; let entitiesType;
     let query = { ...props.query };
     if (url) {
       let split = url.split('?');
       url = split[0];
       query = { ...getQueryObj(split.slice(1).join('?')), ...query };
       split = split[0].split('/');
-      let result = getUrlInfo(url);
+      const result = getUrlInfo(url);
       if (result.parent) {
         type = result.parent.type;
         childType = result.service;
@@ -54,7 +55,7 @@ export function useList(props) {
         entitiesType = type;
       }
     } else if (type) {
-      url = '/' + type;
+      url = `/${type}`;
       if (id) {
         if (id.startsWith('?')) {
           query = { ...query, ...getQueryObj(id.slice(1)) };
@@ -66,7 +67,7 @@ export function useList(props) {
         }
       }
       if (childType) {
-        url += '/' + childType;
+        url += `/${childType}`;
         parent = { id, type };
         entitiesType = childType;
       } else {
@@ -80,13 +81,13 @@ export function useList(props) {
       query.offset = 0;
     }
     return {
-      type: type,
-      childType: childType,
-      entitiesType: entitiesType,
-      id: id,
-      url: url,
-      query: query,
-      parent: parent
+      type,
+      childType,
+      entitiesType,
+      id,
+      url,
+      query,
+      parent
     };
   }, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
@@ -94,9 +95,10 @@ export function useList(props) {
     status: propsData.url ? STATUS.PENDING : STATUS.SUCCESS,
     options: { query: props.query }
   });
-  const name = props.name || propsData.url + JSON.stringify(propsData.query);
-  const idsItemName = name + '_ids';
-  const requestIdName = name + '_requestId';
+  // const name = props.name || propsData.url + JSON.stringify(propsData.query);
+  const name = propsData.url + JSON.stringify(propsData.query);
+  const idsItemName = `${name  }_ids`;
+  const requestIdName = `${name  }_requestId`;
   const getSavedIdsItem = useMemo(makeItemSelector, []);
   const savedIds = useSelector((state) => getSavedIdsItem(state, idsItemName)) || empty;
   const { request, send } = useRequest(requestIdName);
@@ -105,7 +107,7 @@ export function useList(props) {
     setCustomRequest({ status: STATUS.PENDING, options: { query: props.query } });
   }
 
-  const limit = propsData.query.limit;
+  const {limit} = propsData.query;
 
   const options = { ids: savedIds, limit: savedIds.length };
 
@@ -125,7 +127,7 @@ export function useList(props) {
   }
   if (items.length === 1 && items[0].meta.type === 'attributelist') {
     const newItems = [];
-    for (let key in items[0].data) {
+    for (const key in items[0].data) {
       newItems.push({ id: key, [propsData.id]: items[0].data[key] });
     }
     items = newItems.length > 0 ? newItems : empty;
@@ -143,7 +145,7 @@ export function useList(props) {
     (options) => {
       if (propsData.url) {
         setCanLoadMore(false);
-        setCustomRequest({ status: STATUS.PENDING, options: options });
+        setCustomRequest({ status: STATUS.PENDING, options });
         send({
           method: 'GET',
           url: propsData.url,
@@ -273,9 +275,9 @@ export function useList(props) {
           setItem(idsItemName, (ids = []) => {
             if (position === 'start') {
               return [id, ...ids];
-            } else {
-              return [...ids, id];
             }
+              return [...ids, id];
+
           })
         );
         return true;
