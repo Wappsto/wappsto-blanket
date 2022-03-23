@@ -1,8 +1,8 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react-hooks';
-import { useStoreItem } from '../src';
 import { Provider } from 'react-redux';
 import { configureStore } from 'wappsto-redux';
+import { useStoreItem } from '../src';
 
 describe('useItemStore', () => {
   it('run correctly', () => {

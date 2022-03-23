@@ -19,12 +19,12 @@ describe('useEntitySelector', () => {
     const wrong_id = 'wrong_id';
 
     const { result, rerender } = renderHook(({ service, id }) => useEntitySelector(service, id), {
-      initialProps: { service: service, id: wrong_id },
+      initialProps: { service, id: wrong_id },
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
     });
 
     expect(result.current).toBe(undefined);
-    rerender({ service: service, id: id });
+    rerender({ service, id });
     expect(result.current.name).toEqual('network name');
   });
 });

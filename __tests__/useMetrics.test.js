@@ -19,7 +19,7 @@ describe('useMetrics', () => {
       .mockResponseOnce(JSON.stringify({ name: 'metrics' }))
       .mockRejectOnce(JSON.stringify({ name: 'metrics' }));
 
-    const { result, waitForNextUpdate, rerender, unmount } = renderHook(() => useMetrics(id), {
+    const { result, unmount } = renderHook(() => useMetrics(id), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
     });
 

@@ -14,9 +14,9 @@ describe('useFetchItems', () => {
 
   describe('with cache', () => {
     it('get no items', async () => {
-      let objIds = [];
-      let query = {};
-      let useCache = true;
+      const objIds = [];
+      const query = {};
+      const useCache = true;
 
       const { result } = renderHook(() => useFetchItems(objIds, query, useCache), {
         wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
@@ -28,11 +28,11 @@ describe('useFetchItems', () => {
 
     it('will report error on failed request', async () => {
       fetch.mockRejectOnce('error');
-      let objIds = { network: ['658ef28d-d255-4394-9c6e-3199cc9e4c06'] };
-      let query = {
+      const objIds = { network: ['658ef28d-d255-4394-9c6e-3199cc9e4c06'] };
+      const query = {
         expand: 1
       };
-      let useCache = true;
+      const useCache = true;
 
       const { result, waitForNextUpdate } = renderHook(
         () => useFetchItems(objIds, query, useCache),
@@ -59,12 +59,12 @@ describe('useFetchItems', () => {
         ])
       );
 
-      let objIds = { network: ['658ef28d-d255-4394-9c6e-3199cc9e4c06'] };
-      let query = {
+      const objIds = { network: ['658ef28d-d255-4394-9c6e-3199cc9e4c06'] };
+      const query = {
         expand: 1,
         from_last: false
       };
-      let useCache = true;
+      const useCache = true;
 
       const { result, waitForNextUpdate } = renderHook(
         () => useFetchItems(objIds, query, useCache),
@@ -105,14 +105,14 @@ describe('useFetchItems', () => {
           ])
         );
 
-      let objIds = {
+      const objIds = {
         network: ['658ef28d-d255-4394-9c6e-3199cc9e4c06', '1ed7e891-a000-49b2-8122-7bb5ba5f5559'],
         application: ['ace68452-f7f9-4e6b-a656-3cd0c1d70463']
       };
-      let query = {
+      const query = {
         expand: 1
       };
-      let useCache = true;
+      const useCache = true;
 
       const { result, waitForNextUpdate } = renderHook(
         () => useFetchItems(objIds, query, useCache),
@@ -143,18 +143,18 @@ describe('useFetchItems', () => {
         ])
       );
 
-      let objIds = {
+      const objIds = {
         network: ['4e63ae3a-f653-410b-afb9-56e4672feca9']
       };
-      let query = {
+      const query = {
         expand: 1
       };
-      let useCache = true;
+      const useCache = true;
 
       const { result, waitForNextUpdate, rerender } = renderHook(
         ({ objIds, query, useCache }) => useFetchItems(objIds, query, useCache),
         {
-          initialProps: { objIds: objIds, query: query, useCache: useCache },
+          initialProps: { objIds, query, useCache },
           wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
         }
       );
