@@ -7,7 +7,7 @@ import {
 } from 'wappsto-redux';
 import { v4 as uuidv4 } from 'uuid';
 
-export function useRequest(id, removeOldRequest) {
+export default function useRequest(id, removeOldRequest) {
   const dispatch = useDispatch();
   const [requestId, setRequestId] = useState(() => id || uuidv4());
   const getRequest = useMemo(makeRequestSelector, []);

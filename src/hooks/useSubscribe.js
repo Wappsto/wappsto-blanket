@@ -3,20 +3,20 @@ import { useDispatch } from 'react-redux';
 import equal from 'deep-equal';
 import { updateStream } from '../util';
 
-export function useSubscribe(type, ids) {
+export default function useSubscribe(type, ids) {
   const dispatch = useDispatch();
   const cached = useRef([]);
   const arr = useMemo(() => {
-    let arr;
+    let data;
     if (ids) {
       if (ids.constructor === Array) {
-        arr = ids.map((id) => `/${type}/${id}`);
+        data = ids.map((id) => `/${type}/${id}`);
       } else {
-        arr = [`/${type}/${ids}`];
+        data = [`/${type}/${ids}`];
       }
     }
-    if (!equal(arr, cached.current)) {
-      cached.current = arr;
+    if (!equal(data, cached.current)) {
+      cached.current = data;
     }
     return cached.current;
   }, [type, ids]);

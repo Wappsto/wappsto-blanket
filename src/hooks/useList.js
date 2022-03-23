@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setItem, makeEntitiesSelector, makeItemSelector, getUrlInfo } from 'wappsto-redux';
-import { usePrevious } from './usePrevious';
-import { useRequest } from './useRequest';
+import { usePrevious, useRequest } from './index';
 import { STATUS } from '../util';
 
 const empty = [];

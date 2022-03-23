@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useRequest } from './useRequest';
 import { getUserData } from 'wappsto-redux';
+import { useRequest } from './index';
 import { STATUS } from '../util';
 
-export function useUser() {
+export default function useUser() {
   const user = useSelector(getUserData);
   const { request, send } = useRequest();
 
@@ -24,7 +24,7 @@ export function useUser() {
       name = user.nickname;
     } else {
       if (user.first_name) {
-        name += user.first_name + ' ';
+        name += `${user.first_name  } `;
       }
       if (user.last_name) {
         name += user.last_name;

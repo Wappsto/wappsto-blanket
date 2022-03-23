@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from 'wappsto-redux';
 import { useStoreItem } from '../src';
 
-describe('useItemStore', () => {
+describe('useStoreItem', () => {
   it('run correctly', () => {
     const defaultValue = 'key';
     const store = new configureStore({ items: { key: 'test' } });

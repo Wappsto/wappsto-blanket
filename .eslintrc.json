@@ -1,8 +1,9 @@
 {
-    "parserOptions": {
+  "parserOptions": {
     "sourceType": "module",
     "allowImportExportEverywhere": false,
-    "codeFrame": false
+    "codeFrame": false,
+    "ecmaVersion": 2020
   },
   "extends": ["airbnb", "prettier"],
   "env": {

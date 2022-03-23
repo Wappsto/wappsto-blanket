@@ -23,6 +23,12 @@ export const STATUS = {
 
 export const ITEMS_PER_SLICE = 100;
 
+export function getServiceUrl(service, options) {
+  const version =
+    options && options.version ? options.version : getServiceVersion(service);
+  return `${config.baseUrl + (version ? `/${version}` : '')  }/${service}`;
+}
+
 function updateSubscriptions(options) {
   const subscriptionsKeys = Object.keys(subscriptions);
   const newSubscriptionsKeys = Object.keys(newSubscriptions);
@@ -76,12 +82,6 @@ export function updateStream(dispatch, subscription, type, options = defaultOpti
   }, 200);
 }
 
-export function getServiceUrl(service, options) {
-  const version =
-    options && options.hasOwnProperty('version') ? options.version : getServiceVersion(service);
-  return `${config.baseUrl + (version ? `/${version}` : '')  }/${service}`;
-}
-
 export function cannotAccessState(state) {
   return (
     state.status_payment === 'not_shared' ||
@@ -107,13 +107,11 @@ export function countDecimals(value) {
 }
 
 export function roundBasedOnStep(number, step, min) {
-  let roundedNumber;
-  if (isNaN(number) || step === 0) {
+  let roundedNumber = Number(number);;
+  if (Number.isNaN(roundedNumber) || step === 0) {
     return number;
   }
-  if (number - min + min !== number) {
-    roundedNumber = Number(number);
-  } else {
+  if (number - min + min === number) {
     roundedNumber = step * Math.round((number - min) / step) + min;
   }
   roundedNumber = roundedNumber.toFixed(countDecimals(step));

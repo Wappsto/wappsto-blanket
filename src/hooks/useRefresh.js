@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export function useRefresh(time) {
+export default function useRefresh(time) {
   const [, setRefresh] = useState();
   useEffect(() => {
     let timer;

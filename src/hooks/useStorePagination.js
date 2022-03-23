@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
-import { usePagination } from './usePagination';
-import { useEntitiesSelector } from './useEntitiesSelector';
+import { usePagination, useEntitiesSelector } from './index';
 
-export function useStorePagination(...props) {
+export default function useStorePagination(...props) {
   const { items, removeItem, ...rest } = usePagination(...props);
   const storeItems = useEntitiesSelector(
     items?.[0]?.meta?.type,

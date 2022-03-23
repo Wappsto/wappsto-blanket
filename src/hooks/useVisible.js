@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-export function useVisible(initialValue) {
+export default function useVisible(initialValue) {
   const [visible, setVisible] = useState(initialValue);
 
   const show = useCallback(() => {

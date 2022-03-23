@@ -3,7 +3,7 @@ import { useStore } from 'react-redux';
 import { startRequest, addEntities, getSession, schema } from 'wappsto-redux';
 import querystring from 'query-string';
 import { STATUS, ITEMS_PER_SLICE } from '../util';
-import { useMounted } from './useMounted';
+import { useMounted } from './index';
 
 const CHILDREN = { network: 'device', device: 'value', value: 'state' };
 
@@ -60,9 +60,9 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
     const itemListIds = itemList.reduce((arr, e) => [...arr, ...(e[CHILDREN[type]] || [])], []);
     const result = await fetch(itemListIds, CHILDREN[type], store, query, lvl - 1, useCache);
     return { [type]: itemList, ...result };
-  } 
+  }
     return type ? { [type]: itemList } : {};
-  
+
 };
 
 export function useFetchItems(objIds, query, useCache = true) {

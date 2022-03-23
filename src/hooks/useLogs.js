@@ -8,7 +8,7 @@ import { STATUS } from '../util';
 let cache = {};
 onLogout(() => (cache = {}));
 
-export function useLogs(stateId, sessionId, cacheId) {
+export default function useLogs(stateId, sessionId, cacheId) {
   const [data, setData] = useState([]);
   const cachedData = useRef([]);
   const cachedStatus = useRef(STATUS.IDLE);
@@ -18,9 +18,9 @@ export function useLogs(stateId, sessionId, cacheId) {
   const cancelFunc = useRef();
   const unmounted = useRef(false);
 
-  const setCurrentStatus = (status) => {
-    cachedStatus.current = status;
-    setStatus(status);
+  const setCurrentStatus = (currentStatus) => {
+    cachedStatus.current = currentStatus;
+    setStatus(currentStatus);
   };
 
   const getLogs = useCallback(
@@ -35,7 +35,7 @@ export function useLogs(stateId, sessionId, cacheId) {
       if (cacheId && cache[cacheId] && equal(cache[cacheId].options, options)) {
         setData(cache[cacheId].data);
         setCurrentStatus(cache[cacheId].status);
-        return true;
+        return;
       }
       if (cOptions.start.constructor === Date) {
         cOptions.start = cOptions.start.toISOString();

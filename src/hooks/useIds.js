@@ -9,7 +9,7 @@ import {
   onLogout
 } from 'wappsto-redux';
 import equal from 'deep-equal';
-import { usePrevious } from './usePrevious';
+import { usePrevious } from './index';
 import { STATUS, ITEMS_PER_SLICE } from '../util';
 
 const itemName = 'useIds_status';

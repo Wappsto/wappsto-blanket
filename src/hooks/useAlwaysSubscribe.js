@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { onLogout } from 'wappsto-redux';
-import { usePrevious } from './usePrevious';
+import { usePrevious } from './index';
 import { updateStream } from '../util';
 
 let cache = {};
