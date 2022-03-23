@@ -8,9 +8,9 @@ import {
   startRequest,
   onLogout
 } from 'wappsto-redux';
+import equal from 'deep-equal';
 import { usePrevious } from './usePrevious';
 import { STATUS, ITEMS_PER_SLICE } from '../util';
-import equal from 'deep-equal';
 
 const itemName = 'useIds_status';
 
@@ -32,7 +32,7 @@ function sendGetIds(store, ids, service, query, sliceLength) {
   const session = getSession(state);
   res.forEach((arr) => {
     const options = {
-      url: '/' + service,
+      url: `/${service}`,
       method: 'GET',
       query: {
         ...query,
@@ -125,7 +125,7 @@ export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) 
         if (idStatus === STATUS.ERROR) {
           setStatus(STATUS.ERROR);
           return;
-        } else if (idStatus === STATUS.PENDING) {
+        } if (idStatus === STATUS.PENDING) {
           setStatus(STATUS.PENDING);
           return;
         }

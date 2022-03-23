@@ -16,13 +16,11 @@ export function useNetworkStatusLog(networkId) {
   const currentRef = useRef();
   const store = useStore();
 
-  useEffect(() => {
-    return () => (isMountedRef.current = false);
-  }, []);
+  useEffect(() => () => (isMountedRef.current = false), []);
 
   const _get = ({ start, end, limit: initLimit, resetCache }) => {
     const getData = async ({ query, initLimit }) => {
-      let data = [];
+      const data = [];
       let more = true;
 
       while (more && isMountedRef.current) {
@@ -75,7 +73,7 @@ export function useNetworkStatusLog(networkId) {
       limit = MAX_LOG_LIMIT;
     }
 
-    const current = currentRef.current;
+    const {current} = currentRef;
     const query = { limit, order: 'descending' };
     if (start) {
       query.start = start;

@@ -9,9 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export function useRequest(id, removeOldRequest) {
   const dispatch = useDispatch();
-  const [requestId, setRequestId] = useState(() => {
-    return id || uuidv4();
-  });
+  const [requestId, setRequestId] = useState(() => id || uuidv4());
   const getRequest = useMemo(makeRequestSelector, []);
   const request = useSelector((state) => getRequest(state, requestId));
 
@@ -20,9 +18,7 @@ export function useRequest(id, removeOldRequest) {
   }, [dispatch, requestId]);
 
   const send = useCallback(
-    (obj) => {
-      return dispatch(makeRequest({ ...obj, id: requestId }));
-    },
+    (obj) => dispatch(makeRequest({ ...obj, id: requestId })),
     [dispatch, requestId]
   );
 

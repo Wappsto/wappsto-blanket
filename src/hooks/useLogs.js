@@ -81,7 +81,7 @@ export function useLogs(stateId, sessionId, cacheId) {
           if (cacheId) {
             cache[cacheId] = {
               data: cachedData.current,
-              options: options,
+              options,
               status: STATUS.SUCCESS
             };
           }
@@ -97,7 +97,7 @@ export function useLogs(stateId, sessionId, cacheId) {
           if (cacheId) {
             cache[cacheId] = {
               data: cachedData.current,
-              options: options,
+              options,
               status: STATUS.ERROR
             };
           }
@@ -114,11 +114,9 @@ export function useLogs(stateId, sessionId, cacheId) {
     [cacheId, dispatch, sessionId, stateId]
   );
 
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       unmounted.current = true;
-    };
-  }, []);
+    }, []);
 
   const cancel = useCallback(() => {
     if (cancelFunc.current) {

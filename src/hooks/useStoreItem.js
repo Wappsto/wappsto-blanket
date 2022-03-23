@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { useItemSelector } from './useItemSelector';
 import { setItem as setReduxItem, removeItem as removeReduxItem } from 'wappsto-redux';
+import { useItemSelector } from './useItemSelector';
 
 export function useStoreItem(id) {
   const dispatch = useDispatch();
