@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 
 const mainStream = 'stream-main';
 let subscriptions = {};
-let newSubscriptions = { ...subscriptions };
+const newSubscriptions = { ...subscriptions };
 let timeout;
 let ws;
 
@@ -60,7 +60,7 @@ export function updateStream(dispatch, subscription, type, options = defaultOpti
       }
     });
   }
-  timeout = setTimeout(async function () {
+  timeout = setTimeout(async () => {
     if (!ws || ws.readyState !== ws.OPEN) {
       ws = await dispatch(
         openStream(
@@ -79,7 +79,7 @@ export function updateStream(dispatch, subscription, type, options = defaultOpti
 export function getServiceUrl(service, options) {
   const version =
     options && options.hasOwnProperty('version') ? options.version : getServiceVersion(service);
-  return config.baseUrl + (version ? '/' + version : '') + '/' + service;
+  return `${config.baseUrl + (version ? `/${version}` : '')  }/${service}`;
 }
 
 export function cannotAccessState(state) {
@@ -92,11 +92,11 @@ export function cannotAccessState(state) {
 }
 
 export function countDecimals(value) {
-  let text = value.toString();
+  const text = value.toString();
   // verify if number 0.000005 is represented as "5e-6"
   if (text.indexOf('e-') > -1) {
-    let trail = text.split('e-')[1];
-    let deg = parseInt(trail, 10);
+    const trail = text.split('e-')[1];
+    const deg = parseInt(trail, 10);
     return deg;
   }
   // count decimals for number in representation like "0.123456"

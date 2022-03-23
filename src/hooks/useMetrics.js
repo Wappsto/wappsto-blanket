@@ -6,7 +6,7 @@ import { STATUS } from '../util';
 export function useMetrics(id) {
   const dispatch = useDispatch();
   const getItem = useMemo(makeItemSelector, []);
-  const itemName = 'metrics_cache_' + id;
+  const itemName = `metrics_cache_${id}`;
   const cachedData = useSelector((state) => getItem(state, itemName));
   const [data, setData] = useState(cachedData);
   const savedStatus = cachedData ? STATUS.SUCCESS : STATUS.IDLE;
@@ -43,9 +43,9 @@ export function useMetrics(id) {
         const body = {
           operation: 'count_online_iot',
           query: {
-            begin: begin,
-            end: end,
-            resolution: resolution
+            begin,
+            end,
+            resolution
           }
         };
         const controller = new AbortController();
@@ -82,11 +82,9 @@ export function useMetrics(id) {
     [dispatch, itemName]
   );
 
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       unmounted.current = true;
-    };
-  }, []);
+    }, []);
 
   const cancel = useCallback(() => {
     if (cancelFunc.current) {

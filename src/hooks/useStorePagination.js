@@ -10,14 +10,14 @@ export function useStorePagination(...props) {
   );
 
   useEffect(() => {
-    if (storeItems.length !== items.length) {
+    if (items && storeItems.length !== items.length) {
       items.forEach((item) => {
         if (!storeItems.find((i) => i?.meta?.id === item?.meta?.id)) {
           removeItem(item);
         }
       });
     }
-  }, [storeItems]);
+  }, [storeItems, items, removeItem]);
 
   return { items: storeItems, removeItem, ...rest };
 }

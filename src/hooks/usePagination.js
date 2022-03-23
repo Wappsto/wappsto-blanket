@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from 'react-redux';
 import { startRequest, STATUS, getSession, onLogout } from 'wappsto-redux';
-import { useMountedRef } from './useMounted';
+import { useMounted } from './useMounted';
 
 const MAX_PER_PAGE_IDS = 1000;
 const MAX_PER_PAGE_ITEMS = 10;
@@ -126,7 +126,7 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
     offset: idsOffset
   });
 
-  const count = response.json.count;
+  const {count} = response.json;
   if (useCache) {
     cache.url[url].count = count;
     cache.url[url].pageSize = pageSize;
@@ -222,10 +222,10 @@ export function usePagination(paginationInit) {
   } = pagination || {};
   const [[items, pageLength], setItems] = useState([[], pageSize]);
   const [page, setPage] = useState(pageNo);
-  const [status, setStatus] = useState();
+  const [status, setStatus] = useState('idle');
   const [count, setCount] = useState(0);
   const [itemIds, setItemIds] = useState([]);
-  const isMountedRef = useMountedRef();
+  const isMountedRef = useMounted();
   const requestsRef = useRef({ count: undefined, items: undefined });
   const functionRef = useRef({});
   const store = useStore();
@@ -236,7 +236,7 @@ export function usePagination(paginationInit) {
         return;
       }
       setStatus(STATUS.pending);
-      let pageNumber = parseInt(pageNo) || 1;
+      const pageNumber = parseInt(pageNo) || 1;
       const sessionObj = getSessionObj({ store, session });
       const urlFull = getUrl({ url, query, pageSize });
       const { count, pages } = await getPages({
@@ -278,7 +278,19 @@ export function usePagination(paginationInit) {
         setStatus(STATUS.error);
       }
     });
-  }, [pagination]);
+  }, [
+    pagination,
+    isMountedRef,
+    pageNo,
+    pageSize,
+    query,
+    store,
+    session,
+    url,
+    setCurrentPage,
+    useCache
+    // items,
+  ]);
 
   const _refresh = () => {
     const urlFull = getUrl({ url, query, pageSize });
@@ -292,10 +304,16 @@ export function usePagination(paginationInit) {
   };
 
   const add = (item) => {
+    if (!url) {
+      return;
+    }
     const idUrl = getUrl({ url, query, pageSize });
     if (!useCache) {
+      if (!items) {
+        return;
+      }
       if (page === 1) {
-        let newItems = [item, ...items];
+        const newItems = [item, ...items];
         if (newItems.length > pageLength) {
           newItems.pop();
         }
@@ -306,7 +324,7 @@ export function usePagination(paginationInit) {
         refresh();
       }
     } else if (cache.url[idUrl]) {
-      const id = item.meta.id;
+      const {id} = item.meta;
       cache.url[idUrl].count++;
       cache.item[id] = item;
       const lastPage = Math.ceil(cache.url[idUrl].count / pageSize);
@@ -345,9 +363,12 @@ export function usePagination(paginationInit) {
       id = id.meta.id;
     }
     if (!useCache) {
+      if (!items) {
+        return;
+      }
       const found = items.findIndex((e) => e.meta.id === id);
       if (found !== -1) {
-        let newItems = [...items];
+        const newItems = [...items];
         newItems.splice(found, 1);
         setItems([newItems, pageLength]);
         const lastPage = Math.ceil(count / pageSize);
@@ -364,7 +385,7 @@ export function usePagination(paginationInit) {
       if (!pageIds) {
         return;
       }
-      let index = pageIds.indexOf(id);
+      const index = pageIds.indexOf(id);
       pageIds.splice(index, 1);
       delete cache.item[id];
       cache.url[idUrl].count--;
@@ -393,7 +414,7 @@ export function usePagination(paginationInit) {
   };
 
   const update = (item) => {
-    const id = item.meta.id;
+    const {id} = item.meta;
     if (cache.item[id]) {
       cache.item[id] = item;
       const idUrl = getUrl({ url, query, pageSize });
