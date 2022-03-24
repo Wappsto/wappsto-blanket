@@ -20,7 +20,7 @@ describe('useUser', () => {
         provider: [{ picture: 'image' }]
       })
     );
-    const store = new configureStore();
+    const store = configureStore();
 
     const { result, waitForNextUpdate } = renderHook(() => useUser(), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
@@ -46,7 +46,7 @@ describe('useUser', () => {
   });
 
   it('can get user from Redux', async () => {
-    const store = new configureStore({
+    const store = configureStore({
       entities: { user: { user_id: { first_name: 'first', last_name: 'last' } } }
     });
 
@@ -61,7 +61,7 @@ describe('useUser', () => {
   });
 
   it('can get user from Redux with provider', async () => {
-    const store = new configureStore({
+    const store = configureStore({
       entities: {
         user: { user_id: { provider: [{ name: 'provider name', email: 'provider mail' }] } }
       }
@@ -78,7 +78,7 @@ describe('useUser', () => {
   });
 
   it('can get user from Redux with email', async () => {
-    const store = new configureStore({
+    const store = configureStore({
       entities: { user: { user_id: { email: 'email', provider: [{}] } } }
     });
 

@@ -20,7 +20,7 @@ describe('useSubscribe', () => {
   });
 
   it('runs correctly', async () => {
-    const store = new configureStore();
+    const store = configureStore();
     const networkType = 'network';
     const networkIds = 'network_id';
     const { rerender } = renderHook(({ type, ids }) => useSubscribe(type, ids), {

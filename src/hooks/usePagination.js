@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from 'react-redux';
 import { startRequest, STATUS, getSession, onLogout } from 'wappsto-redux';
-import { useMounted } from './index';
+import useMounted from './useMounted';
 
 const MAX_PER_PAGE_IDS = 1000;
 const MAX_PER_PAGE_ITEMS = 10;

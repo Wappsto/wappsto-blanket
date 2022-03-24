@@ -3,7 +3,7 @@ import { useStore } from 'react-redux';
 import { startRequest, addEntities, getSession, schema } from 'wappsto-redux';
 import querystring from 'query-string';
 import { STATUS, ITEMS_PER_SLICE } from '../util';
-import { useMounted } from './index';
+import useMounted from './useMounted';
 
 const CHILDREN = { network: 'device', device: 'value', value: 'state' };
 
@@ -65,7 +65,7 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
 
 };
 
-export function useFetchItems(objIds, query, useCache = true) {
+export default function useFetchItems(objIds, query, useCache = true) {
   const isMounted = useMounted();
   const store = useStore();
   const [status, setStatus] = useState(STATUS.PENDING);

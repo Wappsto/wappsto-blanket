@@ -7,7 +7,7 @@ import { useItemSelector } from '../src';
 describe('useItemSelector', () => {
   it('runs correctly', () => {
     const defaultValue = 'key';
-    const store = new configureStore();
+    const store = configureStore();
 
     const { result } = renderHook(() => useItemSelector(defaultValue), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
@@ -18,7 +18,7 @@ describe('useItemSelector', () => {
 
   it('can find an item', () => {
     const defaultValue = 'key';
-    const store = new configureStore({ items: { key: 'test' } });
+    const store = configureStore({ items: { key: 'test' } });
 
     const { result } = renderHook(() => useItemSelector(defaultValue), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>

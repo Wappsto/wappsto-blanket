@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setItem, makeItemSelector, makeRequest } from 'wappsto-redux';
 import { STATUS } from '../util';
 
-export function useMetrics(id) {
+export default function useMetrics(id) {
   const dispatch = useDispatch();
   const getItem = useMemo(makeItemSelector, []);
   const itemName = `metrics_cache_${id}`;

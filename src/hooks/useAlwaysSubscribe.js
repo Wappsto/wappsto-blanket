@@ -1,13 +1,13 @@
 import { useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { onLogout } from 'wappsto-redux';
-import { usePrevious } from './index';
+import usePrevious from './usePrevious';
 import { updateStream } from '../util';
 
 let cache = {};
 onLogout(() => (cache = {}));
 
-export function useAlwaysSubscribe(items) {
+export default function useAlwaysSubscribe(items) {
   const dispatch = useDispatch();
   const arr = useMemo(() => {
     const result = [];

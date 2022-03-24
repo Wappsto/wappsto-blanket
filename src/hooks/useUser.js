@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { getUserData } from 'wappsto-redux';
-import { useRequest } from './index';
+import useRequest from './useRequest';
 import { STATUS } from '../util';
 
 export default function useUser() {

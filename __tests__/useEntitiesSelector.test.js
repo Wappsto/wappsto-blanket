@@ -6,7 +6,7 @@ import { useEntitiesSelector } from '../src';
 
 describe('useEntitiesSelector', () => {
   it('runs correctly', () => {
-    const store = new configureStore({
+    const store = configureStore({
       entities: {
         network: {
           network_id: { meta: { type: 'network', id: 'network_id' }, name: 'network name' }
@@ -14,17 +14,17 @@ describe('useEntitiesSelector', () => {
       }
     });
 
-    const service = 'network';
-    const id = 'network_id';
-    const wrong_id = 'wrong_id';
+    const network = 'network';
+    const networkId = 'network_id';
+    const wrongId = 'wrong_id';
 
     const { result, rerender } = renderHook(({ service, id }) => useEntitiesSelector(service, id), {
-      initialProps: { service, id: wrong_id },
+      initialProps: { service: network, id: wrongId },
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
     });
 
     expect(result.current).toEqual([]);
-    rerender({ service, id });
+    rerender({ service: network, id: networkId });
     expect(result.current[0].name).toEqual('network name');
   });
 });

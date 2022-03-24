@@ -9,7 +9,7 @@ import {
   onLogout
 } from 'wappsto-redux';
 import equal from 'deep-equal';
-import { usePrevious } from './index';
+import usePrevious from './usePrevious';
 import { STATUS, ITEMS_PER_SLICE } from '../util';
 
 const itemName = 'useIds_status';
@@ -50,7 +50,7 @@ function sendGetIds(store, ids, service, query, sliceLength) {
   });
 }
 
-export function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) {
+export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER_SLICE) {
   const store = useStore();
   const [status, setStatus] = useState(STATUS.IDLE);
   const prevStatus = usePrevious(status);

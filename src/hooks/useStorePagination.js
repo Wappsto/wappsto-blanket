@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { usePagination, useEntitiesSelector } from './index';
+import usePagination from './usePagination';
+import useEntitiesSelector from './useEntitiesSelector';
 
 export default function useStorePagination(...props) {
   const { items, removeItem, ...rest } = usePagination(...props);

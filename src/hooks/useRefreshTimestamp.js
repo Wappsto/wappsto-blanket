@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useRefresh } from './index';
+import useRefresh from './useRefresh';
 
 export default function useRefreshTimestamp(timestamp) {
   const date = useMemo(() => new Date(timestamp), [timestamp]);

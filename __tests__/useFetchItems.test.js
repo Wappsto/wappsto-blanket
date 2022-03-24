@@ -7,7 +7,7 @@ import { useFetchItems } from '../src';
 
 describe('useFetchItems', () => {
   fetchMock.enableMocks();
-  let store = new configureStore();
+  let store = configureStore();
   beforeEach(() => {
     fetch.resetMocks();
   });
@@ -133,7 +133,7 @@ describe('useFetchItems', () => {
     });
 
     it('will get multiple different id', async () => {
-      store = new configureStore();
+      store = configureStore();
       fetch.mockResponseOnce(
         JSON.stringify([
           {
@@ -143,18 +143,18 @@ describe('useFetchItems', () => {
         ])
       );
 
-      const objIds = {
+      const networkIds = {
         network: ['4e63ae3a-f653-410b-afb9-56e4672feca9']
       };
-      const query = {
+      const queryExpand = {
         expand: 1
       };
-      const useCache = true;
+      const cache = true;
 
       const { result, waitForNextUpdate, rerender } = renderHook(
         ({ objIds, query, useCache }) => useFetchItems(objIds, query, useCache),
         {
-          initialProps: { objIds, query, useCache },
+          initialProps: { objIds: networkIds, query: queryExpand, useCache: cache },
           wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
         }
       );
@@ -168,7 +168,7 @@ describe('useFetchItems', () => {
       expect(result.current.items.network.network[0].name).toEqual('Network Name');
 
       await act(async () => {
-        await rerender({ objIds });
+        await rerender({ objIds: networkIds });
       });
 
       expect(fetchMock).toHaveBeenCalledTimes(1);

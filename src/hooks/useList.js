@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setItem, makeEntitiesSelector, makeItemSelector, getUrlInfo } from 'wappsto-redux';
-import { usePrevious, useRequest } from './index';
+import usePrevious from './usePrevious';
+import useRequest from './useRequest';
 import { STATUS } from '../util';
 
 const empty = [];
@@ -24,7 +25,7 @@ function getQueryObj(query) {
 /*
 props: url, type, id, childType, query, reset, resetOnEmpty, sort
 */
-export function useList(inputProps) {
+export default function useList(inputProps) {
   const props = inputProps || {};
   const dispatch = useDispatch();
   const prevQuery = usePrevious(props.query);

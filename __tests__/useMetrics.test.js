@@ -7,7 +7,7 @@ import { useMetrics } from '../src';
 
 describe('useMetrics', () => {
   fetchMock.enableMocks();
-  const store = new configureStore();
+  const store = configureStore();
 
   beforeEach(() => {
     fetch.resetMocks();

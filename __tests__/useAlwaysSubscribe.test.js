@@ -20,7 +20,7 @@ describe('useAlwaysSubscribe', () => {
   });
 
   it('runs correctly', async () => {
-    const store = new configureStore();
+    const store = configureStore();
     const networkItem = [
       {
         meta: {

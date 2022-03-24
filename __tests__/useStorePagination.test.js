@@ -7,7 +7,7 @@ import { useStorePagination } from '../src';
 
 describe('useStorePageination', () => {
   fetchMock.enableMocks();
-  const store = new configureStore();
+  const store = configureStore();
   const idResponse = JSON.stringify({
     child: [{ type: 'network', version: '2.0' }],
     id: [

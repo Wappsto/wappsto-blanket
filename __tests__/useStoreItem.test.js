@@ -7,7 +7,7 @@ import { useStoreItem } from '../src';
 describe('useStoreItem', () => {
   it('run correctly', () => {
     const defaultValue = 'key';
-    const store = new configureStore({ items: { key: 'test' } });
+    const store = configureStore({ items: { key: 'test' } });
 
     const { result } = renderHook(() => useStoreItem(defaultValue), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>

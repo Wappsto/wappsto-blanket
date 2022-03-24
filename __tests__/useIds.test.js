@@ -21,7 +21,7 @@ describe('useIds', () => {
         JSON.stringify([{ meta: { type: 'network', id: 'network_id_3' }, name: 'network name 3' }])
       );
 
-    const store = new configureStore({
+    const store = configureStore({
       entities: {
         network: {
           network_id: { meta: { type: 'network', id: 'network_id' }, name: 'network name' }

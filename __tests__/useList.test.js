@@ -7,7 +7,7 @@ import { useList } from '../src';
 
 describe('useList', () => {
   fetchMock.enableMocks();
-  const store = new configureStore();
+  const store = configureStore();
 
   beforeEach(() => {
     fetch.resetMocks();
