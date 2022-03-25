@@ -7,7 +7,7 @@ import useMounted from './useMounted';
 
 const CHILDREN = { network: 'device', device: 'value', value: 'state' };
 
-const fetch = async (ids, type, store, query, lvl = 0, useCache) => {
+const fetch = async (ids, type, store, query, lvl = 0, useCache = false) => {
   const state = store.getState();
   const uniqIds = [...new Set(ids)];
   const typeKey = schema.getSchemaTree(type).name;
@@ -72,15 +72,15 @@ export default function useFetchItems(objIds, query, useCache = true) {
   const [items, setItems] = useState({});
   const [queryClone, lvl] = useMemo(() => {
     if (query && query.constructor === Object) {
-      const queryClone = { ...query };
-      const lvl = queryClone.expand;
-      if (queryClone.hasOwnProperty('expand')) {
-        delete queryClone.expand;
+      const tmpQueryClone = { ...query };
+      const tmpLvl = tmpQueryClone.expand;
+      if (Object.prototype.hasOwnProperty.call(tmpQueryClone, 'expand')) {
+        delete tmpQueryClone.expand;
       }
-      if (!queryClone.hasOwnProperty('from_last')) {
-        queryClone.from_last = true;
+      if (!Object.prototype.hasOwnProperty.call(tmpQueryClone, 'from_last')) {
+        tmpQueryClone.from_last = true;
       }
-      return [queryClone, lvl];
+      return [tmpQueryClone, tmpLvl];
     }
     return [null, query];
   }, [query]);
@@ -91,14 +91,19 @@ export default function useFetchItems(objIds, query, useCache = true) {
 
     const startFetching = async () => {
       const newItems = {};
-      for (const [type, ids] of Object.entries(objIds || {})) {
-        if (CHILDREN[type] || type === 'state') {
-          const response = await fetch(ids, type, store, queryClone, lvl, useCache);
-          newItems[type] = response;
-        } else {
-          const response = await fetch(ids, type, store, queryClone, 0, useCache);
-          Object.assign(newItems, response);
-        }
+      if(objIds) {
+        const keys = Object.keys(objIds);
+        for(let i=0; i<keys.length; i+=1) {
+          const type = keys[i];
+          const ids = objIds[type];
+          if (CHILDREN[type] || type === 'state') {
+            const response = await fetch(ids, type, store, queryClone, lvl, useCache);
+            newItems[type] = response;
+          } else {
+            const response = await fetch(ids, type, store, queryClone, 0, useCache);
+            Object.assign(newItems, response);
+          }
+        };
       }
       if (isMounted) {
         setStatus(STATUS.SUCCESS);

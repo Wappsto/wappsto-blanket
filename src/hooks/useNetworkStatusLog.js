@@ -9,7 +9,7 @@ let cache = {};
 
 onLogout(() => (cache = {}));
 
-export function useNetworkStatusLog(networkId) {
+export default function useNetworkStatusLog(networkId) {
   const [{ data, status }, setResult] = useState({});
   const functionRef = useRef({});
   const isMountedRef = useRef(true);

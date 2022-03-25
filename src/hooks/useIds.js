@@ -25,7 +25,7 @@ function setCacheStatus(dispatch, ids, status, query) {
 function sendGetIds(store, ids, service, query, sliceLength) {
   const res = [];
   const slices = Math.ceil(ids.length / sliceLength);
-  for (let i = 0; i < slices; i++) {
+  for (let i = 0; i < slices; i+=1) {
     res.push(ids.slice(i * sliceLength, (i + 1) * sliceLength));
   }
   const state = store.getState();
@@ -65,7 +65,7 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
 
   const updateMissingIds = useCallback(() => {
     if (equal(ids, prevIds)) {
-      return;
+      return [];
     }
     const arr = [];
     const cacheIds = [];
@@ -120,7 +120,7 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
   // Update status
   useMemo(() => {
     if (status !== STATUS.SUCCESS || prevIds !== ids) {
-      for (let i = 0; i < ids.length; i++) {
+      for (let i = 0; i < ids.length; i+=1) {
         const idStatus = cache[ids[i]] && cache[ids[i]].status;
         if (idStatus === STATUS.ERROR) {
           setStatus(STATUS.ERROR);

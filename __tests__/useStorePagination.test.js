@@ -5,6 +5,8 @@ import { configureStore } from 'wappsto-redux';
 import fetchMock from 'jest-fetch-mock';
 import { useStorePagination } from '../src';
 
+Error.stackTraceLimit = 30;
+
 describe('useStorePageination', () => {
   fetchMock.enableMocks();
   const store = configureStore();
@@ -182,23 +184,19 @@ describe('useStorePageination', () => {
   });
 
   describe('without url', () => {
-    let result;
+    const { result } = renderHook(
+      () =>
+        useStorePagination({
+          url: undefined,
+          useCache: cache,
+          pageSize: size
+        }),
+      {
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      }
+    );
 
     it('can not render', async () => {
-      const res = renderHook(
-        () =>
-          useStorePagination({
-            url: undefined,
-            useCache: cache,
-            pageSize: size
-          }),
-        {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
-      );
-
-      result = res.result;
-
       expect(result.current.status).toBe('idle');
       expect(fetchMock).toHaveBeenCalledTimes(0);
     });
@@ -250,11 +248,8 @@ describe('useStorePageination', () => {
   });
 
   describe('with error', () => {
-    let result;
-    let waitForNextUpdate;
-
     it('can not render', async () => {
-      const res = renderHook(
+      const { result, waitForNextUpdate } = renderHook(
         () =>
           useStorePagination({
             url,
@@ -266,9 +261,6 @@ describe('useStorePageination', () => {
         }
       );
 
-      result = res.result;
-      waitForNextUpdate = res.waitForNextUpdate;
-
       await act(async () => {
         await waitForNextUpdate();
       });
@@ -278,6 +270,18 @@ describe('useStorePageination', () => {
     });
 
     it('can not add an item to the first page', async () => {
+      const { result } = renderHook(
+        () =>
+          useStorePagination({
+            url,
+            useCache: false,
+            pageSize: size
+          }),
+        {
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+        }
+      );
+
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
@@ -286,10 +290,22 @@ describe('useStorePageination', () => {
       });
 
       expect(result.current.status).toBe('error');
-      expect(fetchMock).toHaveBeenCalledTimes(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it('can not switch to page 2', async () => {
+      const { result } = renderHook(
+        () =>
+          useStorePagination({
+            url,
+            useCache: false,
+            pageSize: size
+          }),
+        {
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+        }
+      );
+
       await act(async () => {
         await result.current.setPage(2);
       });
@@ -299,6 +315,18 @@ describe('useStorePageination', () => {
     });
 
     it('can not update an item', async () => {
+      const { result } = renderHook(
+        () =>
+          useStorePagination({
+            url,
+            useCache: false,
+            pageSize: size
+          }),
+        {
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+        }
+      );
+
       await act(async () => {
         await result.current.updateItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
@@ -307,10 +335,22 @@ describe('useStorePageination', () => {
       });
 
       expect(result.current.status).toBe('error');
-      expect(fetchMock).toHaveBeenCalledTimes(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it('can not remove an item', async () => {
+      const { result } = renderHook(
+        () =>
+          useStorePagination({
+            url,
+            useCache: false,
+            pageSize: size
+          }),
+        {
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+        }
+      );
+
       await act(async () => {
         await result.current.removeItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
@@ -319,18 +359,15 @@ describe('useStorePageination', () => {
       });
 
       expect(result.current.status).toBe('error');
-      expect(fetchMock).toHaveBeenCalledTimes(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('with cache', () => {
-    let result;
-    let waitForNextUpdate;
-
     it('can render', async () => {
       fetch.mockResponseOnce(idResponse).mockResponseOnce(networkResponse1);
 
-      const res = renderHook(
+      const { result, waitForNextUpdate } = renderHook(
         () =>
           useStorePagination({
             url,
@@ -341,8 +378,6 @@ describe('useStorePageination', () => {
           wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
         }
       );
-      result = res.result;
-      waitForNextUpdate = res.waitForNextUpdate;
 
       expect(result.current.status).toBe('pending');
       expect(result.current.count).toBe(0);
@@ -368,6 +403,18 @@ describe('useStorePageination', () => {
     });
 
     it('can add an item to the first page', async () => {
+      const { result } = renderHook(
+        () =>
+          useStorePagination({
+            url,
+            useCache: cache,
+            pageSize: size
+          }),
+        {
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+        }
+      );
+
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
@@ -388,6 +435,18 @@ describe('useStorePageination', () => {
     it('can switch to page 2', async () => {
       fetch.mockResponseOnce(networkResponse2).mockResponseOnce(idResponse);
 
+      const { result } = renderHook(
+        () =>
+          useStorePagination({
+            url,
+            useCache: cache,
+            pageSize: size
+          }),
+        {
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+        }
+      );
+
       await act(async () => {
         await result.current.setPage(2);
       });
@@ -401,9 +460,7 @@ describe('useStorePageination', () => {
 
       expect(result.current.items[0].name).toEqual('Network Name');
       expect(result.current.itemIds[7]).toEqual('c0d98d41-3d9e-4c56-ad1f-50aae05f7e85');
-    });
 
-    it('can add an item to the second page', async () => {
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
@@ -411,16 +468,14 @@ describe('useStorePageination', () => {
         });
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
       expect(result.current.status).toBe('success');
       expect(result.current.count).toBe(19);
       expect(result.current.page).toBe(2);
       expect(result.current.pageSize).toBe(10);
       expect(result.current.items.length).toEqual(9);
       expect(result.current.itemIds.length).toEqual(9);
-    });
 
-    it('can update an item', async () => {
       await act(async () => {
         await result.current.updateItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
@@ -428,16 +483,14 @@ describe('useStorePageination', () => {
         });
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
       expect(result.current.status).toBe('success');
       expect(result.current.count).toBe(19);
       expect(result.current.page).toBe(2);
       expect(result.current.pageSize).toBe(10);
       expect(result.current.items.length).toEqual(9);
       expect(result.current.itemIds.length).toEqual(9);
-    });
 
-    it('can remove an item', async () => {
       await act(async () => {
         await result.current.removeItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
@@ -445,7 +498,7 @@ describe('useStorePageination', () => {
         });
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
       expect(result.current.status).toBe('success');
       expect(result.current.count).toBe(18);
       expect(result.current.page).toBe(2);
@@ -456,14 +509,11 @@ describe('useStorePageination', () => {
   });
 
   describe('without cache', () => {
-    let result;
-    let waitForNextUpdate;
-
     it('can render', async () => {
       cache = false;
       fetch.mockResponseOnce(idResponse).mockResponseOnce(networkResponse1);
 
-      const res = renderHook(
+      const { result, waitForNextUpdate } = renderHook(
         () =>
           useStorePagination({
             url,
@@ -474,8 +524,6 @@ describe('useStorePageination', () => {
           wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
         }
       );
-      result = res.result;
-      waitForNextUpdate = res.waitForNextUpdate;
 
       expect(result.current.status).toBe('pending');
       expect(result.current.count).toBe(0);
@@ -498,9 +546,7 @@ describe('useStorePageination', () => {
       expect(fetchMock).toHaveBeenCalledTimes(2);
       expect(result.current.items[0].name).toEqual('Network Name');
       expect(result.current.itemIds[9]).toEqual('26b19be3-d7a4-4961-8544-b57700d55eaa');
-    });
 
-    it('can add an item to the first page', async () => {
       fetch.mockResponseOnce(idResponse).mockResponseOnce(networkResponse1);
 
       await act(async () => {
@@ -517,10 +563,8 @@ describe('useStorePageination', () => {
       expect(result.current.items.length).toEqual(10);
       expect(result.current.itemIds.length).toEqual(10);
 
-      expect(fetchMock).toHaveBeenCalledTimes(2);
-    });
+      expect(fetchMock).toHaveBeenCalledTimes(4);
 
-    it('can switch to page 2', async () => {
       fetch.mockResponseOnce(idResponse).mockResponseOnce(networkResponse2);
 
       await act(async () => {
@@ -534,12 +578,10 @@ describe('useStorePageination', () => {
       expect(result.current.items.length).toEqual(8);
       expect(result.current.itemIds.length).toEqual(8);
 
-      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock).toHaveBeenCalledTimes(6);
       expect(result.current.items[0].name).toEqual('Network Name');
       expect(result.current.itemIds[7]).toEqual('c0d98d41-3d9e-4c56-ad1f-50aae05f7e85');
-    });
 
-    it('can add an item to the second page', async () => {
       fetch.mockResponseOnce(idResponse);
 
       await act(async () => {
@@ -549,16 +591,14 @@ describe('useStorePageination', () => {
         });
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledTimes(7);
       expect(result.current.status).toBe('success');
       expect(result.current.count).toBe(18);
       expect(result.current.page).toBe(2);
       expect(result.current.pageSize).toBe(10);
       expect(result.current.items.length).toEqual(8);
       expect(result.current.itemIds.length).toEqual(8);
-    });
 
-    it('can update an item', async () => {
       await act(async () => {
         await result.current.updateItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
@@ -566,16 +606,14 @@ describe('useStorePageination', () => {
         });
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(0);
+      expect(fetchMock).toHaveBeenCalledTimes(7);
       expect(result.current.status).toBe('success');
       expect(result.current.count).toBe(18);
       expect(result.current.page).toBe(2);
       expect(result.current.pageSize).toBe(10);
       expect(result.current.items.length).toEqual(8);
       expect(result.current.itemIds.length).toEqual(8);
-    });
 
-    it('can remove an item', async () => {
       await act(async () => {
         await result.current.removeItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
@@ -583,7 +621,7 @@ describe('useStorePageination', () => {
         });
       });
 
-      expect(fetchMock).toHaveBeenCalledTimes(0);
+      expect(fetchMock).toHaveBeenCalledTimes(7);
       expect(result.current.status).toBe('success');
       expect(result.current.count).toBe(18);
       expect(result.current.page).toBe(2);

@@ -14,9 +14,9 @@ describe('useMetrics', () => {
   });
 
   it('runs correctly', async () => {
-    const stateId = 'e3e44493-8a90-4ea5-bbe4-644855caa6d0';
-    const sessionId = 'session';
-    const cacheId = 'cache';
+    const id = 'e3e44493-8a90-4ea5-bbe4-644855caa6d0';
+    const session = 'session';
+    const cache = 'cache';
     fetch
       .mockResponseOnce(JSON.stringify({ data: [1, 2, 3] }))
       .mockRejectOnce(JSON.stringify({ name: 'metrics' }))
@@ -25,7 +25,7 @@ describe('useMetrics', () => {
     const { result, unmount } = renderHook(
       ({ stateId, sessionId, cacheId }) => useLogs(stateId, sessionId, cacheId),
       {
-        initialProps: { stateId, sessionId, cacheId },
+        initialProps: { stateId: id, sessionId: session, cacheId: cache },
         wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
       }
     );

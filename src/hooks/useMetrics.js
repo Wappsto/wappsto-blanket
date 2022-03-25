@@ -16,16 +16,18 @@ export default function useMetrics(id) {
   const isCanceled = useRef(false);
   const unmounted = useRef(false);
 
-  const setCurrentStatus = (status) => {
-    cachedStatus.current = status;
-    setStatus(status);
+  const setCurrentStatus = (newStatus) => {
+    cachedStatus.current = newStatus;
+    setStatus(newStatus);
   };
 
   const getData = useCallback(
-    async (begin, end, resolution) => {
-      if (!begin || !end || !resolution) {
+    async (pBegin, pEnd, resolution) => {
+      if (!pBegin || !pEnd || !resolution) {
         return;
       }
+      let begin = pBegin;
+      let end = pEnd;
       if (begin.constructor === Date) {
         begin = begin.toISOString();
       }

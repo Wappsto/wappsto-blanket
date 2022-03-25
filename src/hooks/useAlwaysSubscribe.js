@@ -11,14 +11,16 @@ export default function useAlwaysSubscribe(items) {
   const dispatch = useDispatch();
   const arr = useMemo(() => {
     const result = [];
-    const allItems = items ? (items.constructor === Array ? items : [items]) : [];
-    allItems.forEach((item) => {
-      const itemPath = `/${item.meta.type}/${item.meta.id}`;
-      if (!cache[itemPath]) {
-        cache[itemPath] = true;
-        result.push(itemPath);
-      }
-    });
+    if (items) {
+      const allItems = items.constructor === Array ? items : [items];
+      allItems.forEach((item) => {
+        const itemPath = `/${item.meta.type}/${item.meta.id}`;
+        if (!cache[itemPath]) {
+          cache[itemPath] = true;
+          result.push(itemPath);
+        }
+      });
+    }
     return result;
   }, [items]);
   const prevArr = usePrevious(arr);

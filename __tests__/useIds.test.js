@@ -29,12 +29,12 @@ describe('useIds', () => {
       }
     });
 
-    const service = 'network';
-    const ids = ['network_id'];
+    const network = 'network';
+    const networkIds = ['network_id'];
     const { result, waitForNextUpdate, rerender } = renderHook(
       ({ service, ids }) => useIds(service, ids),
       {
-        initialProps: { service, ids },
+        initialProps: { service: network, ids: networkIds },
         wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
       }
     );
@@ -45,7 +45,7 @@ describe('useIds', () => {
     expect(fetch).toHaveBeenCalledTimes(0);
 
     const newIds = ['network_id_2'];
-    rerender({ service, ids: newIds });
+    rerender({ service: network, ids: newIds });
 
     expect(result.current.status).toEqual('pending');
     await act(async () => {
@@ -64,7 +64,7 @@ describe('useIds', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
 
     const newIds2 = ['network_id_2', 'network_id_3'];
-    rerender({ service, ids: newIds2 });
+    rerender({ service: network, ids: newIds2 });
 
     expect(result.current.status).toEqual('pending');
     await act(async () => {

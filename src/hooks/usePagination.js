@@ -30,13 +30,22 @@ function getSessionObj({ store, session }) {
   return sessionObj || getSession(state);
 }
 
+function getMaxPerPageIds(no) {
+  for (let i = MAX_PER_PAGE_IDS; i >= 0; i-=1) {
+    if (i % no === 0) {
+      return i;
+    }
+  }
+  return 0;
+}
+
 function getUrl({ url, query = {}, pageSize }) {
   if (!url) {
     return '';
   }
   const [baseUrl, queryStr] = url.split('?');
   const queryInstance = new URLSearchParams(queryStr);
-  for (const key in query) {
+  Object.keys(query).forEach((key) => {
     const value = query[key];
     if (Array.isArray(value)) {
       value.sort();
@@ -45,20 +54,20 @@ function getUrl({ url, query = {}, pageSize }) {
     } else {
       queryInstance.set(key, value);
     }
-  }
-  for (const k in DEFAULT_QUERY) {
-    if (!queryInstance.has(k)) {
-      queryInstance.set(k, DEFAULT_QUERY[k]);
+  });
+  Object.keys(DEFAULT_QUERY).forEach((key) => {
+    if (!queryInstance.has(key)) {
+      queryInstance.set(key, DEFAULT_QUERY[key]);
     }
-  }
+  });
   if (!queryInstance.has('limit')) {
     queryInstance.set('limit', getMaxPerPageIds(pageSize));
   }
-  for (const key in query) {
+  Object.keys(query).forEach((key) => {
     if (query[key] === null) {
       queryInstance.delete(key);
     }
-  }
+  });
   const url2 = `${baseUrl}?${queryInstance.toString()}`;
   return url2;
 }
@@ -81,14 +90,6 @@ function paginateIds({ ids, url, pageSize, useCache, offset = 0 }) {
   return pages;
 }
 
-function getMaxPerPageIds(no) {
-  for (let i = MAX_PER_PAGE_IDS; i >= 0; i--) {
-    if (i % no === 0) {
-      return i;
-    }
-  }
-}
-
 const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, sessionObj }) => {
   if (
     (useCache &&
@@ -97,7 +98,7 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
       cache.url[url].page[page]) ||
     (cache.url[url] && cache.url[url].count === 0)
   ) {
-    return { count: cache.url[url].count, pages: cache.url[url].page };
+    return { newCount: cache.url[url].count, pages: cache.url[url].page };
   }
 
   const maxPerPageIds = getMaxPerPageIds(pageSize);
@@ -131,7 +132,7 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
     cache.url[url].count = count;
     cache.url[url].pageSize = pageSize;
   }
-  return { count, pages };
+  return { newCount: count, pages };
 };
 
 const getCurrentPageItems = async ({
@@ -173,8 +174,7 @@ const getCurrentPageItems = async ({
   while (index < idsLength) {
     const queryIds = fetchIds.slice(index, 100 + index).join(',');
     query2.set('id', `[${queryIds}]`);
-    const url = `${baseUrl}?${query2.toString()}`;
-    urls.push(url);
+    urls.push(`${baseUrl}?${query2.toString()}`);
     index += 100;
   }
 
@@ -230,16 +230,27 @@ export default function usePagination(paginationInit) {
   const functionRef = useRef({});
   const store = useStore();
 
+  const get = useCallback(
+    (newState) => {
+      if (isMountedRef.current) {
+        setPagination((current) => ({ ...(current || {}), ...(newState || {}) }));
+      }
+    },
+    [isMountedRef]
+  );
+
+  const setCurrentPage = useCallback((newPageNo) => get({ page: newPageNo }), [get]);
+
   useEffect(() => {
     const startPagination = async () => {
       if (!url) {
         return;
       }
       setStatus(STATUS.pending);
-      const pageNumber = parseInt(pageNo) || 1;
+      const pageNumber = parseInt(pageNo, 10) || 1;
       const sessionObj = getSessionObj({ store, session });
       const urlFull = getUrl({ url, query, pageSize });
-      const { count, pages } = await getPages({
+      const { newCount, pages } = await getPages({
         url: urlFull,
         store,
         useCache,
@@ -248,7 +259,7 @@ export default function usePagination(paginationInit) {
         pageSize,
         sessionObj
       });
-      const lastPage = Math.ceil(count / pageSize);
+      const lastPage = Math.ceil(newCount / pageSize);
       if (pageNumber > lastPage && lastPage > 0) {
         setCurrentPage(lastPage);
         return;
@@ -265,7 +276,7 @@ export default function usePagination(paginationInit) {
       });
       if (isMountedRef.current) {
         setPage(pageNumber);
-        setCount(count);
+        setCount(newCount);
         setItems([newItems, pageSize]);
         setItemIds(pages[pageNumber] || []);
         setStatus(STATUS.success);
@@ -292,12 +303,12 @@ export default function usePagination(paginationInit) {
     // items,
   ]);
 
-  const _refresh = () => {
+  const refresh = () => {
     const urlFull = getUrl({ url, query, pageSize });
     if (cache.url[urlFull]) {
-      for (const k in cache.url[urlFull].page) {
-        cache.url[urlFull].page[k].forEach((id) => delete cache.item[id]);
-      }
+      Object.keys(cache.url[urlFull].page).forEach((key) => {
+        cache.url[urlFull].page[key].forEach((id) => delete cache.item[id]);
+      });
       delete cache.url[urlFull];
     }
     get();
@@ -325,7 +336,7 @@ export default function usePagination(paginationInit) {
       }
     } else if (cache.url[idUrl]) {
       const {id} = item.meta;
-      cache.url[idUrl].count++;
+      cache.url[idUrl].count+=1;
       cache.item[id] = item;
       const lastPage = Math.ceil(cache.url[idUrl].count / pageSize);
       const lastPageOld = Math.ceil((cache.url[idUrl].count - 1) / pageSize);
@@ -335,20 +346,21 @@ export default function usePagination(paginationInit) {
       if (idUrl.includes('from_last=true')) {
         let prevPage = 0;
         let prevId = id;
-        for (const page in cache.url[idUrl].page) {
-          const ids = cache.url[idUrl].page[+page];
-          if (prevPage == +page - 1) {
+        Object.keys(cache.url[idUrl].page).forEach((key) => {
+          const newPage = parseInt(key, 10);
+          const ids = cache.url[idUrl].page[newPage];
+          if (prevPage === (newPage - 1)) {
             ids.unshift(prevId);
           } else {
-            prevPage = page;
+            prevPage = newPage;
             prevId = ids.pop();
-            delete cache.url[idUrl].page[+page];
+            delete cache.url[idUrl].page[newPage];
           }
           if (ids.length > cache.url[idUrl].pageSize) {
-            prevPage = page;
+            prevPage = newPage;
             prevId = ids.pop();
           }
-        }
+        });
         get();
       } else if (cache.url[idUrl].page[lastPage]) {
         cache.url[idUrl].page[lastPage].push(id);
@@ -357,8 +369,9 @@ export default function usePagination(paginationInit) {
     }
   };
 
-  const remove = (id) => {
+  const remove = (pId) => {
     const idUrl = getUrl({ url, query, pageSize });
+    let id = pId;
     if (id && id.constructor === Object) {
       id = id.meta.id;
     }
@@ -388,21 +401,22 @@ export default function usePagination(paginationInit) {
       const index = pageIds.indexOf(id);
       pageIds.splice(index, 1);
       delete cache.item[id];
-      cache.url[idUrl].count--;
+      cache.url[idUrl].count-=1;
       const lastPage = Math.ceil(cache.url[idUrl].count / pageSize);
-      arrCachePage.forEach(([page, ids], i) => {
-        if (+page < deletePageNo) {
+      arrCachePage.forEach(([key, ids], i) => {
+        const newPage = parseInt(key, 10);
+        if (newPage < parseInt(deletePageNo, 10)) {
           return;
         }
         const [nextPageNo, nextPageIds] = arrCachePage[i + 1] || [];
-        if (!cache.url[idUrl].page[+page - 1] && page !== deletePageNo) {
+        if (!cache.url[idUrl].page[newPage - 1] && newPage !== parseInt(deletePageNo, 10)) {
           ids.shift();
         }
-        if (+page + 1 == nextPageNo) {
+        if (newPage + 1 === parseInt(nextPageNo, 10)) {
           const shiftedId = nextPageIds.shift();
           ids.push(shiftedId);
-        } else if (page != lastPage) {
-          delete cache.url[idUrl].page[+page];
+        } else if (newPage !== lastPage) {
+          delete cache.url[idUrl].page[newPage];
         }
       });
       if (page > lastPage) {
@@ -426,24 +440,14 @@ export default function usePagination(paginationInit) {
     }
   };
 
-  const get = useCallback(
-    (newState) => {
-      if (isMountedRef.current) {
-        setPagination((current) => ({ ...(current || {}), ...(newState || {}) }));
-      }
-    },
-    [isMountedRef]
-  );
-  const setCurrentPage = useCallback((pageNo) => get({ page: pageNo }), [get]);
-
   functionRef.current.update = update;
   functionRef.current.remove = remove;
   functionRef.current.add = add;
-  functionRef.current.refresh = _refresh;
+  functionRef.current.refresh = refresh;
   const updateItem = useCallback((...args) => functionRef.current.update(...args), []);
   const removeItem = useCallback((...args) => functionRef.current.remove(...args), []);
   const addItem = useCallback((...args) => functionRef.current.add(...args), []);
-  const refresh = useCallback((...args) => functionRef.current.refresh(...args), []);
+  const refreshAll = useCallback((...args) => functionRef.current.refresh(...args), []);
 
   return {
     items,
@@ -451,7 +455,7 @@ export default function usePagination(paginationInit) {
     page,
     pageSize: pageLength,
     setPage: setCurrentPage,
-    refresh,
+    refresh: refreshAll,
     status,
     get,
     addItem,

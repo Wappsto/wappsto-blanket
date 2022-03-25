@@ -3,9 +3,9 @@ import { usePrevious } from '../src';
 
 describe('usePrevious', () => {
   it('runs correctly', async () => {
-    const value = 'test';
+    const testValue = 'test';
     const { result, rerender } = renderHook(({ value }) => usePrevious(value), {
-      initialProps: { value }
+      initialProps: { value: testValue }
     });
 
     expect(result.current).toEqual(undefined);

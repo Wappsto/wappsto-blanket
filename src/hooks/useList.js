@@ -10,13 +10,14 @@ const empty = [];
 function getQueryObj(query) {
   const urlParams = {};
   let match;
-    const pl = /\+/g;
-    const search = /([^&=]+)=?([^&]*)/g;
-    const decode = function (s) {
-      return decodeURIComponent(s.replace(pl, ' '));
-    };
+  const pl = /\+/g;
+  const search = /([^&=]+)=?([^&]*)/g;
+  function decode(s) {
+    return decodeURIComponent(s.replace(pl, ' '));
+  };
 
-  while ((match = search.exec(query))) {
+  while(match) {
+    match = search.exec(query);
     urlParams[decode(match[1])] = decode(match[2]);
   }
   return urlParams;
@@ -37,12 +38,13 @@ export default function useList(inputProps) {
 
   const propsData = useMemo(() => {
     let { type, id, childType, url } = props;
-    let parent; let entitiesType;
-    let query = { ...props.query };
+    let parent;
+    let entitiesType;
+    let propsQuery = { ...props.query };
     if (url) {
       let split = url.split('?');
-      url = split[0];
-      query = { ...getQueryObj(split.slice(1).join('?')), ...query };
+      [ url ] = split;
+      propsQuery = { ...getQueryObj(split.slice(1).join('?')), ...propsQuery };
       split = split[0].split('/');
       const result = getUrlInfo(url);
       if (result.parent) {
@@ -58,7 +60,7 @@ export default function useList(inputProps) {
       url = `/${type}`;
       if (id) {
         if (id.startsWith('?')) {
-          query = { ...query, ...getQueryObj(id.slice(1)) };
+          propsQuery = { ...propsQuery, ...getQueryObj(id.slice(1)) };
         } else {
           if (!id.startsWith('/')) {
             url += '/';
@@ -74,11 +76,11 @@ export default function useList(inputProps) {
         entitiesType = type;
       }
     }
-    if (!query.limit || query.limit > 100) {
-      query.limit = 100;
+    if (!propsQuery.limit || propsQuery.limit > 100) {
+      propsQuery.limit = 100;
     }
-    if (!query.hasOwnProperty('offset')) {
-      query.offset = 0;
+    if (!Object.prototype.hasOwnProperty.call(propsQuery, 'offset')) {
+      propsQuery.offset = 0;
     }
     return {
       type,
@@ -86,7 +88,7 @@ export default function useList(inputProps) {
       entitiesType,
       id,
       url,
-      query,
+      query: propsQuery,
       parent
     };
   }, [props.type, props.id, props.childType, props.url, differentQuery.current]);
@@ -127,9 +129,9 @@ export default function useList(inputProps) {
   }
   if (items.length === 1 && items[0].meta.type === 'attributelist') {
     const newItems = [];
-    for (const key in items[0].data) {
+    Object.keys(items[0].data).forEach((key) => {
       newItems.push({ id: key, [propsData.id]: items[0].data[key] });
-    }
+    });
     items = newItems.length > 0 ? newItems : empty;
   }
 
@@ -142,14 +144,14 @@ export default function useList(inputProps) {
   const prevRequest = usePrevious(request);
 
   const sendRequest = useCallback(
-    (options) => {
+    (opt) => {
       if (propsData.url) {
         setCanLoadMore(false);
-        setCustomRequest({ status: STATUS.PENDING, options });
+        setCustomRequest({ status: STATUS.PENDING, opt });
         send({
           method: 'GET',
           url: propsData.url,
-          ...options
+          ...opt
         });
       }
     },
@@ -191,7 +193,8 @@ export default function useList(inputProps) {
       request.status === STATUS.SUCCESS
     ) {
       dispatch(
-        setItem(idsItemName, (ids) => {
+        setItem(idsItemName, (pIds) => {
+          let ids = pIds;
           if (request.options.refresh) {
             ids = [];
           }
