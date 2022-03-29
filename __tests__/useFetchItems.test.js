@@ -19,7 +19,7 @@ describe('useFetchItems', () => {
       const useCache = true;
 
       const { result } = renderHook(() => useFetchItems(objIds, query, useCache), {
-        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
       });
 
       expect(result.current.status).toEqual('success');
@@ -30,15 +30,15 @@ describe('useFetchItems', () => {
       fetch.mockRejectOnce('error');
       const objIds = { network: ['658ef28d-d255-4394-9c6e-3199cc9e4c06'] };
       const query = {
-        expand: 1
+        expand: 1,
       };
       const useCache = true;
 
       const { result, waitForNextUpdate } = renderHook(
         () => useFetchItems(objIds, query, useCache),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
@@ -54,23 +54,23 @@ describe('useFetchItems', () => {
         JSON.stringify([
           {
             meta: { id: '4e63ae3a-f653-410b-afb9-56e4672feca9', type: 'network' },
-            name: 'Network Name'
-          }
-        ])
+            name: 'Network Name',
+          },
+        ]),
       );
 
       const objIds = { network: ['658ef28d-d255-4394-9c6e-3199cc9e4c06'] };
       const query = {
         expand: 1,
-        from_last: false
+        from_last: false,
       };
       const useCache = true;
 
       const { result, waitForNextUpdate } = renderHook(
         () => useFetchItems(objIds, query, useCache),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
@@ -88,37 +88,37 @@ describe('useFetchItems', () => {
           JSON.stringify([
             {
               meta: { id: '4e63ae3a-f653-410b-afb9-56e4672feca9', type: 'network' },
-              name: 'Network Name'
+              name: 'Network Name',
             },
             {
               meta: { id: 'ace68452-f7f9-4e6b-a656-3cd0c1d70463', type: 'network' },
-              name: 'Network Name 2'
-            }
-          ])
+              name: 'Network Name 2',
+            },
+          ]),
         )
         .mockResponseOnce(
           JSON.stringify([
             {
               meta: { id: 'ace68452-f7f9-4e6b-a656-3cd0c1d70463', type: 'application' },
-              name: 'Application Name'
-            }
-          ])
+              name: 'Application Name',
+            },
+          ]),
         );
 
       const objIds = {
         network: ['658ef28d-d255-4394-9c6e-3199cc9e4c06', '1ed7e891-a000-49b2-8122-7bb5ba5f5559'],
-        application: ['ace68452-f7f9-4e6b-a656-3cd0c1d70463']
+        application: ['ace68452-f7f9-4e6b-a656-3cd0c1d70463'],
       };
       const query = {
-        expand: 1
+        expand: 1,
       };
       const useCache = true;
 
       const { result, waitForNextUpdate } = renderHook(
         () => useFetchItems(objIds, query, useCache),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
@@ -138,16 +138,16 @@ describe('useFetchItems', () => {
         JSON.stringify([
           {
             meta: { id: '4e63ae3a-f653-410b-afb9-56e4672feca9', type: 'network' },
-            name: 'Network Name'
-          }
-        ])
+            name: 'Network Name',
+          },
+        ]),
       );
 
       const networkIds = {
-        network: ['4e63ae3a-f653-410b-afb9-56e4672feca9']
+        network: ['4e63ae3a-f653-410b-afb9-56e4672feca9'],
       };
       const queryExpand = {
-        expand: 1
+        expand: 1,
       };
       const cache = true;
 
@@ -155,8 +155,8 @@ describe('useFetchItems', () => {
         ({ objIds, query, useCache }) => useFetchItems(objIds, query, useCache),
         {
           initialProps: { objIds: networkIds, query: queryExpand, useCache: cache },
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {

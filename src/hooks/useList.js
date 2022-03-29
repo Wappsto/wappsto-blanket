@@ -14,9 +14,9 @@ function getQueryObj(query) {
   const search = /([^&=]+)=?([^&]*)/g;
   function decode(s) {
     return decodeURIComponent(s.replace(pl, ' '));
-  };
+  }
 
-  while(match) {
+  while (match) {
     match = search.exec(query);
     urlParams[decode(match[1])] = decode(match[2]);
   }
@@ -43,7 +43,7 @@ export default function useList(inputProps) {
     let propsQuery = { ...props.query };
     if (url) {
       let split = url.split('?');
-      [ url ] = split;
+      [url] = split;
       propsQuery = { ...getQueryObj(split.slice(1).join('?')), ...propsQuery };
       split = split[0].split('/');
       const result = getUrlInfo(url);
@@ -89,18 +89,18 @@ export default function useList(inputProps) {
       id,
       url,
       query: propsQuery,
-      parent
+      parent,
     };
   }, [props.type, props.id, props.childType, props.url, differentQuery.current]);
 
   const [customRequest, setCustomRequest] = useState({
     status: propsData.url ? STATUS.PENDING : STATUS.SUCCESS,
-    options: { query: props.query }
+    options: { query: props.query },
   });
   // const name = props.name || propsData.url + JSON.stringify(propsData.query);
   const name = propsData.url + JSON.stringify(propsData.query);
-  const idsItemName = `${name  }_ids`;
-  const requestIdName = `${name  }_requestId`;
+  const idsItemName = `${name}_ids`;
+  const requestIdName = `${name}_requestId`;
   const getSavedIdsItem = useMemo(makeItemSelector, []);
   const savedIds = useSelector((state) => getSavedIdsItem(state, idsItemName)) || empty;
   const { request, send } = useRequest(requestIdName);
@@ -109,7 +109,7 @@ export default function useList(inputProps) {
     setCustomRequest({ status: STATUS.PENDING, options: { query: props.query } });
   }
 
-  const {limit} = propsData.query;
+  const { limit } = propsData.query;
 
   const options = { ids: savedIds, limit: savedIds.length };
 
@@ -151,26 +151,26 @@ export default function useList(inputProps) {
         send({
           method: 'GET',
           url: propsData.url,
-          ...opt
+          ...opt,
         });
       }
     },
-    [propsData.url, send]
+    [propsData.url, send],
   );
 
   const refresh = useCallback(
     (reset) => {
       query.current = {
         expand: 0,
-        ...propsData.query
+        ...propsData.query,
       };
       sendRequest({
         query: query.current,
         reset: typeof reset === 'boolean' ? reset : props.reset,
-        refresh: true
+        refresh: true,
       });
     },
-    [propsData.query, sendRequest, props.reset]
+    [propsData.query, sendRequest, props.reset],
   );
 
   useEffect(() => {
@@ -202,7 +202,7 @@ export default function useList(inputProps) {
             if (request.json.constructor === Array) {
               ids = [
                 ...(ids || []),
-                ...request.json.map((item) => (item.constructor === Object ? item.meta.id : item))
+                ...request.json.map((item) => (item.constructor === Object ? item.meta.id : item)),
               ];
             } else if (request.json.meta.type === 'attributelist') {
               ids = [propsData.id];
@@ -211,7 +211,7 @@ export default function useList(inputProps) {
             ids = [];
           }
           return ids;
-        })
+        }),
       );
     }
   }, [dispatch, idsItemName, prevRequest, propsData.id, request]);
@@ -262,10 +262,10 @@ export default function useList(inputProps) {
       query.current = {
         expand: 0,
         ...propsData.query,
-        offset: items.length + propsData.query.offset
+        offset: items.length + propsData.query.offset,
       };
       sendRequest({
-        query: query.current
+        query: query.current,
       });
     }
   }, [canLoadMore, propsData.query, items.length, sendRequest]);
@@ -279,15 +279,14 @@ export default function useList(inputProps) {
             if (position === 'start') {
               return [id, ...ids];
             }
-              return [...ids, id];
-
-          })
+            return [...ids, id];
+          }),
         );
         return true;
       }
       return false;
     },
-    [dispatch, idsItemName, savedIds]
+    [dispatch, idsItemName, savedIds],
   );
 
   const removeItem = useCallback(
@@ -295,13 +294,13 @@ export default function useList(inputProps) {
       const index = savedIds.findIndex((existingId) => existingId === id);
       if (index !== -1) {
         dispatch(
-          setItem(idsItemName, (ids = []) => [...ids.slice(0, index), ...ids.slice(index + 1)])
+          setItem(idsItemName, (ids = []) => [...ids.slice(0, index), ...ids.slice(index + 1)]),
         );
         return true;
       }
       return false;
     },
-    [dispatch, idsItemName, savedIds]
+    [dispatch, idsItemName, savedIds],
   );
 
   return {
@@ -311,6 +310,6 @@ export default function useList(inputProps) {
     refresh,
     loadMore,
     addItem,
-    removeItem
+    removeItem,
   };
 }

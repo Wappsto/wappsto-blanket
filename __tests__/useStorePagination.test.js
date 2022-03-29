@@ -30,12 +30,12 @@ describe('useStorePageination', () => {
       '916c3b77-e2fe-42cd-bb06-285a903540d9',
       'c6632216-fe28-49e2-b4fa-173ee3cb886a',
       '49b4bdbe-9fc4-44e6-87d0-fc72fe7a97c2',
-      'c0d98d41-3d9e-4c56-ad1f-50aae05f7e85'
+      'c0d98d41-3d9e-4c56-ad1f-50aae05f7e85',
     ],
     more: false,
     limit: 1000,
     count: 18,
-    meta: { type: 'idlist', version: '2.0' }
+    meta: { type: 'idlist', version: '2.0' },
   });
 
   const networkResponse1 = JSON.stringify([
@@ -43,72 +43,72 @@ describe('useStorePageination', () => {
       name: 'Network Name',
       meta: {
         type: 'network',
-        id: '5f4f6649-41a6-478c-94ba-41f56ec74591'
-      }
+        id: '5f4f6649-41a6-478c-94ba-41f56ec74591',
+      },
     },
     {
       name: 'Test',
       meta: {
         id: 'dec1de41-caa6-4095-b59f-84a852023c7b',
-        type: 'network'
-      }
+        type: 'network',
+      },
     },
     {
       name: 'Test',
       meta: {
         id: '13c24904-ba1d-4944-8d5e-6e30c2377607',
-        type: 'network'
-      }
+        type: 'network',
+      },
     },
     {
       name: 'Test',
       meta: {
         type: 'network',
-        id: 'b5a94a6d-a377-4616-9382-23cde976ec3d'
-      }
+        id: 'b5a94a6d-a377-4616-9382-23cde976ec3d',
+      },
     },
     {
       name: 'Test',
       meta: {
         type: 'network',
-        id: 'ff42c059-0028-43ba-a9f3-4c6b84c362c7'
-      }
+        id: 'ff42c059-0028-43ba-a9f3-4c6b84c362c7',
+      },
     },
     {
       name: 'Test',
       meta: {
         id: 'b62439fd-0266-44f0-88e1-5de96d970aa0',
-        type: 'network'
-      }
+        type: 'network',
+      },
     },
     {
       name: 'Test',
       meta: {
         id: '981088a8-6abf-46de-b675-14aba6d2907b',
-        type: 'network'
-      }
+        type: 'network',
+      },
     },
     {
       name: 'Test',
       meta: {
         type: 'network',
-        id: '6b8bd990-f3df-4e4d-bce2-bd65ab68a378'
-      }
+        id: '6b8bd990-f3df-4e4d-bce2-bd65ab68a378',
+      },
     },
     {
       name: 'Test',
       meta: {
         type: 'network',
-        id: '335b87c2-e21c-43f5-b763-51b51b55f23b'
-      }
+        id: '335b87c2-e21c-43f5-b763-51b51b55f23b',
+      },
     },
     {
       name: 'Test',
       meta: {
         type: 'network',
-        id: '26b19be3-d7a4-4961-8544-b57700d55eaa'
-      }
-    }
+        id: '26b19be3-d7a4-4961-8544-b57700d55eaa',
+      },
+    },
   ]);
 
   const networkResponse2 = JSON.stringify([
@@ -116,58 +116,58 @@ describe('useStorePageination', () => {
       name: 'Network Name',
       meta: {
         type: 'network',
-        id: '11c73ade-ddf0-4bd1-8ad5-c3d05dd1dd1f'
-      }
+        id: '11c73ade-ddf0-4bd1-8ad5-c3d05dd1dd1f',
+      },
     },
     {
       name: 'Test',
       meta: {
         id: '3ec1a0ff-7200-4ffd-b33e-154310d66743',
-        type: 'network'
-      }
+        type: 'network',
+      },
     },
     {
       name: 'Test',
       meta: {
         id: '6bead78a-fb5d-43f2-bf7a-43fef0ea61d0',
-        type: 'network'
-      }
+        type: 'network',
+      },
     },
     {
       name: 'Test',
       meta: {
         type: 'network',
-        id: '079b1bb7-195d-4b9e-943c-0356bc96b2a9'
-      }
+        id: '079b1bb7-195d-4b9e-943c-0356bc96b2a9',
+      },
     },
     {
       name: 'Test',
       meta: {
         type: 'network',
-        id: '916c3b77-e2fe-42cd-bb06-285a903540d9'
-      }
+        id: '916c3b77-e2fe-42cd-bb06-285a903540d9',
+      },
     },
     {
       name: 'Test',
       meta: {
         id: 'c6632216-fe28-49e2-b4fa-173ee3cb886a',
-        type: 'network'
-      }
+        type: 'network',
+      },
     },
     {
       name: 'Test',
       meta: {
         id: '49b4bdbe-9fc4-44e6-87d0-fc72fe7a97c2',
-        type: 'network'
-      }
+        type: 'network',
+      },
     },
     {
       name: 'Test',
       meta: {
         type: 'network',
-        id: 'c0d98d41-3d9e-4c56-ad1f-50aae05f7e85'
-      }
-    }
+        id: 'c0d98d41-3d9e-4c56-ad1f-50aae05f7e85',
+      },
+    },
   ]);
 
   const networkRequest1 =
@@ -189,11 +189,11 @@ describe('useStorePageination', () => {
         useStorePagination({
           url: undefined,
           useCache: cache,
-          pageSize: size
+          pageSize: size,
         }),
       {
-        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-      }
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+      },
     );
 
     it('can not render', async () => {
@@ -205,7 +205,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
-          name: 'test'
+          name: 'test',
         });
       });
 
@@ -226,7 +226,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.updateItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
-          name: 'update item'
+          name: 'update item',
         });
       });
 
@@ -238,7 +238,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.removeItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
-          name: 'update item'
+          name: 'update item',
         });
       });
 
@@ -254,11 +254,11 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: false,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
@@ -275,17 +275,17 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: false,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
-          name: 'test'
+          name: 'test',
         });
       });
 
@@ -299,11 +299,11 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: false,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
@@ -320,17 +320,17 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: false,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
         await result.current.updateItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
-          name: 'update item'
+          name: 'update item',
         });
       });
 
@@ -344,17 +344,17 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: false,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
         await result.current.removeItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
-          name: 'update item'
+          name: 'update item',
         });
       });
 
@@ -372,11 +372,11 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: cache,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       expect(result.current.status).toBe('pending');
@@ -408,17 +408,17 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: cache,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
-          name: 'test'
+          name: 'test',
         });
       });
 
@@ -440,11 +440,11 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: cache,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       await act(async () => {
@@ -464,7 +464,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
-          name: 'add item'
+          name: 'add item',
         });
       });
 
@@ -479,7 +479,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.updateItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
-          name: 'update item'
+          name: 'update item',
         });
       });
 
@@ -494,7 +494,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.removeItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
-          name: 'update item'
+          name: 'update item',
         });
       });
 
@@ -518,11 +518,11 @@ describe('useStorePageination', () => {
           useStorePagination({
             url,
             useCache: cache,
-            pageSize: size
+            pageSize: size,
           }),
         {
-          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-        }
+          wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+        },
       );
 
       expect(result.current.status).toBe('pending');
@@ -552,7 +552,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
-          name: 'test'
+          name: 'test',
         });
       });
 
@@ -587,7 +587,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.addItem({
           meta: { type: 'network', id: '489896c6-c4ae-46cf-9352-1148f4e339e4' },
-          name: 'add item'
+          name: 'add item',
         });
       });
 
@@ -602,7 +602,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.updateItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
-          name: 'update item'
+          name: 'update item',
         });
       });
 
@@ -617,7 +617,7 @@ describe('useStorePageination', () => {
       await act(async () => {
         await result.current.removeItem({
           meta: { type: 'network', id: '26b19be3-d7a4-4961-8544-b57700d55eaa' },
-          name: 'update item'
+          name: 'update item',
         });
       });
 

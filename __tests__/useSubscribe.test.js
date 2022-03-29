@@ -25,7 +25,7 @@ describe('useSubscribe', () => {
     const networkIds = 'network_id';
     const { rerender } = renderHook(({ type, ids }) => useSubscribe(type, ids), {
       initialProps: { type: networkType, ids: networkIds },
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     await server.connected;
@@ -33,8 +33,8 @@ describe('useSubscribe', () => {
       expect.objectContaining({
         jsonrpc: '2.0',
         method: 'PATCH',
-        params: { data: ['/network/network_id'], url: '/services/2.0/websocket/open/subscription' }
-      })
+        params: { data: ['/network/network_id'], url: '/services/2.0/websocket/open/subscription' },
+      }),
     );
     rerender({ ids: undefined });
 
@@ -42,8 +42,8 @@ describe('useSubscribe', () => {
       expect.objectContaining({
         jsonrpc: '2.0',
         method: 'PATCH',
-        params: { data: [], url: '/services/2.0/websocket/open/subscription' }
-      })
+        params: { data: [], url: '/services/2.0/websocket/open/subscription' },
+      }),
     );
 
     rerender({ type: networkType, ids: ['network_id_2', 'network_id_3'] });
@@ -54,9 +54,9 @@ describe('useSubscribe', () => {
         method: 'PATCH',
         params: {
           data: ['/network/network_id_2', '/network/network_id_3'],
-          url: '/services/2.0/websocket/open/subscription'
-        }
-      })
+          url: '/services/2.0/websocket/open/subscription',
+        },
+      }),
     );
 
     rerender({ type: networkType, ids: ['network_id_2', 'network_id_3'] });
@@ -67,8 +67,8 @@ describe('useSubscribe', () => {
       expect.objectContaining({
         jsonrpc: '2.0',
         method: 'PATCH',
-        params: { data: [], url: '/services/2.0/websocket/open/subscription' }
-      })
+        params: { data: [], url: '/services/2.0/websocket/open/subscription' },
+      }),
     );
   });
 });

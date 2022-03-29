@@ -20,7 +20,7 @@ describe('useMetrics', () => {
       .mockRejectOnce(JSON.stringify({ name: 'metrics' }));
 
     const { result, unmount } = renderHook(() => useMetrics(id), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     expect(result.current.data).toBe(undefined);
@@ -43,15 +43,15 @@ describe('useMetrics', () => {
             query: {
               begin: 'begin',
               end: 'end',
-              resolution: 'red'
-            }
+              resolution: 'red',
+            },
           },
           dispatchEntities: false,
           method: 'POST',
-          url: '/metrics'
+          url: '/metrics',
         }),
-        url: '/services/metrics'
-      })
+        url: '/services/metrics',
+      }),
     );
 
     act(() => {

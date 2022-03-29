@@ -70,21 +70,21 @@ export default function useNetworkStatusLog(networkId) {
 
     const query = { limit: initLimit, order: 'descending' };
     if (start) {
-      if(start.constructor === Date) {
+      if (start.constructor === Date) {
         query.start = start.toISOString();
       } else {
         query.start = start;
       }
     }
     if (end) {
-      if(end.constructor === Date) {
+      if (end.constructor === Date) {
         query.end = end.toISOString();
       } else {
         query.end = end;
       }
     }
 
-    const {current} = currentRef;
+    const { current } = currentRef;
 
     setResult({ data: [], status: STATUS.pending });
 

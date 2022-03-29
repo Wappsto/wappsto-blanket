@@ -10,7 +10,7 @@ describe('useItemSelector', () => {
     const store = configureStore();
 
     const { result } = renderHook(() => useItemSelector(defaultValue), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     expect(result.current).toBe(undefined);
@@ -21,7 +21,7 @@ describe('useItemSelector', () => {
     const store = configureStore({ items: { key: 'test' } });
 
     const { result } = renderHook(() => useItemSelector(defaultValue), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     expect(result.current).toBe('test');

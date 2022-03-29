@@ -10,7 +10,7 @@ describe('useStoreItem', () => {
     const store = configureStore({ items: { key: 'test' } });
 
     const { result } = renderHook(() => useStoreItem(defaultValue), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     const [item, setItem, removeItem] = result.current;

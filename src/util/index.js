@@ -10,7 +10,7 @@ let ws;
 
 let defaultOptions = {
   endPoint: 'websocket',
-  version: '2.0'
+  version: '2.0',
 };
 
 export const STATUS = {
@@ -18,15 +18,14 @@ export const STATUS = {
   PENDING: 'pending',
   SUCCESS: 'success',
   ERROR: 'error',
-  CANCELED: 'canceled'
+  CANCELED: 'canceled',
 };
 
 export const ITEMS_PER_SLICE = 100;
 
 export function getServiceUrl(service, options) {
-  const version =
-    options && options.version ? options.version : getServiceVersion(service);
-  return `${config.baseUrl + (version ? `/${version}` : '')  }/${service}`;
+  const version = options && options.version ? options.version : getServiceVersion(service);
+  return `${config.baseUrl + (version ? `/${version}` : '')}/${service}`;
 }
 
 function updateSubscriptions(options) {
@@ -40,9 +39,9 @@ function updateSubscriptions(options) {
         id: uuid(),
         params: {
           url: `${getServiceUrl(options.endPoint || options.service, options)}/open/subscription`,
-          data: newSubscriptionsKeys
-        }
-      })
+          data: newSubscriptionsKeys,
+        },
+      }),
     );
   }
   subscriptions = { ...newSubscriptions };
@@ -72,8 +71,8 @@ export function updateStream(dispatch, subscription, type, options = defaultOpti
         openStream(
           { name: mainStream, subscription: [], full: options.full || false },
           null,
-          options
-        )
+          options,
+        ),
       );
       ws.addEventListener('open', () => updateSubscriptions(options));
     } else {
@@ -107,7 +106,7 @@ export function countDecimals(value) {
 }
 
 export function roundBasedOnStep(number, step, min) {
-  let roundedNumber = Number(number);;
+  let roundedNumber = Number(number);
   if (Number.isNaN(roundedNumber) || step === 0) {
     return number;
   }

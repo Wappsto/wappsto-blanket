@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
   makeRequestSelector,
   makeRequest,
-  removeRequest as removeStoreRequest
+  removeRequest as removeStoreRequest,
 } from 'wappsto-redux';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,7 +19,7 @@ export default function useRequest(id, removeOldRequest) {
 
   const send = useCallback(
     (obj) => dispatch(makeRequest({ ...obj, id: requestId })),
-    [dispatch, requestId]
+    [dispatch, requestId],
   );
 
   useEffect(
@@ -28,7 +28,7 @@ export default function useRequest(id, removeOldRequest) {
         removeRequest();
       }
     },
-    [removeOldRequest, requestId, removeRequest, id]
+    [removeOldRequest, requestId, removeRequest, id],
   );
 
   return { request, requestId, setRequestId, send, removeRequest };

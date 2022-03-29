@@ -5,7 +5,7 @@ describe('useRefresh', () => {
   it('runs correctly', async () => {
     const startTime = 100;
     const { waitForNextUpdate, rerender } = renderHook(({ time }) => useRefresh(time), {
-      initialProps: { time: startTime }
+      initialProps: { time: startTime },
     });
 
     await act(async () => {

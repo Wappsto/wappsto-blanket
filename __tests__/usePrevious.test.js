@@ -5,7 +5,7 @@ describe('usePrevious', () => {
   it('runs correctly', async () => {
     const testValue = 'test';
     const { result, rerender } = renderHook(({ value }) => usePrevious(value), {
-      initialProps: { value: testValue }
+      initialProps: { value: testValue },
     });
 
     expect(result.current).toEqual(undefined);

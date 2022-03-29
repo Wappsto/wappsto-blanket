@@ -61,8 +61,7 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache = false) => {
     const result = await fetch(itemListIds, CHILDREN[type], store, query, lvl - 1, useCache);
     return { [type]: itemList, ...result };
   }
-    return type ? { [type]: itemList } : {};
-
+  return type ? { [type]: itemList } : {};
 };
 
 export default function useFetchItems(objIds, query, useCache = true) {
@@ -91,9 +90,9 @@ export default function useFetchItems(objIds, query, useCache = true) {
 
     const startFetching = async () => {
       const newItems = {};
-      if(objIds) {
+      if (objIds) {
         const keys = Object.keys(objIds);
-        for(let i=0; i<keys.length; i+=1) {
+        for (let i = 0; i < keys.length; i += 1) {
           const type = keys[i];
           const ids = objIds[type];
           if (CHILDREN[type] || type === 'state') {
@@ -103,7 +102,7 @@ export default function useFetchItems(objIds, query, useCache = true) {
             const response = await fetch(ids, type, store, queryClone, 0, useCache);
             Object.assign(newItems, response);
           }
-        };
+        }
       }
       if (isMounted) {
         setStatus(STATUS.SUCCESS);

@@ -15,7 +15,7 @@ describe('useList', () => {
 
   it('will return no items when items is undefined', async () => {
     const { result } = renderHook(() => useList(), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(0);
@@ -28,7 +28,7 @@ describe('useList', () => {
     const url = '/network';
 
     const { result, waitForNextUpdate } = renderHook(() => useList({ url }), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     await act(async () => {
@@ -49,35 +49,35 @@ describe('useList', () => {
           {
             meta: {
               type: 'network',
-              id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb'
+              id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb',
             },
-            name: 'network'
-          }
-        ])
+            name: 'network',
+          },
+        ]),
       )
       .mockResponseOnce(
         JSON.stringify([
           {
             meta: {
               type: 'network',
-              id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb'
+              id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb',
             },
-            name: 'network'
+            name: 'network',
           },
           {
             meta: {
               type: 'network',
-              id: 'b08f9add-7bb2-463d-8b30-bf38da068df2'
+              id: 'b08f9add-7bb2-463d-8b30-bf38da068df2',
             },
-            name: 'network'
-          }
-        ])
+            name: 'network',
+          },
+        ]),
       );
 
     const url = '/network?name=test';
 
     const { result, waitForNextUpdate, rerender } = renderHook(() => useList({ url }), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     await act(async () => {
@@ -122,11 +122,11 @@ describe('useList', () => {
         {
           meta: {
             type: 'network',
-            id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb'
+            id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb',
           },
-          name: 'network'
-        }
-      ])
+          name: 'network',
+        },
+      ]),
     );
 
     const type = 'network';
@@ -134,8 +134,8 @@ describe('useList', () => {
     const { result, waitForNextUpdate } = renderHook(
       () => useList({ type, id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb' }),
       {
-        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-      }
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+      },
     );
 
     await act(async () => {
@@ -156,17 +156,17 @@ describe('useList', () => {
           'bd93c35e-f251-4fbd-9938-f01effd3c65f': 'Trientwood Portable Kit',
           'd5733dc7-9593-40c3-be44-e7c0699f45b6': 'Poune Power Bracket',
           'cf53d1b2-b7ed-40fb-ab4b-3677f0aed2b0': 'Truck Video Bracket',
-          '6e2c362e-22b8-4ae8-8405-e983f09c0842': 'Cosche GPS Air System'
+          '6e2c362e-22b8-4ae8-8405-e983f09c0842': 'Cosche GPS Air System',
         },
         path: 'name',
-        more: false
-      })
+        more: false,
+      }),
     );
 
     const url = '/network/b08f9add-7bb2-463d-8b30-bf38da068dfb/device/name';
 
     const { result, waitForNextUpdate } = renderHook(() => useList({ url }), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     await act(async () => {

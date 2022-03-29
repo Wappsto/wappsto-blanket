@@ -6,7 +6,7 @@ export default function useStorePagination(...props) {
   const { items, removeItem, ...rest } = usePagination(...props);
   const storeItems = useEntitiesSelector(
     items?.[0]?.meta?.type,
-    items?.map((item) => item?.meta?.id)
+    items?.map((item) => item?.meta?.id),
   );
 
   useEffect(() => {

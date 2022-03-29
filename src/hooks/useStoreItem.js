@@ -11,7 +11,7 @@ export default function useStoreItem(id) {
     (data) => {
       dispatch(setReduxItem(id, data));
     },
-    [dispatch, id]
+    [dispatch, id],
   );
 
   const removeItem = useCallback(() => {

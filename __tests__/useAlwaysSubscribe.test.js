@@ -25,31 +25,31 @@ describe('useAlwaysSubscribe', () => {
       {
         meta: {
           type: 'network',
-          id: 'network_id'
+          id: 'network_id',
         },
-        name: 'network name'
-      }
+        name: 'network name',
+      },
     ];
     const networkItem2 = {
       meta: {
         type: 'network',
-        id: 'network_id_2'
+        id: 'network_id_2',
       },
-      name: 'network name 2'
+      name: 'network name 2',
     };
     const networkItem3 = [
       {
         meta: {
           type: 'network',
-          id: 'network_id_2'
+          id: 'network_id_2',
         },
-        name: 'network name 2'
-      }
+        name: 'network name 2',
+      },
     ];
 
     const { rerender } = renderHook(({ items }) => useAlwaysSubscribe(items), {
       initialProps: { items: networkItem },
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     await server.connected;
@@ -57,8 +57,8 @@ describe('useAlwaysSubscribe', () => {
       expect.objectContaining({
         jsonrpc: '2.0',
         method: 'PATCH',
-        params: { data: ['/network/network_id'], url: '/services/2.0/websocket/open/subscription' }
-      })
+        params: { data: ['/network/network_id'], url: '/services/2.0/websocket/open/subscription' },
+      }),
     );
 
     rerender({ items: networkItem2 });
@@ -69,9 +69,9 @@ describe('useAlwaysSubscribe', () => {
         method: 'PATCH',
         params: {
           data: ['/network/network_id_2'],
-          url: '/services/2.0/websocket/open/subscription'
-        }
-      })
+          url: '/services/2.0/websocket/open/subscription',
+        },
+      }),
     );
 
     rerender({ items: networkItem3 });
@@ -82,9 +82,9 @@ describe('useAlwaysSubscribe', () => {
         method: 'PATCH',
         params: {
           data: [],
-          url: '/services/2.0/websocket/open/subscription'
-        }
-      })
+          url: '/services/2.0/websocket/open/subscription',
+        },
+      }),
     );
 
     rerender({ items: undefined });
@@ -99,9 +99,9 @@ describe('useAlwaysSubscribe', () => {
         method: 'PATCH',
         params: {
           data: ['/network/network_id_2'],
-          url: '/services/2.0/websocket/open/subscription'
-        }
-      })
+          url: '/services/2.0/websocket/open/subscription',
+        },
+      }),
     );
   });
 });

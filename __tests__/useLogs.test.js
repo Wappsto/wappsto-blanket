@@ -26,8 +26,8 @@ describe('useMetrics', () => {
       ({ stateId, sessionId, cacheId }) => useLogs(stateId, sessionId, cacheId),
       {
         initialProps: { stateId: id, sessionId: session, cacheId: cache },
-        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-      }
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+      },
     );
 
     expect(result.current.status).toEqual('idle');
@@ -43,7 +43,7 @@ describe('useMetrics', () => {
     await act(async () => {
       await result.current.getLogs({
         start: 'start',
-        end: 'end'
+        end: 'end',
       });
     });
 
@@ -55,25 +55,25 @@ describe('useMetrics', () => {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'x-session': 'session'
+          'x-session': 'session',
         },
         method: 'GET',
         rawOptions: expect.objectContaining({
           dispatchEntities: false,
           headers: {
-            'x-session': 'session'
+            'x-session': 'session',
           },
           method: 'GET',
-          url: '/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&start=start&end=end'
+          url: '/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&start=start&end=end',
         }),
-        url: '/services/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&start=start&end=end'
-      })
+        url: '/services/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&start=start&end=end',
+      }),
     );
 
     await act(async () => {
       await result.current.getLogs({
         start: 'start',
-        end: 'end'
+        end: 'end',
       });
     });
 
@@ -98,7 +98,7 @@ describe('useMetrics', () => {
       await result.current.reset();
       await result.current.getLogs({
         start: new Date(),
-        end: new Date()
+        end: new Date(),
       });
     });
 

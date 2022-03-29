@@ -15,18 +15,18 @@ describe('useIds', () => {
   it('can get ids from Redux', async () => {
     fetch
       .mockResponseOnce(
-        JSON.stringify([{ meta: { type: 'network', id: 'network_id_2' }, name: 'network name 2' }])
+        JSON.stringify([{ meta: { type: 'network', id: 'network_id_2' }, name: 'network name 2' }]),
       )
       .mockResponseOnce(
-        JSON.stringify([{ meta: { type: 'network', id: 'network_id_3' }, name: 'network name 3' }])
+        JSON.stringify([{ meta: { type: 'network', id: 'network_id_3' }, name: 'network name 3' }]),
       );
 
     const store = configureStore({
       entities: {
         network: {
-          network_id: { meta: { type: 'network', id: 'network_id' }, name: 'network name' }
-        }
-      }
+          network_id: { meta: { type: 'network', id: 'network_id' }, name: 'network name' },
+        },
+      },
     });
 
     const network = 'network';
@@ -35,8 +35,8 @@ describe('useIds', () => {
       ({ service, ids }) => useIds(service, ids),
       {
         initialProps: { service: network, ids: networkIds },
-        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
-      }
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+      },
     );
 
     expect(result.current.items.length).toBe(1);
@@ -58,8 +58,8 @@ describe('useIds', () => {
       '/services/network?id=network_id_2',
       expect.objectContaining({
         method: 'GET',
-        url: '/services/network?id=network_id_2'
-      })
+        url: '/services/network?id=network_id_2',
+      }),
     );
     expect(fetch).toHaveBeenCalledTimes(1);
 
@@ -78,8 +78,8 @@ describe('useIds', () => {
       '/services/network?id=network_id_3',
       expect.objectContaining({
         method: 'GET',
-        url: '/services/network?id=network_id_3'
-      })
+        url: '/services/network?id=network_id_3',
+      }),
     );
     expect(fetch).toHaveBeenCalledTimes(2);
 
@@ -102,8 +102,8 @@ describe('useIds', () => {
       '/services/network?id=network_id_2&id=network_id_3',
       expect.objectContaining({
         method: 'GET',
-        url: '/services/network?id=network_id_2&id=network_id_3'
-      })
+        url: '/services/network?id=network_id_2&id=network_id_3',
+      }),
     );
   });
 });

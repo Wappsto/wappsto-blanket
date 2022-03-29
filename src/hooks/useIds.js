@@ -6,7 +6,7 @@ import {
   makeItemSelector,
   getSession,
   startRequest,
-  onLogout
+  onLogout,
 } from 'wappsto-redux';
 import equal from 'deep-equal';
 import usePrevious from './usePrevious';
@@ -25,7 +25,7 @@ function setCacheStatus(dispatch, ids, status, query) {
 function sendGetIds(store, ids, service, query, sliceLength) {
   const res = [];
   const slices = Math.ceil(ids.length / sliceLength);
-  for (let i = 0; i < slices; i+=1) {
+  for (let i = 0; i < slices; i += 1) {
     res.push(ids.slice(i * sliceLength, (i + 1) * sliceLength));
   }
   const state = store.getState();
@@ -36,8 +36,8 @@ function sendGetIds(store, ids, service, query, sliceLength) {
       method: 'GET',
       query: {
         ...query,
-        id: arr
-      }
+        id: arr,
+      },
     };
     const promise = startRequest(store.dispatch, options, session);
     promise
@@ -120,12 +120,13 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
   // Update status
   useMemo(() => {
     if (status !== STATUS.SUCCESS || prevIds !== ids) {
-      for (let i = 0; i < ids.length; i+=1) {
+      for (let i = 0; i < ids.length; i += 1) {
         const idStatus = cache[ids[i]] && cache[ids[i]].status;
         if (idStatus === STATUS.ERROR) {
           setStatus(STATUS.ERROR);
           return;
-        } if (idStatus === STATUS.PENDING) {
+        }
+        if (idStatus === STATUS.PENDING) {
           setStatus(STATUS.PENDING);
           return;
         }
@@ -156,7 +157,7 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
       }
       getMissingIds(false);
     },
-    [ids]
+    [ids],
   );
 
   return { items, status, setStatus, reset, refresh };

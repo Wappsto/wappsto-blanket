@@ -9,9 +9,9 @@ describe('useEntitySelector', () => {
     const store = configureStore({
       entities: {
         network: {
-          network_id: { meta: { type: 'network', id: 'network_id' }, name: 'network name' }
-        }
-      }
+          network_id: { meta: { type: 'network', id: 'network_id' }, name: 'network name' },
+        },
+      },
     });
 
     const network = 'network';
@@ -20,7 +20,7 @@ describe('useEntitySelector', () => {
 
     const { result, rerender } = renderHook(({ service, id }) => useEntitySelector(service, id), {
       initialProps: { service: network, id: wrongId },
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     expect(result.current).toBe(undefined);

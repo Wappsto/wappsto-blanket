@@ -47,8 +47,8 @@ export default function useMetrics(id) {
           query: {
             begin,
             end,
-            resolution
-          }
+            resolution,
+          },
         };
         const controller = new AbortController();
         cancelFunc.current = controller.abort;
@@ -58,8 +58,8 @@ export default function useMetrics(id) {
             url: '/metrics',
             signal: controller.signal,
             dispatchEntities: false,
-            body
-          })
+            body,
+          }),
         );
         cancelFunc.current = null;
         if (unmounted.current) {
@@ -81,12 +81,15 @@ export default function useMetrics(id) {
         setCurrentStatus(STATUS.ERROR);
       }
     },
-    [dispatch, itemName]
+    [dispatch, itemName],
   );
 
-  useEffect(() => () => {
+  useEffect(
+    () => () => {
       unmounted.current = true;
-    }, []);
+    },
+    [],
+  );
 
   const cancel = useCallback(() => {
     if (cancelFunc.current) {

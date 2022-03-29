@@ -67,9 +67,9 @@ export default function useLogs(stateId, sessionId, cacheId) {
                 signal: controller.signal,
                 dispatchEntities: false,
                 headers: {
-                  'x-session': sessionId
-                }
-              })
+                  'x-session': sessionId,
+                },
+              }),
             );
             cancelFunc.current = null;
             if (!result.ok || !result.json) {
@@ -82,7 +82,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
             cache[cacheId] = {
               data: cachedData.current,
               options,
-              status: STATUS.SUCCESS
+              status: STATUS.SUCCESS,
             };
           }
           if (unmounted.current) {
@@ -98,7 +98,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
             cache[cacheId] = {
               data: cachedData.current,
               options,
-              status: STATUS.ERROR
+              status: STATUS.ERROR,
             };
           }
           if (unmounted.current) {
@@ -111,12 +111,15 @@ export default function useLogs(stateId, sessionId, cacheId) {
         }
       }
     },
-    [cacheId, dispatch, sessionId, stateId]
+    [cacheId, dispatch, sessionId, stateId],
   );
 
-  useEffect(() => () => {
+  useEffect(
+    () => () => {
       unmounted.current = true;
-    }, []);
+    },
+    [],
+  );
 
   const cancel = useCallback(() => {
     if (cancelFunc.current) {
@@ -141,7 +144,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
       isCanceled.current = false;
       cachedData.current = [];
     },
-    [cacheId]
+    [cacheId],
   );
 
   return { data, status, getLogs, reset, cancel };

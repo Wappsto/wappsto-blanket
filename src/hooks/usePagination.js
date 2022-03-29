@@ -9,7 +9,7 @@ const DEFAULT_QUERY = {
   from_last: true,
   verbose: true,
   order_by: 'this_meta.created',
-  expand: 0
+  expand: 0,
 };
 const cache = { url: {}, item: {} };
 
@@ -31,7 +31,7 @@ function getSessionObj({ store, session }) {
 }
 
 function getMaxPerPageIds(no) {
-  for (let i = MAX_PER_PAGE_IDS; i >= 0; i-=1) {
+  for (let i = MAX_PER_PAGE_IDS; i >= 0; i -= 1) {
     if (i % no === 0) {
       return i;
     }
@@ -124,10 +124,10 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
     url,
     pageSize,
     useCache,
-    offset: idsOffset
+    offset: idsOffset,
   });
 
-  const {count} = response.json;
+  const { count } = response.json;
   if (useCache) {
     cache.url[url].count = count;
     cache.url[url].pageSize = pageSize;
@@ -143,7 +143,7 @@ const getCurrentPageItems = async ({
   requestsRef,
   pages,
   currentItems,
-  sessionObj
+  sessionObj,
 }) => {
   let currentItemsObj = {};
   let fetchIds = pages[page] || [];
@@ -218,7 +218,7 @@ export default function usePagination(paginationInit) {
     page: pageNo = 1,
     pageSize = MAX_PER_PAGE_ITEMS,
     useCache = true,
-    session
+    session,
   } = pagination || {};
   const [[items, pageLength], setItems] = useState([[], pageSize]);
   const [page, setPage] = useState(pageNo);
@@ -236,7 +236,7 @@ export default function usePagination(paginationInit) {
         setPagination((current) => ({ ...(current || {}), ...(newState || {}) }));
       }
     },
-    [isMountedRef]
+    [isMountedRef],
   );
 
   const setCurrentPage = useCallback((newPageNo) => get({ page: newPageNo }), [get]);
@@ -257,7 +257,7 @@ export default function usePagination(paginationInit) {
         page: pageNumber,
         requestsRef,
         pageSize,
-        sessionObj
+        sessionObj,
       });
       const lastPage = Math.ceil(newCount / pageSize);
       if (pageNumber > lastPage && lastPage > 0) {
@@ -272,7 +272,7 @@ export default function usePagination(paginationInit) {
         requestsRef,
         pages,
         currentItems: items,
-        sessionObj
+        sessionObj,
       });
       if (isMountedRef.current) {
         setPage(pageNumber);
@@ -299,7 +299,7 @@ export default function usePagination(paginationInit) {
     session,
     url,
     setCurrentPage,
-    useCache
+    useCache,
     // items,
   ]);
 
@@ -335,8 +335,8 @@ export default function usePagination(paginationInit) {
         refresh();
       }
     } else if (cache.url[idUrl]) {
-      const {id} = item.meta;
-      cache.url[idUrl].count+=1;
+      const { id } = item.meta;
+      cache.url[idUrl].count += 1;
       cache.item[id] = item;
       const lastPage = Math.ceil(cache.url[idUrl].count / pageSize);
       const lastPageOld = Math.ceil((cache.url[idUrl].count - 1) / pageSize);
@@ -349,7 +349,7 @@ export default function usePagination(paginationInit) {
         Object.keys(cache.url[idUrl].page).forEach((key) => {
           const newPage = parseInt(key, 10);
           const ids = cache.url[idUrl].page[newPage];
-          if (prevPage === (newPage - 1)) {
+          if (prevPage === newPage - 1) {
             ids.unshift(prevId);
           } else {
             prevPage = newPage;
@@ -401,7 +401,7 @@ export default function usePagination(paginationInit) {
       const index = pageIds.indexOf(id);
       pageIds.splice(index, 1);
       delete cache.item[id];
-      cache.url[idUrl].count-=1;
+      cache.url[idUrl].count -= 1;
       const lastPage = Math.ceil(cache.url[idUrl].count / pageSize);
       arrCachePage.forEach(([key, ids], i) => {
         const newPage = parseInt(key, 10);
@@ -428,7 +428,7 @@ export default function usePagination(paginationInit) {
   };
 
   const update = (item) => {
-    const {id} = item.meta;
+    const { id } = item.meta;
     if (cache.item[id]) {
       cache.item[id] = item;
       const idUrl = getUrl({ url, query, pageSize });
@@ -462,6 +462,6 @@ export default function usePagination(paginationInit) {
     removeItem,
     updateItem,
     requests: requestsRef.current,
-    itemIds
+    itemIds,
   };
 }

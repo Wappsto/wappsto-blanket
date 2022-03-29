@@ -17,13 +17,13 @@ describe('useUser', () => {
       JSON.stringify({
         meta: { type: 'user', id: 'user_id' },
         nickname: 'nickname',
-        provider: [{ picture: 'image' }]
-      })
+        provider: [{ picture: 'image' }],
+      }),
     );
     const store = configureStore();
 
     const { result, waitForNextUpdate } = renderHook(() => useUser(), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
     expect(result.current.status).toEqual('pending');
@@ -40,18 +40,18 @@ describe('useUser', () => {
       '/services/user?expand=1',
       expect.objectContaining({
         method: 'GET',
-        url: '/services/user?expand=1'
-      })
+        url: '/services/user?expand=1',
+      }),
     );
   });
 
   it('can get user from Redux', async () => {
     const store = configureStore({
-      entities: { user: { user_id: { first_name: 'first', last_name: 'last' } } }
+      entities: { user: { user_id: { first_name: 'first', last_name: 'last' } } },
     });
 
     const { result } = renderHook(() => useUser(), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
     expect(result.current.status).toEqual('success');
 
@@ -63,12 +63,12 @@ describe('useUser', () => {
   it('can get user from Redux with provider', async () => {
     const store = configureStore({
       entities: {
-        user: { user_id: { provider: [{ name: 'provider name', email: 'provider mail' }] } }
-      }
+        user: { user_id: { provider: [{ name: 'provider name', email: 'provider mail' }] } },
+      },
     });
 
     const { result } = renderHook(() => useUser(), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
     expect(result.current.status).toEqual('success');
 
@@ -79,11 +79,11 @@ describe('useUser', () => {
 
   it('can get user from Redux with email', async () => {
     const store = configureStore({
-      entities: { user: { user_id: { email: 'email', provider: [{}] } } }
+      entities: { user: { user_id: { email: 'email', provider: [{}] } } },
     });
 
     const { result } = renderHook(() => useUser(), {
-      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
     expect(result.current.status).toEqual('success');
 

@@ -13,7 +13,7 @@ export default function useUser() {
       send({
         method: 'get',
         url: '/user',
-        query: { expand: 1 }
+        query: { expand: 1 },
       });
     }
   }, [user, send]);
@@ -24,7 +24,7 @@ export default function useUser() {
       name = user.nickname;
     } else {
       if (user.first_name) {
-        name += `${user.first_name  } `;
+        name += `${user.first_name} `;
       }
       if (user.last_name) {
         name += user.last_name;
