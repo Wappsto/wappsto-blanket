@@ -18,15 +18,16 @@ export default function useNetworkStatusLog(networkId) {
 
   useEffect(() => () => (isMountedRef.current = false), []);
 
-  const _get = ({ start, end, limit: initLimit, resetCache }) => {
-    const getData = async ({ query, initLimit }) => {
-      const data = [];
+  const getFun = ({ start, end, limit, resetCache } = {}) => {
+    const getData = async (query, initLimit) => {
+      const newQuery = query;
+      const tmpData = [];
       let more = true;
 
       while (more && isMountedRef.current) {
         const state = store.getState();
         const sessionObj = getSession(state);
-        const url = `/log/${networkId}/online_iot?${querystring.stringify(query)}`;
+        const url = `/log/${networkId}/online_iot?${querystring.stringify(newQuery)}`;
         const http = await startRequest(store.dispatch, { url, method: 'GET' }, sessionObj);
         if (!isMountedRef.current) {
           return [];
@@ -34,19 +35,19 @@ export default function useNetworkStatusLog(networkId) {
         if (http.status !== 200) {
           throw http.json;
         }
-        data.push(...http.json.data);
-        if (data.length < initLimit) {
+        tmpData.push(...http.json.data);
+        if (tmpData.length < initLimit) {
           more = http.json.more;
           if (more) {
-            const last = data.pop();
-            query.start = last.time;
+            const last = tmpData.pop();
+            newQuery.start = last.time;
           }
         } else {
           more = false;
         }
       }
 
-      return data;
+      return tmpData;
     };
 
     currentRef.current = {};
@@ -61,34 +62,37 @@ export default function useNetworkStatusLog(networkId) {
       setResult({ status: STATUS.success, data: cache[networkId] });
       return;
     }
-    if (start && start.constructor === Date) {
-      start = start.toISOString();
-    }
-    if (end && end.constructor === Date) {
-      end = end.toISOString();
+
+    let initLimit = limit || MAX_LOG_LIMIT;
+    if (initLimit > MAX_LOG_LIMIT) {
+      initLimit = MAX_LOG_LIMIT;
     }
 
-    let limit = initLimit || MAX_LOG_LIMIT;
-    if (limit > MAX_LOG_LIMIT) {
-      limit = MAX_LOG_LIMIT;
+    const query = { limit: initLimit, order: 'descending' };
+    if (start) {
+      if(start.constructor === Date) {
+        query.start = start.toISOString();
+      } else {
+        query.start = start;
+      }
+    }
+    if (end) {
+      if(end.constructor === Date) {
+        query.end = end.toISOString();
+      } else {
+        query.end = end;
+      }
     }
 
     const {current} = currentRef;
-    const query = { limit, order: 'descending' };
-    if (start) {
-      query.start = start;
-    }
-    if (end) {
-      query.end = end;
-    }
 
-    setResult((current) => ({ ...current, status: STATUS.pending }));
+    setResult({ data: [], status: STATUS.pending });
 
-    getData({ query, initLimit })
-      .then((data) => {
+    getData(query, initLimit)
+      .then((response) => {
         if (isMountedRef.current && currentRef.current === current) {
-          cache[networkId] = data;
-          setResult({ status: STATUS.success, data });
+          cache[networkId] = response;
+          setResult({ status: STATUS.success, data: response });
         }
       })
       .catch(() => {
@@ -98,7 +102,7 @@ export default function useNetworkStatusLog(networkId) {
       });
   };
 
-  functionRef.current.get = _get;
+  functionRef.current.get = getFun;
   const get = useCallback((...args) => functionRef.current.get(...args), []);
 
   return { data, status, get };
