@@ -5,7 +5,7 @@ import { configureStore } from 'wappsto-redux';
 import fetchMock from 'jest-fetch-mock';
 import { useLogs } from '../src';
 
-describe('useMetrics', () => {
+describe('useLogs', () => {
   fetchMock.enableMocks();
   const store = configureStore();
 
@@ -50,7 +50,7 @@ describe('useMetrics', () => {
     expect(result.current.status).toEqual('success');
     expect(result.current.data).toEqual([1, 2, 3]);
     expect(fetchMock).toHaveBeenCalledWith(
-      '/services/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&start=start&end=end',
+      '/services/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&end=end&start=start',
       expect.objectContaining({
         headers: {
           Accept: 'application/json',
@@ -64,9 +64,9 @@ describe('useMetrics', () => {
             'x-session': 'session',
           },
           method: 'GET',
-          url: '/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&start=start&end=end',
+          url: '/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&end=end&start=start',
         }),
-        url: '/services/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&start=start&end=end',
+        url: '/services/log/e3e44493-8a90-4ea5-bbe4-644855caa6d0?type=state&limit=3600&end=end&start=start',
       }),
     );
 

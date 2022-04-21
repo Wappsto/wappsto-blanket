@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import querystring from 'querystring';
+import querystring from 'query-string';
 import equal from 'deep-equal';
 import { onLogout, makeRequest } from 'wappsto-redux';
 import { STATUS } from '../util';
