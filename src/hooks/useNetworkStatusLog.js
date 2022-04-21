@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'react-redux';
-import querystring from 'query-string';
+import qs from 'qs';
 import { onLogout, startRequest, STATUS, getSession } from 'wappsto-redux';
 
 const MAX_LOG_LIMIT = 3600;
@@ -27,7 +27,7 @@ export default function useNetworkStatusLog(networkId) {
       while (more && isMountedRef.current) {
         const state = store.getState();
         const sessionObj = getSession(state);
-        const url = `/log/${networkId}/online_iot?${querystring.stringify(newQuery)}`;
+        const url = `/log/${networkId}/online_iot?${qs.stringify(newQuery)}`;
         const http = await startRequest(store.dispatch, { url, method: 'GET' }, sessionObj);
         if (!isMountedRef.current) {
           return [];

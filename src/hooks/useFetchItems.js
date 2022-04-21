@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useStore } from 'react-redux';
 import { startRequest, addEntities, getSession, schema } from 'wappsto-redux';
-import querystring from 'query-string';
+import qs from 'qs';
 import { STATUS, ITEMS_PER_SLICE } from '../util';
 import useMounted from './useMounted';
 
@@ -29,7 +29,7 @@ const fetch = async (ids, type, store, query, lvl = 0, useCache = false) => {
   }
 
   const promises = slices.map((e) => {
-    const url = `/${type}?expand=0&id=[${e.join(',')}]&${querystring.stringify(query)}`;
+    const url = `/${type}?expand=0&id=[${e.join(',')}]&${qs.stringify(query)}`;
     const promise = startRequest(store.dispatch, { url, method: 'GET' }, session);
     return promise;
   });

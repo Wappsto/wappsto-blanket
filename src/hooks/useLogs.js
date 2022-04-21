@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import querystring from 'query-string';
+import qs from 'qs';
 import equal from 'deep-equal';
 import { onLogout, makeRequest } from 'wappsto-redux';
 import { STATUS } from '../util';
@@ -57,7 +57,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
             }
             const url = `/log/${stateId}?type=state${
               cOptions.limit ? '' : '&limit=3600'
-            }&${querystring.stringify(cOptions)}`;
+            }&${qs.stringify(cOptions)}`;
             const controller = new AbortController();
             cancelFunc.current = controller.abort;
             const result = await dispatch(
