@@ -32,9 +32,11 @@
   "homepage": "https://github.com/Wappsto/wappsto-blanket#readme",
   "dependencies": {
     "deep-equal": "^2.0.5",
+    "i18next": "^21.6.16",
     "qs": "^6.10.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-i18next": "^11.16.7",
     "react-redux": "^7.2.8",
     "uuid": "^8.3.1",
     "wappsto-redux": "^4.0.1"
