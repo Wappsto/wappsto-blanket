@@ -18,28 +18,7 @@ export default function useUser() {
     }
   }, [user, send]);
 
-  let name = '';
-  if (user) {
-    if (user.nickname) {
-      name = user.nickname;
-    } else {
-      if (user.first_name) {
-        name += `${user.first_name} `;
-      }
-      if (user.last_name) {
-        name += user.last_name;
-      }
-
-      if (!name) {
-        if (user.provider[0] && user.provider[0].name) {
-          name = user.provider[0].name;
-        } else {
-          name = user.email;
-        }
-      }
-    }
-  }
-
+  const name = user?.name ?? '';
   const icon = user?.provider?.[0]?.picture;
   const status = request?.status || STATUS.SUCCESS;
 
