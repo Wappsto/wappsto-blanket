@@ -1,6 +1,6 @@
 import { getServiceVersion, openStream, config } from 'wappsto-redux';
 import equal from 'deep-equal';
-import { v4 as uuid } from 'uuid';
+import crypto from 'crypto';
 
 const mainStream = 'stream-main';
 let subscriptions = {};
@@ -22,6 +22,10 @@ export const STATUS = {
 };
 
 export const ITEMS_PER_SLICE = 100;
+
+export function uuid() {
+  return crypto.randomUUID();
+}
 
 export function getServiceUrl(service, options) {
   const version = options && options.version ? options.version : getServiceVersion(service);
