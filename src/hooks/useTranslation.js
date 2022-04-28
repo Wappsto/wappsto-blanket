@@ -10,18 +10,19 @@ const useTranslation = () => {
     return (newStr.charAt(0).toUpperCase() + newStr.slice(1));
   }
 
+  // translate + Capitalize Each
+  function tCE(str) {
+    const newStr = str ? t(str) : '';
+    return newStr.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1));
+  }
+
   // translate + Uppercase
   function tU(str) {
     const newStr = str ? t(str) : '';
     return newStr.toUpperCase();
   }
 
-  function tCE(str) {
-    const newStr = str ? t(str) : '';
-    return newStr.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1));
-  }
-
-  return {t, tC, tU, tCE}
+  return {t, tC, tCE, tU}
 }
 
 export default useTranslation
