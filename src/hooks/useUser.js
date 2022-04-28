@@ -22,5 +22,5 @@ export default function useUser() {
   const icon = user?.provider?.[0]?.picture;
   const status = request?.status || STATUS.SUCCESS;
 
-  return { status, icon, name, user, request };
+  return { status, icon, name, user };
 }
