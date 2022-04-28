@@ -6,8 +6,8 @@ const useTranslation = () => {
 
   // translate + Capitalize
   function tC(str) {
-    const newStr = str ? t(str)  : '';
-    return (newStr.charAt(0).toUpperCase() + newStr.slice(1));
+    const newStr = str ? t(str) : '';
+    return newStr.charAt(0).toUpperCase() + newStr.slice(1);
   }
 
   // translate + Capitalize Each
@@ -22,7 +22,7 @@ const useTranslation = () => {
     return newStr.toUpperCase();
   }
 
-  return {t, tC, tCE, tU}
-}
+  return { t, tC, tCE, tU };
+};
 
-export default useTranslation
+export default useTranslation;
