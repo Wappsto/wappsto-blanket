@@ -44,6 +44,15 @@ describe('useTranslation', () => {
     expect(empty).toEqual('');
   });
 
+  it('can translate and captilize each', () => {
+    const { result } = renderHook(() => useTranslation());
+    const str = result.current.tCE('test test');
+    const empty = result.current.tCE();
+
+    expect(str).toEqual('Test Test');
+    expect(empty).toEqual('');
+  });
+
   it('can translate and uppercase', () => {
     const { result } = renderHook(() => useTranslation());
     const str = result.current.tU('test');
