@@ -1,6 +1,5 @@
 import { getServiceVersion, openStream, config } from 'wappsto-redux';
 import equal from 'deep-equal';
-import randomUUID from 'crypto-randomuuid';
 
 const mainStream = 'stream-main';
 let subscriptions = {};
@@ -23,8 +22,8 @@ export const STATUS = {
 
 export const ITEMS_PER_SLICE = 100;
 
-export function uuid() {
-  return randomUUID();
+export function randomID() {
+  return (Math.random() + 1).toString(36).substring(10);
 }
 
 export function getServiceUrl(service, options) {
@@ -40,7 +39,7 @@ function updateSubscriptions(options) {
       JSON.stringify({
         jsonrpc: '2.0',
         method: 'PATCH',
-        id: uuid(),
+        id: randomID(),
         params: {
           url: `${getServiceUrl(options.endPoint || options.service, options)}/open/subscription`,
           data: newSubscriptionsKeys,

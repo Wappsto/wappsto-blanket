@@ -5,11 +5,11 @@ import {
   makeRequest,
   removeRequest as removeStoreRequest,
 } from 'wappsto-redux';
-import { uuid } from '../util';
+import { randomID } from '../util';
 
 export default function useRequest(id, removeOldRequest) {
   const dispatch = useDispatch();
-  const [requestId, setRequestId] = useState(() => id || uuid());
+  const [requestId, setRequestId] = useState(() => id || randomID());
   const getRequest = useMemo(makeRequestSelector, []);
   const request = useSelector((state) => getRequest(state, requestId));
 
