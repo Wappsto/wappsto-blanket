@@ -247,7 +247,7 @@ export default function usePagination(paginationInit) {
         return;
       }
       setStatus(STATUS.pending);
-      const pageNumber = parseInt(pageNo, 10) || 1;
+      const pageNumber = Number(pageNo) || 1;
       const sessionObj = getSessionObj({ store, session });
       const urlFull = getUrl({ url, query, pageSize });
       const { newCount, pages } = await getPages({
@@ -347,7 +347,7 @@ export default function usePagination(paginationInit) {
         let prevPage = 0;
         let prevId = id;
         Object.keys(cache.url[idUrl].page).forEach((key) => {
-          const newPage = parseInt(key, 10);
+          const newPage = Number(key);
           const ids = cache.url[idUrl].page[newPage];
           if (prevPage === newPage - 1) {
             ids.unshift(prevId);
@@ -404,15 +404,15 @@ export default function usePagination(paginationInit) {
       cache.url[idUrl].count -= 1;
       const lastPage = Math.ceil(cache.url[idUrl].count / pageSize);
       arrCachePage.forEach(([key, ids], i) => {
-        const newPage = parseInt(key, 10);
-        if (newPage < parseInt(deletePageNo, 10)) {
+        const newPage = Number(key);
+        if (newPage < Number(deletePageNo)) {
           return;
         }
         const [nextPageNo, nextPageIds] = arrCachePage[i + 1] || [];
-        if (!cache.url[idUrl].page[newPage - 1] && newPage !== parseInt(deletePageNo, 10)) {
+        if (!cache.url[idUrl].page[newPage - 1] && newPage !== Number(deletePageNo)) {
           ids.shift();
         }
-        if (newPage + 1 === parseInt(nextPageNo, 10)) {
+        if (newPage + 1 === Number(nextPageNo)) {
           const shiftedId = nextPageIds.shift();
           ids.push(shiftedId);
         } else if (newPage !== lastPage) {
