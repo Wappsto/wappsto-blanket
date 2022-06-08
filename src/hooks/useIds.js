@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 import {
   setItem,
@@ -112,13 +112,11 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
     }
   };
 
-  // Make request to get the ids
-  useMemo(() => {
+  useEffect(() => {
+    // Make request to get the ids
     getMissingIds();
-  }, [dispatch, service, updateMissingIds, ids]);
 
-  // Update status
-  useMemo(() => {
+    // Update status
     if (status !== STATUS.SUCCESS || prevIds !== ids) {
       for (let i = 0; i < ids.length; i += 1) {
         const idStatus = cache[ids[i]] && cache[ids[i]].status;
@@ -136,13 +134,11 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
     } else if (prevStatus !== STATUS.SUCCESS && status === STATUS.SUCCESS) {
       setItems(cacheItems);
     }
-  }, [ids, idsStatus]);
 
-  useMemo(() => {
     if (status === STATUS.SUCCESS) {
       setItems(cacheItems);
     }
-  }, [cacheItems]);
+  }, [dispatch, service, updateMissingIds, ids, idsStatus, cacheItems]);
 
   // Reset current ids cache
   const reset = useCallback(() => {
