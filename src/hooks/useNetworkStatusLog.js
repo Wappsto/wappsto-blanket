@@ -28,6 +28,7 @@ export default function useNetworkStatusLog(networkId) {
         const state = store.getState();
         const sessionObj = getSession(state);
         const url = `/log/${networkId}/online_iot?${qs.stringify(newQuery)}`;
+        /* eslint-disable-next-line no-await-in-loop */
         const http = await startRequest(store.dispatch, { url, method: 'GET' }, sessionObj);
         if (!isMountedRef.current) {
           return [];

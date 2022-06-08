@@ -60,6 +60,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
             }&${qs.stringify(cOptions)}`;
             const controller = new AbortController();
             cancelFunc.current = controller.abort;
+            /* eslint-disable-next-line no-await-in-loop */
             const result = await dispatch(
               makeRequest({
                 url,

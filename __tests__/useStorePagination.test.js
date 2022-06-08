@@ -170,11 +170,6 @@ describe('useStorePageination', () => {
     },
   ]);
 
-  const networkRequest1 =
-    '/services/network?from_last=true&verbose=true&order_by=this_meta.created&expand=0&limit=1000&id=%5B5f4f6649-41a6-478c-94ba-41f56ec74591%2Cdec1de41-caa6-4095-b59f-84a852023c7b%2C13c24904-ba1d-4944-8d5e-6e30c2377607%2Cb5a94a6d-a377-4616-9382-23cde976ec3d%2Cff42c059-0028-43ba-a9f3-4c6b84c362c7%2Cb62439fd-0266-44f0-88e1-5de96d970aa0%2C981088a8-6abf-46de-b675-14aba6d2907b%2C6b8bd990-f3df-4e4d-bce2-bd65ab68a378%2C335b87c2-e21c-43f5-b763-51b51b55f23b%2C26b19be3-d7a4-4961-8544-b57700d55eaa%5D';
-  const networkRequest2 =
-    '/services/network?from_last=true&verbose=true&order_by=this_meta.created&expand=0&limit=1000&id=%5B11c73ade-ddf0-4bd1-8ad5-c3d05dd1dd1f%2C3ec1a0ff-7200-4ffd-b33e-154310d66743%2C6bead78a-fb5d-43f2-bf7a-43fef0ea61d0%2C079b1bb7-195d-4b9e-943c-0356bc96b2a9%2C916c3b77-e2fe-42cd-bb06-285a903540d9%2Cc6632216-fe28-49e2-b4fa-173ee3cb886a%2C49b4bdbe-9fc4-44e6-87d0-fc72fe7a97c2%2Cc0d98d41-3d9e-4c56-ad1f-50aae05f7e85%5D';
-
   const url = '/network';
   let cache = true;
   const size = 10;

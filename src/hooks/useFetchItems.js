@@ -96,9 +96,11 @@ export default function useFetchItems(objIds, query, useCache = true) {
           const type = keys[i];
           const ids = objIds[type];
           if (CHILDREN[type] || type === 'state') {
+            /* eslint-disable-next-line no-await-in-loop */
             const response = await fetch(ids, type, store, queryClone, lvl, useCache);
             newItems[type] = response;
           } else {
+            /* eslint-disable-next-line no-await-in-loop */
             const response = await fetch(ids, type, store, queryClone, 0, useCache);
             Object.assign(newItems, response);
           }
