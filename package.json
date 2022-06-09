@@ -39,7 +39,7 @@
     "react-dom": "^18.1.0",
     "react-i18next": "^11.17.0",
     "react-redux": "^8.0.2",
-    "wappsto-redux": "^4.0.2"
+    "wappsto-redux": "^4.2.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.6",
