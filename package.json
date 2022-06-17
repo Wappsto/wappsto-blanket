@@ -33,7 +33,7 @@
   "homepage": "https://github.com/Wappsto/wappsto-blanket#readme",
   "dependencies": {
     "deep-equal": "^2.0.5",
-    "i18next": "^21.8.9",
+    "i18next": "^21.8.10",
     "qs": "^6.10.5",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
