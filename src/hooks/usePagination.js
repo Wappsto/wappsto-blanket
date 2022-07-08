@@ -289,19 +289,7 @@ export default function usePagination(paginationInit) {
         setStatus(STATUS.error);
       }
     });
-  }, [
-    pagination,
-    isMountedRef,
-    pageNo,
-    pageSize,
-    query,
-    store,
-    session,
-    url,
-    setCurrentPage,
-    useCache,
-    // items,
-  ]);
+  }, [isMountedRef, pageNo, pageSize, query, store, session, url, setCurrentPage, useCache, items]);
 
   const refresh = () => {
     const urlFull = getUrl({ url, query, pageSize });

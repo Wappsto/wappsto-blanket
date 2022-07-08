@@ -5,7 +5,7 @@
     "codeFrame": false,
     "ecmaVersion": 2020
   },
-  "extends": ["airbnb", "prettier"],
+  "extends": ["airbnb", "prettier","plugin:react-hooks/recommended"],
   "env": {
     "browser": true,
     "jest": true

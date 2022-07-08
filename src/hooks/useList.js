@@ -27,7 +27,7 @@ function getQueryObj(query) {
 props: url, type, id, childType, query, reset, resetOnEmpty, sort
 */
 export default function useList(inputProps) {
-  const props = inputProps || {};
+  const props = useMemo(() => inputProps || {}, [inputProps]);
   const dispatch = useDispatch();
   const prevQuery = usePrevious(props.query);
   const query = useRef({});
@@ -91,7 +91,7 @@ export default function useList(inputProps) {
       query: propsQuery,
       parent,
     };
-  }, [props.type, props.id, props.childType, props.url, differentQuery.current]);
+  }, [props]);
 
   const [customRequest, setCustomRequest] = useState({
     status: propsData.url ? STATUS.PENDING : STATUS.SUCCESS,
@@ -182,7 +182,16 @@ export default function useList(inputProps) {
     ) {
       refresh(props.reset);
     }
-  }, [propsData.query, props.id, propsData.url, refresh, props.useCache]);
+  }, [
+    propsData.query,
+    props.id,
+    propsData.url,
+    refresh,
+    props.useCache,
+    props.reset,
+    request,
+    savedIds,
+  ]);
 
   // function updateItemCount
   useEffect(() => {
@@ -255,7 +264,7 @@ export default function useList(inputProps) {
         setCustomRequest(request);
       }
     }
-  }, [prevRequest, request]);
+  }, [prevRequest, request, customRequest.id, customRequest.status]);
 
   const loadMore = useCallback(() => {
     if (canLoadMore) {

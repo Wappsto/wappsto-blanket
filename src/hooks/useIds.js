@@ -99,18 +99,21 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
       setCacheStatus(dispatch, cacheIds, STATUS.SUCCESS, query);
     }
     return prevMissingIds;
-  }, [ids]);
+  }, [ids, cacheItems, dispatch, prevIds, query]);
 
-  const getMissingIds = (checkIds = true) => {
-    if (checkIds && equal(ids, prevIds)) {
-      return;
-    }
-    updateMissingIds();
-    if (missingIds.current.length > 0) {
-      setCacheStatus(dispatch, missingIds.current, STATUS.PENDING, query);
-      sendGetIds(store, missingIds.current, service, query, sliceLength);
-    }
-  };
+  const getMissingIds = useCallback(
+    (checkIds = true) => {
+      if (checkIds && equal(ids, prevIds)) {
+        return;
+      }
+      updateMissingIds();
+      if (missingIds.current.length > 0) {
+        setCacheStatus(dispatch, missingIds.current, STATUS.PENDING, query);
+        sendGetIds(store, missingIds.current, service, query, sliceLength);
+      }
+    },
+    [dispatch, ids, prevIds, query, service, sliceLength, store, updateMissingIds],
+  );
 
   useEffect(() => {
     // Make request to get the ids
@@ -138,12 +141,23 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
     if (status === STATUS.SUCCESS) {
       setItems(cacheItems);
     }
-  }, [dispatch, service, updateMissingIds, ids, idsStatus, cacheItems]);
+  }, [
+    dispatch,
+    service,
+    updateMissingIds,
+    ids,
+    idsStatus,
+    cacheItems,
+    getMissingIds,
+    prevIds,
+    prevStatus,
+    status,
+  ]);
 
   // Reset current ids cache
   const reset = useCallback(() => {
     setCacheStatus(dispatch, ids, STATUS.IDLE, query);
-  }, [ids]);
+  }, [ids, dispatch, query]);
 
   // Refresh
   const refresh = useCallback(
@@ -153,7 +167,7 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
       }
       getMissingIds(false);
     },
-    [ids],
+    [getMissingIds, reset],
   );
 
   return { items, status, setStatus, reset, refresh };
