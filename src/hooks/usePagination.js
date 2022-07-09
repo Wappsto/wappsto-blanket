@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from 'react-redux';
-import { startRequest, STATUS, getSession, onLogout } from 'wappsto-redux';
+import { startRequest, getSession, onLogout } from 'wappsto-redux';
+import { STATUS } from '../util';
 import useMounted from './useMounted';
 
 const MAX_PER_PAGE_IDS = 1000;
@@ -20,7 +21,7 @@ onLogout(() => {
 
 function fireRequest(url, store, sessionObj, requestsRef, key) {
   const promise = startRequest(store.dispatch, { url, method: 'GET' }, sessionObj);
-  requestsRef.current[key] = { promise, status: STATUS.pending };
+  requestsRef.current[key] = { promise, status: STATUS.PENDING };
   return promise;
 }
 
@@ -114,10 +115,10 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
   const response = await fireRequest(url2, store, sessionObj, requestsRef, 'count');
   requestsRef.current.count = response;
   if (!response.ok) {
-    requestsRef.current.count.status = STATUS.error;
+    requestsRef.current.count.status = STATUS.ERROR;
     throw response;
   }
-  requestsRef.current.count.status = STATUS.success;
+  requestsRef.current.count.status = STATUS.SUCCESS;
 
   const pages = paginateIds({
     ids: response.json.id,
@@ -177,7 +178,6 @@ const getCurrentPageItems = async ({
     urls.push(`${baseUrl}?${query2.toString()}`);
     index += 100;
   }
-
   const promises = urls.map((e) => fireRequest(e, store, sessionObj, requestsRef, 'items'));
   if (urls.length) {
     requestsRef.current.items.promise = promises;
@@ -187,7 +187,7 @@ const getCurrentPageItems = async ({
   response.forEach((e) => {
     if (!e.ok) {
       requestsRef.current.items = e;
-      requestsRef.current.items.status = STATUS.error;
+      requestsRef.current.items.status = STATUS.ERROR;
       throw e;
     }
     e.json.forEach((obj) => (newItems[obj.meta.id] = obj));
@@ -206,7 +206,7 @@ const getCurrentPageItems = async ({
       }
     });
   }
-  requestsRef.current.items = { ok: true, status: STATUS.success, json: items };
+  requestsRef.current.items = { ok: true, status: STATUS.SUCCESS, json: items };
   return items;
 };
 
@@ -246,7 +246,7 @@ export default function usePagination(paginationInit) {
       if (!url) {
         return;
       }
-      setStatus(STATUS.pending);
+      setStatus(STATUS.PENDING);
       const pageNumber = Number(pageNo) || 1;
       const sessionObj = getSessionObj({ store, session });
       const urlFull = getUrl({ url, query, pageSize });
@@ -279,17 +279,28 @@ export default function usePagination(paginationInit) {
         setCount(newCount);
         setItems([newItems, pageSize]);
         setItemIds(pages[pageNumber] || []);
-        setStatus(STATUS.success);
+        setStatus(STATUS.SUCCESS);
       }
     };
     startPagination().catch(() => {
       if (isMountedRef.current) {
-        setItems((current) => (current.length ? [] : current));
+        setItemIds((current) => (current.length && current[0].length ? [[], pageSize] : current));
         setItemIds((current) => (current.length ? [] : current));
-        setStatus(STATUS.error);
+        setStatus(STATUS.ERROR);
       }
     });
-  }, [isMountedRef, pageNo, pageSize, query, store, session, url, setCurrentPage, useCache, items]);
+  }, [
+    pagination,
+    isMountedRef,
+    pageNo,
+    pageSize,
+    query,
+    store,
+    session,
+    url,
+    setCurrentPage,
+    useCache,
+  ]);
 
   const refresh = () => {
     const urlFull = getUrl({ url, query, pageSize });

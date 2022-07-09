@@ -74,7 +74,7 @@ describe('useList', () => {
         ]),
       );
 
-    const url = '/network?name=test';
+    const url = '/network2?name=test';
 
     const { result, waitForNextUpdate, rerender } = renderHook(() => useList({ url }), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,

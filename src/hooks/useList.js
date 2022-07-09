@@ -103,6 +103,7 @@ export default function useList(inputProps) {
   const requestIdName = `${name}_requestId`;
   const getSavedIdsItem = useMemo(makeItemSelector, []);
   const savedIds = useSelector((state) => getSavedIdsItem(state, idsItemName)) || empty;
+
   const { request, send } = useRequest(requestIdName);
 
   if (propsData.url && !request && customRequest.status !== STATUS.PENDING) {
@@ -174,12 +175,7 @@ export default function useList(inputProps) {
   );
 
   useEffect(() => {
-    if (
-      props.useCache === false ||
-      !request ||
-      (savedIds === empty && !request) ||
-      (request && request.status === STATUS.ERROR)
-    ) {
+    if (props.useCache === false || !request || (savedIds === empty && !request)) {
       refresh(props.reset);
     }
   }, [

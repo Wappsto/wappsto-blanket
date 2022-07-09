@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'react-redux';
 import qs from 'qs';
-import { onLogout, startRequest, STATUS, getSession } from 'wappsto-redux';
+import { onLogout, startRequest, getSession } from 'wappsto-redux';
+import { STATUS } from '../util';
 
 const MAX_LOG_LIMIT = 3600;
 
@@ -60,7 +61,7 @@ export default function useNetworkStatusLog(networkId) {
       delete cache[networkId];
     }
     if (cache[networkId]) {
-      setResult({ status: STATUS.success, data: cache[networkId] });
+      setResult({ status: STATUS.SUCCESS, data: cache[networkId] });
       return;
     }
 
@@ -87,18 +88,18 @@ export default function useNetworkStatusLog(networkId) {
 
     const { current } = currentRef;
 
-    setResult({ data: [], status: STATUS.pending });
+    setResult({ data: [], status: STATUS.PENDING });
 
     getData(query, initLimit)
       .then((response) => {
         if (isMountedRef.current && currentRef.current === current) {
           cache[networkId] = response;
-          setResult({ status: STATUS.success, data: response });
+          setResult({ status: STATUS.SUCCESS, data: response });
         }
       })
       .catch(() => {
         if (isMountedRef.current) {
-          setResult({ status: STATUS.error, data: [] });
+          setResult({ status: STATUS.ERROR, data: [] });
         }
       });
   };

@@ -398,17 +398,25 @@ describe('useStorePageination', () => {
     });
 
     it('can add an item to the first page', async () => {
-      const { result } = renderHook(
+      const { result, waitForNextUpdate } = renderHook(
         () =>
           useStorePagination({
             url,
-            useCache: cache,
+            useCache: true,
             pageSize: size,
           }),
         {
           wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
         },
       );
+
+      expect(result.current.status).toBe('pending');
+
+      await act(async () => {
+        await waitForNextUpdate();
+      });
+
+      expect(result.current.status).toBe('success');
 
       await act(async () => {
         await result.current.addItem({
@@ -429,8 +437,7 @@ describe('useStorePageination', () => {
 
     it('can switch to page 2', async () => {
       fetch.mockResponseOnce(networkResponse2).mockResponseOnce(idResponse);
-
-      const { result } = renderHook(
+      const { result, waitForNextUpdate } = renderHook(
         () =>
           useStorePagination({
             url,
@@ -443,6 +450,10 @@ describe('useStorePageination', () => {
       );
 
       await act(async () => {
+        await waitForNextUpdate();
+      });
+
+      await act(async () => {
         await result.current.setPage(2);
       });
 
@@ -452,7 +463,6 @@ describe('useStorePageination', () => {
       expect(result.current.pageSize).toBe(10);
       expect(result.current.items.length).toEqual(8);
       expect(result.current.itemIds.length).toEqual(8);
-
       expect(result.current.items[0].name).toEqual('Network Name');
       expect(result.current.itemIds[7]).toEqual('c0d98d41-3d9e-4c56-ad1f-50aae05f7e85');
 

@@ -64,9 +64,6 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
   const idsStatus = useSelector((state) => getItem(state, itemName));
 
   const updateMissingIds = useCallback(() => {
-    if (equal(ids, prevIds)) {
-      return [];
-    }
     const arr = [];
     const cacheIds = [];
     ids.forEach((id) => {
@@ -98,8 +95,9 @@ export default function useIds(service, ids, query = {}, sliceLength = ITEMS_PER
     if (cacheIds.length > 0) {
       setCacheStatus(dispatch, cacheIds, STATUS.SUCCESS, query);
     }
+
     return prevMissingIds;
-  }, [ids, cacheItems, dispatch, prevIds, query]);
+  }, [ids, cacheItems, dispatch, query]);
 
   const getMissingIds = useCallback(
     (checkIds = true) => {
