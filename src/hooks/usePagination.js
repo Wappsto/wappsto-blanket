@@ -113,8 +113,9 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
   const url2 = `${baseUrl}?${query.toString()}`;
 
   const response = await fireRequest(url2, store, sessionObj, requestsRef, 'count');
+
   requestsRef.current.count = response;
-  if (!response.ok) {
+  if (!response.ok || !response.json) {
     requestsRef.current.count.status = STATUS.ERROR;
     throw response;
   }
@@ -133,6 +134,7 @@ const getPages = async ({ url, store, useCache, page, pageSize, requestsRef, ses
     cache.url[url].count = count;
     cache.url[url].pageSize = pageSize;
   }
+
   return { newCount: count, pages };
 };
 
@@ -178,6 +180,7 @@ const getCurrentPageItems = async ({
     urls.push(`${baseUrl}?${query2.toString()}`);
     index += 100;
   }
+
   const promises = urls.map((e) => fireRequest(e, store, sessionObj, requestsRef, 'items'));
   if (urls.length) {
     requestsRef.current.items.promise = promises;
@@ -206,6 +209,7 @@ const getCurrentPageItems = async ({
       }
     });
   }
+
   requestsRef.current.items = { ok: true, status: STATUS.SUCCESS, json: items };
   return items;
 };
@@ -220,9 +224,9 @@ export default function usePagination(paginationInit) {
     useCache = true,
     session,
   } = pagination || {};
-  const [[items, pageLength], setItems] = useState([[], pageSize]);
+  const [items, setItems] = useState([]);
   const [page, setPage] = useState(pageNo);
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState(STATUS.IDLE);
   const [count, setCount] = useState(0);
   const [itemIds, setItemIds] = useState([]);
   const isMountedRef = useMounted();
@@ -241,8 +245,8 @@ export default function usePagination(paginationInit) {
 
   const setCurrentPage = useCallback((newPageNo) => get({ page: newPageNo }), [get]);
 
-  useEffect(() => {
-    const startPagination = async () => {
+  const startPagination = useCallback(async () => {
+    try {
       if (!url) {
         return;
       }
@@ -274,33 +278,28 @@ export default function usePagination(paginationInit) {
         currentItems: items,
         sessionObj,
       });
+
       if (isMountedRef.current) {
+        const ids = pages[pageNumber] || [];
         setPage(pageNumber);
         setCount(newCount);
-        setItems([newItems, pageSize]);
-        setItemIds(pages[pageNumber] || []);
+        setItems(newItems);
+        setItemIds(ids);
         setStatus(STATUS.SUCCESS);
       }
-    };
-    startPagination().catch(() => {
+    } catch (e) {
       if (isMountedRef.current) {
-        setItemIds((current) => (current.length && current[0].length ? [[], pageSize] : current));
+        setItems((current) => (current.length ? [] : current));
         setItemIds((current) => (current.length ? [] : current));
+        setCount(0);
         setStatus(STATUS.ERROR);
       }
-    });
-  }, [
-    pagination,
-    isMountedRef,
-    pageNo,
-    pageSize,
-    query,
-    store,
-    session,
-    url,
-    setCurrentPage,
-    useCache,
-  ]);
+    }
+  }, [isMountedRef, pageNo, pageSize, query, store, session, url, setCurrentPage, useCache]);
+
+  useEffect(() => {
+    startPagination();
+  }, [startPagination]);
 
   const refresh = () => {
     const urlFull = getUrl({ url, query, pageSize });
@@ -310,7 +309,7 @@ export default function usePagination(paginationInit) {
       });
       delete cache.url[urlFull];
     }
-    get();
+    startPagination();
   };
 
   const add = (item) => {
@@ -324,12 +323,12 @@ export default function usePagination(paginationInit) {
       }
       if (page === 1) {
         const newItems = [item, ...items];
-        if (newItems.length > pageLength) {
+        if (newItems.length > pageSize) {
           newItems.pop();
         }
         setCount((current) => current + 1);
         setItemIds(newItems.map((e) => e.meta.id));
-        setItems([newItems, pageLength]);
+        setItems(newItems);
       } else {
         refresh();
       }
@@ -360,10 +359,10 @@ export default function usePagination(paginationInit) {
             prevId = ids.pop();
           }
         });
-        get();
+        startPagination();
       } else if (cache.url[idUrl].page[lastPage]) {
         cache.url[idUrl].page[lastPage].push(id);
-        get();
+        startPagination();
       }
     }
   };
@@ -382,7 +381,7 @@ export default function usePagination(paginationInit) {
       if (found !== -1) {
         const newItems = [...items];
         newItems.splice(found, 1);
-        setItems([newItems, pageLength]);
+        setItems(newItems);
         const lastPage = Math.ceil(count / pageSize);
         if (lastPage !== page || !newItems.length) {
           refresh();
@@ -421,7 +420,7 @@ export default function usePagination(paginationInit) {
       if (page > lastPage) {
         setCurrentPage(lastPage || 1);
       } else {
-        get();
+        startPagination();
       }
     }
   };
@@ -434,7 +433,7 @@ export default function usePagination(paginationInit) {
       const pageItems = cache.url[idUrl].page[page];
       const found = pageItems.includes(id);
       if (found) {
-        get();
+        startPagination();
       }
     }
   };
@@ -452,7 +451,7 @@ export default function usePagination(paginationInit) {
     items,
     count,
     page,
-    pageSize: pageLength,
+    pageSize,
     setPage: setCurrentPage,
     refresh: refreshAll,
     status,
