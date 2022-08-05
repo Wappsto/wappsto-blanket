@@ -430,7 +430,7 @@ describe('useStorePageination', () => {
           name: 'Added Network',
         };
 
-        await store.dispatch(addEntities('network', newItem, {reset: false}));
+        await store.dispatch(addEntities('network', newItem, { reset: false }));
         await result.current.addItem(newItem);
       });
 
@@ -578,7 +578,7 @@ describe('useStorePageination', () => {
           name: 'Added Network',
         };
 
-        await store.dispatch(addEntities('network', newItem, {reset: false}));
+        await store.dispatch(addEntities('network', newItem, { reset: false }));
         await result.current.addItem(newItem);
       });
 
