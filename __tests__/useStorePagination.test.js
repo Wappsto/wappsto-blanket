@@ -1,9 +1,9 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react-hooks';
 import { Provider } from 'react-redux';
-import { configureStore } from 'wappsto-redux';
+import { configureStore, addEntities } from 'wappsto-redux';
 import fetchMock from 'jest-fetch-mock';
-import { usePagination as useStorePagination } from '../src';
+import { useStorePagination } from '../src';
 
 Error.stackTraceLimit = 30;
 
@@ -422,11 +422,16 @@ describe('useStorePageination', () => {
 
       expect(result.current.status).toBe('success');
 
+      fetch.mockResponseOnce(networkResponse2);
+
       await act(async () => {
-        await result.current.addItem({
+        const newItem = {
           meta: { type: 'network', id: '789896c6-c4ae-46cf-9352-1148f4e339e4' },
           name: 'Added Network',
-        });
+        };
+
+        await store.dispatch(addEntities('network', newItem, {reset: false}));
+        await result.current.addItem(newItem);
       });
 
       expect(fetchMock).toHaveBeenCalledTimes(0);
@@ -440,8 +445,6 @@ describe('useStorePageination', () => {
       expect(result.current.items[9].name).toEqual('Network 9');
       expect(result.current.itemIds[0]).toEqual('789896c6-c4ae-46cf-9352-1148f4e339e4');
       expect(result.current.itemIds[9]).toEqual('335b87c2-e21c-43f5-b763-51b51b55f23b');
-
-      expect(fetchMock).toHaveBeenCalledTimes(0);
     });
 
     it('can switch to page 2', async () => {
@@ -570,10 +573,13 @@ describe('useStorePageination', () => {
       expect(result.current.itemIds[9]).toEqual('26b19be3-d7a4-4961-8544-b57700d55eaa');
 
       await act(async () => {
-        await result.current.addItem({
+        const newItem = {
           meta: { type: 'network', id: '989896c6-c4ae-46cf-9352-1148f4e339e4' },
-          name: 'test',
-        });
+          name: 'Added Network',
+        };
+
+        await store.dispatch(addEntities('network', newItem, {reset: false}));
+        await result.current.addItem(newItem);
       });
 
       expect(result.current.status).toBe('success');
@@ -591,6 +597,7 @@ describe('useStorePageination', () => {
         await result.current.setPage(2);
       });
 
+      expect(fetchMock).toHaveBeenCalledTimes(4);
       expect(result.current.status).toBe('success');
       expect(result.current.count).toBe(18);
       expect(result.current.page).toBe(2);
