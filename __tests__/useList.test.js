@@ -14,7 +14,7 @@ describe('useList', () => {
   });
 
   it('will return no items when items is undefined', async () => {
-    const { result } = renderHook(() => useList(), {
+    const { result } = renderHook(() => useList({}), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
@@ -25,7 +25,7 @@ describe('useList', () => {
 
   it('can not get items when error', async () => {
     fetch.mockRejectOnce('error');
-    const url = '/network';
+    const url = '/networkError';
 
     const { result, waitForNextUpdate } = renderHook(() => useList({ url }), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
@@ -43,6 +43,35 @@ describe('useList', () => {
   });
 
   it('can get items from url', async () => {
+    fetch.mockResponseOnce(
+      JSON.stringify([
+        {
+          meta: {
+            type: 'network',
+            id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb',
+          },
+          name: 'network',
+        },
+      ]),
+    );
+
+    const url = '/networkUrl';
+
+    const { result, waitForNextUpdate } = renderHook(() => useList({ url }), {
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+    });
+
+    await act(async () => {
+      await waitForNextUpdate();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.items.length).toBe(1);
+    expect(result.current.items[0].name).toBe('network');
+    expect(result.current.canLoadMore).toBe(false);
+  });
+
+  it('can get more items from refresh', async () => {
     fetch
       .mockResponseOnce(
         JSON.stringify([
@@ -74,7 +103,45 @@ describe('useList', () => {
         ]),
       );
 
-    const url = '/network2?name=test';
+    const url = '/networkRefresh';
+
+    const { result, waitForNextUpdate } = renderHook(() => useList({ url }), {
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+    });
+
+    await act(async () => {
+      await waitForNextUpdate();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.items.length).toBe(1);
+    expect(result.current.items[0].meta.id).toEqual('b08f9add-7bb2-463d-8b30-bf38da068dfb');
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.items.length).toBe(2);
+    expect(result.current.items[0].meta.id).toEqual('b08f9add-7bb2-463d-8b30-bf38da068dfb');
+    expect(result.current.items[1].meta.id).toEqual('b08f9add-7bb2-463d-8b30-bf38da068df2');
+  });
+
+  it('can remove items', async () => {
+    fetch.mockResponseOnce(
+      JSON.stringify([
+        {
+          meta: {
+            type: 'network',
+            id: '0ed7f455-cd3a-4550-8bdd-6b0619a68253',
+          },
+          name: 'network',
+        },
+      ]),
+    );
+
+    const url = '/networkRemove';
+    let returnResult;
 
     const { result, waitForNextUpdate, rerender } = renderHook(() => useList({ url }), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
@@ -86,34 +153,96 @@ describe('useList', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(result.current.items.length).toBe(1);
-    expect(result.current.items[0].name).toBe('network');
-    expect(result.current.canLoadMore).toBe(false);
 
     await act(async () => {
-      await result.current.refresh();
+      returnResult = await result.current.removeItem('0ed7f455-cd3a-4550-8bdd-6b0619a68253');
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(result.current.items.length).toBe(2);
-
-    await act(async () => {
-      await result.current.addItem('0ed7f455-cd3a-4550-8bdd-6b0619a68253');
-    });
+    expect(returnResult).toBe(true);
 
     await act(async () => {
       await rerender();
     });
 
     await act(async () => {
-      await result.current.removeItem('0ed7f455-cd3a-4550-8bdd-6b0619a68253');
+      returnResult = await result.current.removeItem('0ed7f455-cd3a-4550-8bdd-6b0619a68253');
+    });
+
+    expect(returnResult).toBe(false);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.items.length).toBe(0);
+  });
+
+  it('can add items', async () => {
+    fetch.mockResponseOnce(
+      JSON.stringify([
+        {
+          meta: {
+            type: 'network',
+            id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb',
+          },
+          name: 'network 1',
+        },
+        {
+          meta: {
+            type: 'network',
+            id: 'c08f9add-7bb2-463d-8b30-bf38da068dfb',
+          },
+          name: 'network 2',
+        },
+      ]),
+    );
+
+    const url = '/networkAdd';
+    let returnResult;
+
+    const { result, waitForNextUpdate, rerender } = renderHook(() => useList({ url }), {
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+    });
+
+    await act(async () => {
+      await waitForNextUpdate();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.items.length).toBe(2);
+
+    await act(async () => {
+      returnResult = await result.current.removeItem('b08f9add-7bb2-463d-8b30-bf38da068dfb');
+      returnResult = await result.current.removeItem('c08f9add-7bb2-463d-8b30-bf38da068dfb');
+    });
+
+    expect(result.current.items.length).toBe(0);
+
+    await act(async () => {
+      returnResult = await result.current.addItem('c08f9add-7bb2-463d-8b30-bf38da068dfb');
+    });
+
+    expect(returnResult).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.items.length).toBe(1);
+
+    await act(async () => {
+      returnResult = await result.current.addItem('c08f9add-7bb2-463d-8b30-bf38da068dfb');
+    });
+
+    expect(returnResult).toBe(false);
+
+    await act(async () => {
+      returnResult = await result.current.addItem('b08f9add-7bb2-463d-8b30-bf38da068dfb', 'end');
     });
 
     await act(async () => {
       await rerender();
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(returnResult).toBe(true);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(result.current.items.length).toBe(2);
+    expect(result.current.items[0].meta.id).toEqual('c08f9add-7bb2-463d-8b30-bf38da068dfb');
+    expect(result.current.items[1].meta.id).toEqual('b08f9add-7bb2-463d-8b30-bf38da068dfb');
   });
 
   it('can get items from type', async () => {
@@ -176,6 +305,211 @@ describe('useList', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(result.current.items.length).toBe(4);
     expect(result.current.items[0].name).toBe('Trientwood Portable Kit');
+    expect(result.current.canLoadMore).toBe(false);
+  });
+
+  it('can load more then the limit', async () => {
+    fetch
+      .mockResponseOnce(
+        JSON.stringify([
+          {
+            meta: {
+              type: 'network',
+              id: 'a08f9add-7bb2-463d-8b30-bf38da068dfb',
+            },
+            name: 'network 1',
+          },
+          {
+            meta: {
+              type: 'network',
+              id: 'b08f9add-7bb2-463d-8b30-bf38da068dfb',
+            },
+            name: 'network 2',
+          },
+        ]),
+      )
+      .mockResponseOnce(
+        JSON.stringify([
+          {
+            meta: {
+              type: 'network',
+              id: 'c08f9add-7bb2-463d-8b30-bf38da068dfb',
+            },
+            name: 'network 3',
+          },
+        ]),
+      );
+
+    const url = '/networkMore';
+
+    const { result, waitForNextUpdate } = renderHook(() => useList({ url, query: { limit: 2 } }), {
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+    });
+
+    await act(async () => {
+      await waitForNextUpdate();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.items.length).toBe(2);
+    expect(result.current.items[0].name).toBe('network 1');
+    expect(result.current.canLoadMore).toBe(true);
+
+    await act(async () => {
+      await result.current.loadMore();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.items.length).toBe(3);
+    expect(result.current.items[0].name).toBe('network 1');
+    expect(result.current.items[2].name).toBe('network 3');
+    expect(result.current.canLoadMore).toBe(false);
+  });
+
+  it('can load values from a device', async () => {
+    const valueResponse = [
+      {
+        state: [
+          {
+            timestamp: '2022-05-18T07:31:57.575000Z',
+            data: '',
+            status_payment: 'owned',
+            type: 'Report',
+            meta: {
+              type: 'state',
+              version: '2.0',
+              manufacturer: '7ff2124c-2af9-4498-92b6-21d00f97cc90',
+              owner: 'f770df28-d063-493a-9e51-9eb1c75bfb9c',
+              id: '12d98bc2-b278-445a-8d9e-63cd3b71a1b9',
+              iot: false,
+              application: '916d2a44-0981-4786-8001-d1eda497e12b',
+              created: '2022-05-18T07:31:57.634550Z',
+              updated: '2022-05-18T07:31:57.634550Z',
+              revision: 1,
+              changed: '2022-05-18T07:31:57.634550Z',
+              size: 1441,
+              path: '/network/6e1d786f-4029-42ae-8ece-95bb31b0bcd0/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c/value/60bfe4d1-9976-4373-8e38-87d4af8576ba/state/12d98bc2-b278-445a-8d9e-63cd3b71a1b9',
+              parent: '60bfe4d1-9976-4373-8e38-87d4af8576ba',
+              name_by_user: 'Report',
+              tag_by_user: [],
+              historical: true,
+              tag: [],
+              can_update_data: false,
+            },
+          },
+          {
+            timestamp: '2022-05-18T07:31:57.694000Z',
+            data: '',
+            status_payment: 'owned',
+            type: 'Control',
+            meta: {
+              type: 'state',
+              version: '2.0',
+              manufacturer: '7ff2124c-2af9-4498-92b6-21d00f97cc90',
+              owner: 'f770df28-d063-493a-9e51-9eb1c75bfb9c',
+              id: '8e0e3600-eef1-4443-bd61-050e54f7b12d',
+              iot: false,
+              application: '916d2a44-0981-4786-8001-d1eda497e12b',
+              created: '2022-05-18T07:31:57.751548Z',
+              updated: '2022-05-18T07:31:57.751548Z',
+              revision: 1,
+              changed: '2022-05-18T07:31:57.751548Z',
+              size: 1442,
+              path: '/network/6e1d786f-4029-42ae-8ece-95bb31b0bcd0/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c/value/60bfe4d1-9976-4373-8e38-87d4af8576ba/state/8e0e3600-eef1-4443-bd61-050e54f7b12d',
+              parent: '60bfe4d1-9976-4373-8e38-87d4af8576ba',
+              name_by_user: 'Control',
+              tag_by_user: [],
+              historical: true,
+              tag: [],
+              can_update_data: false,
+            },
+          },
+        ],
+        eventlog: [],
+        name: 'Find Device Value Name',
+        type: 'temperature',
+        period: '2',
+        delta: '0',
+        permission: 'rw',
+        number: { min: 0.0, max: 100.0, step: 1.0, unit: 'unit' },
+        meta: {
+          type: 'value',
+          version: '2.0',
+          manufacturer: '7ff2124c-2af9-4498-92b6-21d00f97cc90',
+          owner: 'f770df28-d063-493a-9e51-9eb1c75bfb9c',
+          id: '60bfe4d1-9976-4373-8e38-87d4af8576ba',
+          iot: false,
+          application: '916d2a44-0981-4786-8001-d1eda497e12b',
+          created: '2022-05-18T07:31:57.516300Z',
+          updated: '2022-05-18T07:31:57.751548Z',
+          revision: 3,
+          changed: '2022-05-18T07:31:57.751548Z',
+          size: 1515,
+          path: '/network/6e1d786f-4029-42ae-8ece-95bb31b0bcd0/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c/value/60bfe4d1-9976-4373-8e38-87d4af8576ba',
+          parent: 'b3a829a4-6ec2-43ec-8aac-e4640cb58f6c',
+          name_by_user: 'Find Device Value Name',
+          tag_by_user: [],
+          tag: [],
+        },
+      },
+    ];
+
+    fetch.mockResponseOnce(JSON.stringify(valueResponse));
+
+    const { result, waitForNextUpdate } = renderHook(
+      () =>
+        useList({
+          url: '/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c/value',
+          reset: false,
+          query: { limit: 33, expand: 1, verbose: true },
+          resetOnEmpty: true,
+        }),
+      {
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+      },
+    );
+
+    await act(async () => {
+      await waitForNextUpdate();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.items.length).toBe(1);
+    expect(result.current.items[0].name).toEqual('Find Device Value Name');
+    expect(result.current.canLoadMore).toBe(false);
+  });
+
+  it('can load without cache', async () => {
+    fetch
+     .mockResponseOnce(
+        JSON.stringify([
+          {
+            meta: {
+              type: 'network',
+              id: 'c08f9add-7bb2-463d-8b30-bf38da068dfb',
+            },
+            name: 'network 3',
+          },
+        ]),
+      );
+
+    const { result, waitForNextUpdate } = renderHook(
+      () =>
+        useList({
+          url: '/networkCache',
+          useCache: false,
+        }),
+      {
+        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+      },
+    );
+
+    await act(async () => {
+      await waitForNextUpdate();
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.current.items.length).toBe(1);
     expect(result.current.canLoadMore).toBe(false);
   });
 });

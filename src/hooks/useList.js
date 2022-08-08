@@ -7,73 +7,79 @@ import { STATUS } from '../util';
 
 const empty = [];
 
-function getQueryObj(query) {
-  const urlParams = {};
-  let match;
-  const pl = /\+/g;
-  const search = /([^&=]+)=?([^&]*)/g;
-  function decode(s) {
-    return decodeURIComponent(s.replace(pl, ' '));
+function getQueryAsObj(query) {
+  const queryString = {};
+  if (query !== '') {
+    const vars = query.split('&');
+    for (let i = 0; i < vars.length; i += 1) {
+      const pair = vars[i].split('=');
+      pair[0] = decodeURIComponent(pair[0]);
+      pair[1] = decodeURIComponent(pair[1]);
+      // If first entry with this name
+      if (typeof queryString[pair[0]] === 'undefined') {
+        [, queryString[pair[0]]] = pair;
+        // If second entry with this name
+      } else if (typeof queryString[pair[0]] === 'string') {
+        queryString[pair[0]] = [queryString[pair[0]], pair[1]];
+        // If third or later entry with this name
+      } else {
+        queryString[pair[0]].push(pair[1]);
+      }
+    }
   }
-
-  while (match) {
-    match = search.exec(query);
-    urlParams[decode(match[1])] = decode(match[2]);
-  }
-  return urlParams;
+  return queryString;
 }
 
-/*
-props: url, type, id, childType, query, reset, resetOnEmpty, sort
-*/
-export default function useList(inputProps) {
-  const props = useMemo(() => inputProps || {}, [inputProps]);
+function useList({ url, type, id, childType, query, reset, resetOnEmpty, sort, useCache }) {
   const dispatch = useDispatch();
-  const prevQuery = usePrevious(props.query);
-  const query = useRef({});
+  const prevQuery = usePrevious(query);
+  const newQuery = useRef({});
   const differentQuery = useRef(0);
-  if (JSON.stringify(prevQuery) !== JSON.stringify(props.query)) {
+  if (JSON.stringify(prevQuery) !== JSON.stringify(query)) {
     differentQuery.current += 1;
   }
 
   const propsData = useMemo(() => {
-    let { type, id, childType, url } = props;
+    let pType = type;
+    let pUrl = url;
+    let pChildType = childType;
+    let pId = id;
     let parent;
     let entitiesType;
-    let propsQuery = { ...props.query };
-    if (url) {
-      let split = url.split('?');
-      [url] = split;
-      propsQuery = { ...getQueryObj(split.slice(1).join('?')), ...propsQuery };
+    let propsQuery = { ...query };
+    if (pUrl) {
+      let split = pUrl.split('?');
+      [pUrl] = split;
+      propsQuery = { ...getQueryAsObj(split.slice(1).join('?')), ...propsQuery };
       split = split[0].split('/');
-      const result = getUrlInfo(url);
+      const result = getUrlInfo(pUrl);
       if (result.parent) {
-        type = result.parent.type;
-        childType = result.service;
-        entitiesType = childType;
+        pType = result.parent.type;
+        pChildType = result.service;
+        entitiesType = pChildType;
       } else {
-        id = result.id;
-        type = result.service;
-        entitiesType = type;
+        pId = result.id;
+        pType = result.service;
+        entitiesType = pType;
       }
-    } else if (type) {
-      url = `/${type}`;
-      if (id) {
-        if (id.startsWith('?')) {
-          propsQuery = { ...propsQuery, ...getQueryObj(id.slice(1)) };
+    } else if (pType) {
+      pUrl = `/${pType}`;
+      if (pId) {
+        if (pId.startsWith('?')) {
+          propsQuery = { ...propsQuery, ...getQueryAsObj(pId.slice(1)) };
         } else {
           if (!id.startsWith('/')) {
-            url += '/';
+            pUrl += '/';
           }
-          url += id;
+          pUrl += pId;
         }
       }
-      if (childType) {
-        url += `/${childType}`;
-        parent = { id, type };
-        entitiesType = childType;
+      if (pChildType) {
+        pUrl += `/${pChildType}`;
+        parent = { id, pType };
+        entitiesType = pChildType;
       } else {
-        entitiesType = type;
+        entitiesType = pType;
       }
     }
     if (!propsQuery.limit || propsQuery.limit > 100) {
@@ -83,21 +89,22 @@ export default function useList(inputProps) {
       propsQuery.offset = 0;
     }
     return {
-      type,
-      childType,
+      type: pType,
+      childType: pChildType,
       entitiesType,
-      id,
-      url,
+      id: pId,
+      url: pUrl,
       query: propsQuery,
       parent,
+      resetOnEmpty,
     };
-  }, [props]);
+  }, [childType, id, query, resetOnEmpty, type, url]);
 
   const [customRequest, setCustomRequest] = useState({
     status: propsData.url ? STATUS.PENDING : STATUS.SUCCESS,
-    options: { query: props.query },
+    options: { query: propsData.query },
   });
-  // const name = props.name || propsData.url + JSON.stringify(propsData.query);
+
   const name = propsData.url + JSON.stringify(propsData.query);
   const idsItemName = `${name}_ids`;
   const requestIdName = `${name}_requestId`;
@@ -107,7 +114,7 @@ export default function useList(inputProps) {
   const { request, send } = useRequest(requestIdName);
 
   if (propsData.url && !request && customRequest.status !== STATUS.PENDING) {
-    setCustomRequest({ status: STATUS.PENDING, options: { query: props.query } });
+    setCustomRequest({ status: STATUS.PENDING, options: { query: propsData.query } });
   }
 
   const { limit } = propsData.query;
@@ -121,10 +128,10 @@ export default function useList(inputProps) {
     !request ||
     items.length === 0 ||
     (request && request.status === STATUS.ERROR) ||
-    (props.resetOnEmpty &&
+    (propsData.resetOnEmpty &&
       request &&
       request.status === STATUS.PENDING &&
-      query.current.offset === propsData.query.offset)
+      newQuery.current.offset === propsData.query.offset)
   ) {
     items = empty;
   }
@@ -139,8 +146,8 @@ export default function useList(inputProps) {
   const [canLoadMore, setCanLoadMore] = useState(items.length !== 0 && items.length % limit === 0);
 
   useEffect(() => {
-    items.sort(props.sort);
-  }, [items, props.sort]);
+    items.sort(sort);
+  }, [items, sort]);
 
   const prevRequest = usePrevious(request);
 
@@ -160,34 +167,25 @@ export default function useList(inputProps) {
   );
 
   const refresh = useCallback(
-    (reset) => {
-      query.current = {
+    (paramReset) => {
+      newQuery.current = {
         expand: 0,
         ...propsData.query,
       };
       sendRequest({
-        query: query.current,
-        reset: typeof reset === 'boolean' ? reset : props.reset,
+        query: newQuery.current,
+        reset: typeof paramReset === 'boolean' ? paramReset : reset,
         refresh: true,
       });
     },
-    [propsData.query, sendRequest, props.reset],
+    [propsData.query, sendRequest, reset],
   );
 
   useEffect(() => {
-    if (props.useCache === false || !request || (savedIds === empty && !request)) {
-      refresh(props.reset);
+    if (!request || (savedIds === empty && !request)) {
+      refresh(reset);
     }
-  }, [
-    propsData.query,
-    props.id,
-    propsData.url,
-    refresh,
-    props.useCache,
-    props.reset,
-    request,
-    savedIds,
-  ]);
+  }, [propsData.query, id, propsData.url, refresh, reset, request, savedIds]);
 
   // function updateItemCount
   useEffect(() => {
@@ -224,9 +222,9 @@ export default function useList(inputProps) {
   // function updateListLoadMore
   useEffect(() => {
     if (
-      request &&
       prevRequest &&
       prevRequest.status !== STATUS.SUCCESS &&
+      request &&
       request.status === STATUS.SUCCESS
     ) {
       let data;
@@ -264,27 +262,27 @@ export default function useList(inputProps) {
 
   const loadMore = useCallback(() => {
     if (canLoadMore) {
-      query.current = {
+      newQuery.current = {
         expand: 0,
         ...propsData.query,
         offset: items.length + propsData.query.offset,
       };
       sendRequest({
-        query: query.current,
+        query: newQuery.current,
       });
     }
   }, [canLoadMore, propsData.query, items.length, sendRequest]);
 
   const addItem = useCallback(
-    (id, position = 'start') => {
-      const found = savedIds.find((existingId) => existingId === id);
+    (newId, position = 'start') => {
+      const found = savedIds.find((existingId) => existingId === newId);
       if (!found) {
         dispatch(
           setItem(idsItemName, (ids = []) => {
             if (position === 'start') {
-              return [id, ...ids];
+              return [newId, ...ids];
             }
-            return [...ids, id];
+            return [...ids, newId];
           }),
         );
         return true;
@@ -295,8 +293,8 @@ export default function useList(inputProps) {
   );
 
   const removeItem = useCallback(
-    (id) => {
-      const index = savedIds.findIndex((existingId) => existingId === id);
+    (oldId) => {
+      const index = savedIds.findIndex((existingId) => existingId === oldId);
       if (index !== -1) {
         dispatch(
           setItem(idsItemName, (ids = []) => [...ids.slice(0, index), ...ids.slice(index + 1)]),
@@ -318,3 +316,5 @@ export default function useList(inputProps) {
     removeItem,
   };
 }
+
+export default useList;
