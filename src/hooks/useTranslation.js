@@ -1,9 +1,4 @@
-import { useTranslation as useExternalTranslation } from 'react-i18next';
-
-const useTranslation = () => {
-  // translate
-  const { t } = useExternalTranslation();
-
+const useTranslation = (t) => {
   // translate + Capitalize
   function tC(str, options) {
     const newStr = str ? t(str, options) : '';
