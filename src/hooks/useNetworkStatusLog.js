@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useStore } from 'react-redux';
 import qs from 'qs';
 import { onLogout, startRequest, getSession } from 'wappsto-redux';
+import useMounted from './useMounted';
 import { STATUS } from '../util';
 
 const MAX_LOG_LIMIT = 3600;
@@ -13,11 +14,9 @@ onLogout(() => (cache = {}));
 export default function useNetworkStatusLog(networkId) {
   const [{ data, status }, setResult] = useState({});
   const functionRef = useRef({});
-  const isMountedRef = useRef(true);
+  const isMounted = useMounted();
   const currentRef = useRef();
   const store = useStore();
-
-  useEffect(() => () => (isMountedRef.current = false), []);
 
   const getFun = ({ start, end, limit, resetCache } = {}) => {
     const getData = async (query, initLimit) => {
@@ -25,13 +24,13 @@ export default function useNetworkStatusLog(networkId) {
       const tmpData = [];
       let more = true;
 
-      while (more && isMountedRef.current) {
+      while (more && isMounted.current) {
         const state = store.getState();
         const sessionObj = getSession(state);
         const url = `/log/${networkId}/online_iot?${qs.stringify(newQuery)}`;
         /* eslint-disable-next-line no-await-in-loop */
         const http = await startRequest(store.dispatch, { url, method: 'GET' }, sessionObj);
-        if (!isMountedRef.current) {
+        if (!isMounted.current) {
           return [];
         }
         if (http.status !== 200) {
@@ -92,13 +91,13 @@ export default function useNetworkStatusLog(networkId) {
 
     getData(query, initLimit)
       .then((response) => {
-        if (isMountedRef.current && currentRef.current === current) {
+        if (isMounted.current && currentRef.current === current) {
           cache[networkId] = response;
           setResult({ status: STATUS.SUCCESS, data: response });
         }
       })
       .catch(() => {
-        if (isMountedRef.current) {
+        if (isMounted.current) {
           setResult({ status: STATUS.ERROR, data: [] });
         }
       });

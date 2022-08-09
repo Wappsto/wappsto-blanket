@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setItem, makeItemSelector, makeRequest } from 'wappsto-redux';
+import useMounted from './useMounted';
 import { STATUS } from '../util';
 
 export default function useMetrics(id) {
@@ -14,7 +15,7 @@ export default function useMetrics(id) {
   const [status, setStatus] = useState(savedStatus);
   const cancelFunc = useRef();
   const isCanceled = useRef(false);
-  const unmounted = useRef(false);
+  const isMounted = useMounted();
 
   const setCurrentStatus = (newStatus) => {
     cachedStatus.current = newStatus;
@@ -62,7 +63,7 @@ export default function useMetrics(id) {
           }),
         );
         cancelFunc.current = null;
-        if (unmounted.current) {
+        if (!isMounted.current) {
           return;
         }
         if (!result.ok || !result.json) {
@@ -75,20 +76,13 @@ export default function useMetrics(id) {
         setCurrentStatus(STATUS.SUCCESS);
       } catch (e) {
         cancelFunc.current = null;
-        if (unmounted.current) {
+        if (!isMounted.current) {
           return;
         }
         setCurrentStatus(STATUS.ERROR);
       }
     },
-    [dispatch, itemName],
-  );
-
-  useEffect(
-    () => () => {
-      unmounted.current = true;
-    },
-    [],
+    [dispatch, itemName, isMounted],
   );
 
   const cancel = useCallback(() => {

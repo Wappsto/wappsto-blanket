@@ -388,7 +388,6 @@ describe('useList', () => {
               revision: 1,
               changed: '2022-05-18T07:31:57.634550Z',
               size: 1441,
-              path: '/network/6e1d786f-4029-42ae-8ece-95bb31b0bcd0/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c/value/60bfe4d1-9976-4373-8e38-87d4af8576ba/state/12d98bc2-b278-445a-8d9e-63cd3b71a1b9',
               parent: '60bfe4d1-9976-4373-8e38-87d4af8576ba',
               name_by_user: 'Report',
               tag_by_user: [],
@@ -415,7 +414,6 @@ describe('useList', () => {
               revision: 1,
               changed: '2022-05-18T07:31:57.751548Z',
               size: 1442,
-              path: '/network/6e1d786f-4029-42ae-8ece-95bb31b0bcd0/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c/value/60bfe4d1-9976-4373-8e38-87d4af8576ba/state/8e0e3600-eef1-4443-bd61-050e54f7b12d',
               parent: '60bfe4d1-9976-4373-8e38-87d4af8576ba',
               name_by_user: 'Control',
               tag_by_user: [],
@@ -445,7 +443,6 @@ describe('useList', () => {
           revision: 3,
           changed: '2022-05-18T07:31:57.751548Z',
           size: 1515,
-          path: '/network/6e1d786f-4029-42ae-8ece-95bb31b0bcd0/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c/value/60bfe4d1-9976-4373-8e38-87d4af8576ba',
           parent: 'b3a829a4-6ec2-43ec-8aac-e4640cb58f6c',
           name_by_user: 'Find Device Value Name',
           tag_by_user: [],
@@ -480,18 +477,17 @@ describe('useList', () => {
   });
 
   it('can load without cache', async () => {
-    fetch
-     .mockResponseOnce(
-        JSON.stringify([
-          {
-            meta: {
-              type: 'network',
-              id: 'c08f9add-7bb2-463d-8b30-bf38da068dfb',
-            },
-            name: 'network 3',
+    fetch.mockResponseOnce(
+      JSON.stringify([
+        {
+          meta: {
+            type: 'network',
+            id: 'c08f9add-7bb2-463d-8b30-bf38da068dfb',
           },
-        ]),
-      );
+          name: 'network 3',
+        },
+      ]),
+    );
 
     const { result, waitForNextUpdate } = renderHook(
       () =>

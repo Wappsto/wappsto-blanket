@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import qs from 'qs';
 import equal from 'deep-equal';
 import { onLogout, makeRequest } from 'wappsto-redux';
+import useMounted from './useMounted';
 import { STATUS } from '../util';
 
 let cache = {};
@@ -16,12 +17,16 @@ export default function useLogs(stateId, sessionId, cacheId) {
   const [status, setStatus] = useState(STATUS.IDLE);
   const dispatch = useDispatch();
   const cancelFunc = useRef();
-  const unmounted = useRef(false);
+  const isMounted = useMounted();
 
   const setCurrentStatus = (currentStatus) => {
     cachedStatus.current = currentStatus;
     setStatus(currentStatus);
   };
+
+  useEffect(() => {
+    cache = {};
+  }, []);
 
   const getLogs = useCallback(
     async (options) => {
@@ -50,7 +55,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
         cachedData.current = [];
         let more = true;
         try {
-          while (more && !isCanceled.current && (cacheId || (!cacheId && !unmounted.current))) {
+          while (more && !isCanceled.current && (cacheId || (!cacheId && isMounted.current))) {
             if (cachedData.current.length > 0) {
               const last = cachedData.current[cachedData.current.length - 1];
               cOptions.start = last.time || last.selected_timestamp;
@@ -59,7 +64,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
               cOptions.limit ? '' : '&limit=3600'
             }&${qs.stringify(cOptions)}`;
             const controller = new AbortController();
-            cancelFunc.current = controller.abort;
+            cancelFunc.current = controller.abort.bind(controller);
             /* eslint-disable-next-line no-await-in-loop */
             const result = await dispatch(
               makeRequest({
@@ -72,7 +77,11 @@ export default function useLogs(stateId, sessionId, cacheId) {
                 },
               }),
             );
+
             cancelFunc.current = null;
+            if (isCanceled.current) {
+              return;
+            }
             if (!result.ok || !result.json) {
               throw new Error('error');
             }
@@ -86,7 +95,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
               status: STATUS.SUCCESS,
             };
           }
-          if (unmounted.current) {
+          if (!isMounted.current) {
             return;
           }
           if (!isCanceled.current) {
@@ -102,7 +111,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
               status: STATUS.ERROR,
             };
           }
-          if (unmounted.current) {
+          if (!isMounted.current) {
             return;
           }
           if (!isCanceled.current) {
@@ -112,14 +121,7 @@ export default function useLogs(stateId, sessionId, cacheId) {
         }
       }
     },
-    [cacheId, dispatch, sessionId, stateId],
-  );
-
-  useEffect(
-    () => () => {
-      unmounted.current = true;
-    },
-    [],
+    [cacheId, dispatch, sessionId, stateId, isMounted],
   );
 
   const cancel = useCallback(() => {
