@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { useStore } from 'react-redux';
 import qs from 'qs';
 import { onLogout, startRequest, getSession } from 'wappsto-redux';
@@ -102,6 +102,10 @@ export default function useNetworkStatusLog(networkId) {
         }
       });
   };
+
+  useEffect(() => {
+    setResult({ status: STATUS.PENDING, data: [] });
+  }, [networkId]);
 
   functionRef.current.get = getFun;
   const get = useCallback((...args) => functionRef.current.get(...args), []);

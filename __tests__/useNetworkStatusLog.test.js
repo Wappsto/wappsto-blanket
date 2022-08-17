@@ -14,14 +14,12 @@ describe('useNetworkStatusLog', () => {
   });
 
   it('runs correctly when there is errors', async () => {
-    const testValue = 'test';
-    const { result, rerender, unmount } = renderHook(({ value }) => useNetworkStatusLog(value), {
-      initialProps: { value: testValue },
+    const { result, rerender, unmount } = renderHook(() => useNetworkStatusLog('test'), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
-    expect(result.current.data).toBe(undefined);
-    expect(result.current.status).toBe(undefined);
+    expect(result.current.data).toEqual([]);
+    expect(result.current.status).toEqual('pending');
 
     await act(async () => {
       await result.current.get();
@@ -43,8 +41,8 @@ describe('useNetworkStatusLog', () => {
     expect(result.current.status).toEqual('error');
 
     await act(async () => {
-      result.current.get();
       unmount();
+      result.current.get();
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -57,9 +55,7 @@ describe('useNetworkStatusLog', () => {
       .mockResponseOnce(JSON.stringify({ data: [{ id: 1 }, { id: 2 }], more: true }))
       .mockResponseOnce(JSON.stringify({ data: [{ id: 2 }, { id: 3 }], more: false }));
 
-    const testValue = 'test';
-    const { result } = renderHook(({ value }) => useNetworkStatusLog(value), {
-      initialProps: { value: testValue },
+    const { result } = renderHook(() => useNetworkStatusLog('test'), {
       wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
     });
 
@@ -84,6 +80,83 @@ describe('useNetworkStatusLog', () => {
     end = '2023-02-02T02:02:02Z';
     resetCache = false;
     await act(async () => {
+      await result.current.get({
+        start,
+        end,
+        limit,
+        resetCache,
+      });
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.data).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    expect(result.current.status).toEqual('success');
+  });
+
+  it('clears the data when there is no network id', async () => {
+    fetch
+      .mockResponseOnce(JSON.stringify({ data: [{ id: 1 }, { id: 2 }], more: true }))
+      .mockResponseOnce(JSON.stringify({ data: [{ id: 2 }, { id: 3 }], more: false }));
+
+    const testValue = 'networkId2';
+    const { result, rerender } = renderHook(({ networkId }) => useNetworkStatusLog(networkId), {
+      initialProps: { networkId: testValue },
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+    });
+
+    const start = '2022-02-02T02:02:02Z';
+    const end = '2023-02-02T02:02:02Z';
+    const limit = 5000;
+    const resetCache = false;
+    await act(async () => {
+      await result.current.get({
+        start,
+        end,
+        limit,
+        resetCache,
+      });
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.data).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    expect(result.current.status).toEqual('success');
+
+    await act(async () => {
+      await result.current.get({
+        start,
+        end,
+        limit,
+        resetCache,
+      });
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.data).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    expect(result.current.status).toEqual('success');
+
+    await act(async () => {
+      await rerender({ networkId: undefined });
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.data).toEqual([]);
+    expect(result.current.status).toEqual('pending');
+
+    await act(async () => {
+      await result.current.get({
+        start,
+        end,
+        limit,
+        resetCache,
+      });
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.data).toEqual([]);
+    expect(result.current.status).toEqual('pending');
+
+    await act(async () => {
+      await rerender({ networkId: testValue });
       await result.current.get({
         start,
         end,
