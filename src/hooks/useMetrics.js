@@ -52,7 +52,7 @@ export default function useMetrics(id) {
           },
         };
         const controller = new AbortController();
-        cancelFunc.current = controller.abort;
+        cancelFunc.current = controller.abort.bind(controller);
         const result = await dispatch(
           makeRequest({
             method: 'POST',
