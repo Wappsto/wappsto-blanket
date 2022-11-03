@@ -1,6 +1,6 @@
 {
   "name": "wappsto-blanket",
-  "version": "2.4.5",
+  "version": "2.4.6",
   "description": "",
   "main": "dist/index.js",
   "files": [
@@ -35,7 +35,7 @@
     "deep-equal": "^2.1.0",
     "qs": "^6.11.0",
     "react": "^18.1.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "^18.1.0",
     "react-redux": "^8.0.4",
     "wappsto-redux": "^4.2.4"
   },
