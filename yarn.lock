@@ -10712,10 +10712,10 @@ walker@^1.0.7, walker@^1.0.8:
   dependencies:
     makeerror "1.0.12"
 
-wappsto-redux@^4.2.6:
-  version "4.2.6"
-  resolved "https://registry.yarnpkg.com/wappsto-redux/-/wappsto-redux-4.2.6.tgz#ae55770ed51568d9f069ed563ec9aade00c65d62"
-  integrity sha512-KWzcrW4KDjx0my0GnTrWx75HbvMRhhwAtn6S+GFN6EUngf1Ir2UBALpZp6l6DgKl+d5FzOx6/GDhuFow6YWQdw==
+wappsto-redux@^4.2.7:
+  version "4.2.7"
+  resolved "https://registry.yarnpkg.com/wappsto-redux/-/wappsto-redux-4.2.7.tgz#ba5a717b34bf1fe184e757c52e475d51899769d4"
+  integrity sha512-LXarmskM8sPF44m0d5tzsHZp0aCuPcTCdQ20Zu7uhpopxX7AkjJgdG4DJyVW6LbgeDKgmEOQefHUBCgS4AvGVg==
   dependencies:
     deep-equal "^2.1.0"
     normalizr "^3.6.2"
