@@ -16,12 +16,17 @@ describe('useRequest', () => {
     const res = {"file_id":"dc1695e7-346d-4e64-9dcf-29c562362042","status":"ok"};
     fetch.mockResponseOnce(JSON.stringify(res), { status: 201 });
 
-    const { waitForNextUpdate, result } = renderHook(() => useRequest(), {
-        wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
-      });
+    const { result } = renderHook(() => useRequest(), {
+      wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+    });
 
+    let url = 'https://showme.wappsto.com/generate_report';
+    url += '?type=monthly&x_session=cce01ae3-3150-4811-9f47-3fec80d7aed0';
     await act(async () => {
-      await result.current.send({ method: "GET", url: "https://showme.wappsto.com"});
+      await result.current.send({
+        method: 'GET',
+        url
+      });
     });
 
     expect(result.current.request.status).toBe('success');

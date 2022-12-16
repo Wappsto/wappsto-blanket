@@ -668,6 +668,8 @@ describe('useStorePageination', () => {
         child: [{ type: 'device', version: '2.0' }],
         id: ['b3a829a4-6ec2-43ec-8aac-e4640cb58f6c'],
       });
+      let path = '/network/6e1d786f-4029-42ae-8ece-95bb31b0bcd0';
+      path += '/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c';
       const response2 = JSON.stringify([
         {
           status: [],
@@ -686,7 +688,7 @@ describe('useStorePageination', () => {
             revision: 2,
             changed: '2022-05-18T07:31:57.751548Z',
             size: 1252,
-            path: '/network/6e1d786f-4029-42ae-8ece-95bb31b0bcd0/device/b3a829a4-6ec2-43ec-8aac-e4640cb58f6c',
+            path,
             parent: '6e1d786f-4029-42ae-8ece-95bb31b0bcd0',
             name_by_user: 'Find Device',
             tag_by_user: [],
