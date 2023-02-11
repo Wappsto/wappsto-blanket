@@ -51,7 +51,7 @@
     "@typescript-eslint/parser": "^5.46.1",
     "babel-jest": "^29.3.1",
     "babel-polyfill": "^6.26.0",
-    "eslint": "^8.29.0",
+    "eslint": "^8.34.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.4.0",
     "eslint-plugin-import": "^2.26.0",
