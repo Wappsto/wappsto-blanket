@@ -155,7 +155,7 @@ function useList({ url, type, id, childType, query, reset, resetOnEmpty, sort, u
     (opt) => {
       if (propsData.url) {
         setCanLoadMore(false);
-        setCustomRequest({ status: STATUS.PENDING, opt });
+        setCustomRequest({ status: STATUS.PENDING, options: opt });
         send({
           method: 'GET',
           url: propsData.url,
